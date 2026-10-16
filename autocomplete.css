@@ -1,0 +1,14 @@
+/* ---------- City autocomplete (cities.js) ---------- */
+.ac-list {
+  position: absolute; z-index: 70; margin: 0; padding: 6px; list-style: none;
+  background: #fff; border-radius: 12px; border: 1px solid var(--line);
+  box-shadow: var(--shadow); max-height: 280px; overflow-y: auto;
+  font-family: "Poppins", system-ui, sans-serif;
+}
+.ac-list[hidden] { display: none; }
+.ac-list li { display: flex; align-items: center; gap: 10px; height: 42px; padding: 0 12px; border-radius: 9px; cursor: pointer; font-size: 14px; color: var(--ink); }
+.ac-list li.on { background: var(--teal-soft); color: var(--teal-dark); }
+.ac-list li b { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ac-list .ac-pin { font-size: 15px; flex-shrink: 0; }
+.ac-list .ac-country { color: var(--muted); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ac-list li.on .ac-country { color: var(--teal-dark); opacity: 0.75; }

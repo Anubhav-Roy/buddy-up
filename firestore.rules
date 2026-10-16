@@ -1,0 +1,109 @@
+rules_version = '2';
+// buddyup — Cloud Firestore security rules.
+// Publish in Firebase console → Firestore Database → Rules (or `firebase deploy --only firestore:rules`).
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function isMe(uid) { return signedIn() && request.auth.uid == uid; }
+    function onlyChanges(keys) { return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys); }
+
+    // Public profiles: any signed-in user can read (needed to find locals and buddies).
+    // Never put email, phone or verification answers here — those live in private/info.
+    // `approved` (verified local) can only be set by a reviewer in the console / Admin SDK.
+    match /users/{uid} {
+      allow read: if signedIn();
+      // Profile photos are small data URLs, so cap their size.
+      function photoOk() { return !("photoURL" in request.resource.data) || request.resource.data.photoURL.size() < 200000; }
+      allow create: if isMe(uid) && request.resource.data.approved == false && photoOk();
+      allow update: if isMe(uid) && request.resource.data.approved == resource.data.approved && photoOk();
+      allow delete: if isMe(uid);
+
+      match /private/{doc} {
+        allow read, write: if isMe(uid);
+      }
+
+      // ID / selfie photos for local verification: the owner can upload (or replace) them,
+      // but nobody can read them from the app — reviewers use the Firebase console.
+      match /verification/{doc} {
+        allow read: if false;
+        allow create, update: if isMe(uid) && doc in ["id", "selfie"]
+          && request.resource.data.image is string && request.resource.data.image.size() < 900000;
+      }
+    }
+
+    // Meetup requests. Only the recipient can accept/decline; either side can mark it
+    // completed once the time slot has ended, and record that they've reviewed it.
+    match /meetups/{id} {
+      function inMeetup() { return signedIn() && request.auth.uid in resource.data.participants; }
+      allow read: if inMeetup();
+      allow create: if signedIn()
+        && request.resource.data.from == request.auth.uid
+        && request.resource.data.participants == [request.auth.uid, request.resource.data.to]
+        && request.resource.data.to != request.auth.uid
+        && request.resource.data.status == "requested"
+        && request.resource.data.slotStart > request.time + duration.value(23, "h")
+        && (request.resource.data.kind != "local"
+            || get(/databases/$(database)/documents/users/$(request.resource.data.to)).data.approved == true);
+      allow update: if inMeetup() && (
+        // recipient responds to a request
+        (request.auth.uid == resource.data.to && resource.data.status == "requested"
+          && request.resource.data.status in ["confirmed", "declined"]
+          && onlyChanges(["status", "confirmedAt", "declinedAt"]))
+        // requester cancels a request, or either side cancels a confirmed meetup — before it
+        // starts, and always with a reason the other person can see
+        || ((request.auth.uid == resource.data.from || resource.data.status == "confirmed")
+          && resource.data.status in ["requested", "confirmed"] && request.time < resource.data.slotStart
+          && request.resource.data.status == "cancelled"
+          && request.resource.data.cancelledBy == request.auth.uid
+          && request.resource.data.cancelReason is string
+          && request.resource.data.cancelReason.size() >= 10 && request.resource.data.cancelReason.size() <= 500
+          && onlyChanges(["status", "cancelledAt", "cancelledBy", "cancelReason"]))
+        // either side completes it after the slot has ended
+        || (resource.data.status == "confirmed" && request.time > resource.data.slotEnd
+          && request.resource.data.status == "completed" && onlyChanges(["status", "completedAt"]))
+        // either side records their own review
+        || (onlyChanges(["reviewed"])
+          && request.resource.data.reviewed.diff(resource.data.reviewed).affectedKeys().hasOnly([request.auth.uid]))
+      );
+    }
+
+    // One chat per pair of users. Messages can't be sent once either person has blocked the other.
+    match /chats/{chatId} {
+      function chat() { return getAfter(/databases/$(database)/documents/chats/$(chatId)).data; }
+      allow read: if signedIn() && (resource == null || request.auth.uid in resource.data.participants);
+      allow create: if signedIn() && request.auth.uid in request.resource.data.participants
+        && request.resource.data.participants.size() == 2;
+      allow update: if signedIn() && request.auth.uid in resource.data.participants
+        && request.resource.data.participants == resource.data.participants
+        && onlyChanges(["lastMessage", "updatedAt", "readAt", "blockedBy"]);
+
+      match /messages/{messageId} {
+        allow read: if signedIn() && request.auth.uid in chat().participants;
+        allow create: if signedIn() && request.auth.uid in chat().participants
+          && request.resource.data.from == request.auth.uid
+          && request.resource.data.text is string && request.resource.data.text.size() <= 2000
+          && chat().get("blockedBy", []).size() == 0;
+      }
+    }
+
+    // One review per person per completed meetup they took part in.
+    match /reviews/{reviewId} {
+      function meetup() { return get(/databases/$(database)/documents/meetups/$(request.resource.data.meetupId)).data; }
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && reviewId == request.resource.data.meetupId + "_" + request.auth.uid
+        && request.resource.data.from == request.auth.uid
+        && meetup().status == "completed"
+        && request.auth.uid in meetup().participants
+        && request.resource.data.to in meetup().participants
+        && request.resource.data.to != request.auth.uid
+        && request.resource.data.rating is int && request.resource.data.rating >= 1 && request.resource.data.rating <= 5
+        && request.resource.data.text is string && request.resource.data.text.size() <= 1000;
+    }
+
+    // Safety reports: users can file them, only the team (console / Admin SDK) can read them.
+    match /reports/{id} {
+      allow create: if signedIn() && request.resource.data.from == request.auth.uid;
+    }
+  }
+}
