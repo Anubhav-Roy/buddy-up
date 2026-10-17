@@ -171,7 +171,10 @@
     if (!DB.cache.loaded) return;
     // Outside the app shell, only the loading / finish-profile screens react to data (the profile
     // appearing); forms like local verification must not re-render while someone fills them in.
-    if (state.screen !== "app") { if (kind === "profile" && ["loading", "complete"].includes(state.screen) && !state.signingUp) render(); return; }
+    if (state.screen !== "app") {
+      if (kind === "profile" && !state.signingUp && (["loading", "complete"].includes(state.screen) || (state.screen === "birthdate" && me()?.birthdate))) render();
+      return;
+    }
     if (kind === "meetups") autoComplete();
     updateNavBadges();
     const { page, id } = route();
@@ -323,11 +326,21 @@
       if (!f.name?.trim() || !f.city?.trim()) return (err.textContent = local ? "Please add your name and the city you live in." : "Please add your name and where you're from.");
       if (birthError(f.birthdate)) return (err.textContent = birthError(f.birthdate));
       if (!f.adult) return (err.textContent = "You need to be 18+ and accept the guidelines.");
+      // Hold the loading screen until the profile and private details are both saved: they
+      // arrive separately, and rendering in between looks like the date of birth is missing.
+      state.signingUp = true;
+      render();
       try {
         await createProfileFor(au, { name: f.name.trim(), city: f.city, birthdate: f.birthdate });
+        state.signingUp = false;
         toast(local ? "Profile created! Now let's verify you're a local." : `Welcome to buddyup, ${f.name.trim().split(" ")[0]}! 🎉`);
         go("#/discover");
-      } catch (ex) { err.textContent = DB.friendlyError(ex); }
+      } catch (ex) {
+        state.signingUp = false;
+        render();
+        const box = $("#err");
+        if (box) box.textContent = DB.friendlyError(ex); else fail(ex);
+      }
     });
   }
 
@@ -821,9 +834,13 @@
   }
 
   // ---------- App shell ----------
+  // Deleting a chat only hides it for you (the other person keeps their copy): messages from
+  // before chats/{id}.deletedAt[you] are hidden, and the chat comes back if someone writes again.
+  const clearedAt = (c) => DB.ms(c.deletedAt?.[DB.cache.uid] || 0);
+  const visibleChat = (c) => !c.deletedAt?.[DB.cache.uid] || (!!c.lastMessage && DB.ms(c.lastMessage.ts) > clearedAt(c));
   const unreadChat = (c) => {
     const lm = c.lastMessage, uid = DB.cache.uid;
-    return !!lm && lm.from !== uid && (!c.readAt?.[uid] || DB.ms(lm.ts) > DB.ms(c.readAt[uid]));
+    return visibleChat(c) && !!lm && lm.from !== uid && (!c.readAt?.[uid] || DB.ms(lm.ts) > DB.ms(c.readAt[uid]));
   };
   const counts = () => {
     const uid = DB.cache.uid;
@@ -1840,7 +1857,7 @@
       const hint = user.mode === "local"
         ? `No chats yet.<br/>When a traveller requests a meetup, your conversation starts here.<br/><br/><a class="btn btn-primary" href="#/discover">Go to dashboard</a>`
         : `No chats yet.<br/>Request a meetup with a local or buddy to start one.<br/><br/><a class="btn btn-primary" href="#/discover">Find people</a>`;
-      pane.innerHTML = `<div class="pane-empty"><div><div class="art">💬</div>${DB.cache.chats.length ? "Pick a conversation to keep chatting." : hint}</div></div>`;
+      pane.innerHTML = `<div class="pane-empty"><div><div class="art">💬</div>${DB.cache.chats.some(visibleChat) ? "Pick a conversation to keep chatting." : hint}</div></div>`;
       return;
     }
     renderThread(user, chat, pane);
@@ -1849,7 +1866,7 @@
   function refreshConvos(activeId) {
     const box = $("#convos");
     if (!box) return;
-    const all = DB.cache.chats.slice().sort((a, b) => DB.ms(b.updatedAt) - DB.ms(a.updatedAt));
+    const all = DB.cache.chats.filter(visibleChat).sort((a, b) => DB.ms(b.updatedAt) - DB.ms(a.updatedAt));
     const q = state.chatSearch.toLowerCase();
     const list = q ? all.filter((c) => otherPerson(c).name.toLowerCase().includes(q)) : all;
     box.innerHTML = list.length ? list.map((c) => {
@@ -1937,12 +1954,13 @@
     const t = state.thread;
     if (!box || !t?.msgs) return;
     const uid = DB.cache.uid;
-    box.innerHTML = t.msgs.length ? t.msgs.map((m) => m.type === "sys"
+    const chat = chatById(t.id);
+    const msgs = chat ? t.msgs.filter((m) => m.ts > clearedAt(chat)) : t.msgs;
+    box.innerHTML = msgs.length ? msgs.map((m) => m.type === "sys"
       ? `<div class="sys">${esc(m.text)}</div>`
       : `<div class="bubble ${m.from === uid ? "me" : "them"}">${esc(m.text)}<time>${clock(m.ts)}</time></div>`).join("")
       : `<p class="hint center">No messages yet.</p>`;
     box.scrollTop = box.scrollHeight;
-    const chat = chatById(t.id);
     if (chat && unreadChat(chat)) DB.markRead(t.id).catch(() => {});
   }
 
@@ -1961,6 +1979,7 @@
       <button data-act="profile">👤 View profile</button>
       ${cancellable ? `<button data-act="cancel">✖️ Cancel ${cancellable.status === "confirmed" ? "meetup" : "request"}</button>` : ""}
       <button data-act="report">🚩 Report ${esc(p.name)}</button>
+      <button data-act="delete" class="danger">🗑️ Delete chat</button>
       <button data-act="block" class="danger">⛔ ${iBlocked ? "Unblock" : "Block"} ${esc(p.name)}</button>`;
     $(".thread-head").appendChild(menu);
     const close = () => { menu.remove(); document.removeEventListener("click", close); };
@@ -1973,12 +1992,38 @@
       if (act === "profile") return openProfileById(p.uid, p.label);
       if (act === "cancel") return openCancel(cancellable);
       if (act === "report") return openReport(p.uid, p.name, chat.id);
+      if (act === "delete") return openDeleteChat(chat, p);
       if (act === "block") {
         DB.setBlocked(chat.id, !iBlocked).catch(fail);
         toast(iBlocked ? `You unblocked ${p.name}.` : `You blocked ${p.name}. They can't message you.`);
         await settle();
         render();
       }
+    });
+  }
+
+  function openDeleteChat(chat, p) {
+    const upcoming = DB.cache.meetups.find((m) => m.chatId === chat.id && ["requested", "confirmed"].includes(m.status) && notStarted(m));
+    openModal(`
+      <button class="modal-close" data-close aria-label="Close">${I.close}</button>
+      <div class="modal-body plain">
+        <h3>Delete this chat?</h3>
+        <p style="margin-top:10px">The conversation with ${esc(p.name)} will be removed from your Messages. ${esc(p.name)} keeps their copy. If either of you sends a new message, the chat comes back without the old messages.</p>
+        ${upcoming ? `<div class="check-result warn" style="margin-top:12px">Your ${upcoming.status === "confirmed" ? "meetup" : "request"} for ${slotLabel(upcoming.slot)} isn't cancelled. To cancel it, go to Meetups.</div>` : ""}
+        <div class="error" id="dcerr"></div>
+        <div class="modal-buttons">
+          <button class="btn btn-soft" data-close>Keep chat</button>
+          <button class="btn btn-danger" id="dcsend">Delete chat</button>
+        </div>
+      </div>`);
+    $("#dcsend").addEventListener("click", async () => {
+      $("#dcsend").disabled = true;
+      try {
+        await DB.deleteChat(chat.id);
+        closeModal();
+        toast(`Chat with ${p.name} deleted.`);
+        go("#/messages");
+      } catch (e) { $("#dcsend").disabled = false; $("#dcerr").textContent = DB.friendlyError(e); }
     });
   }
 

@@ -230,6 +230,8 @@ window.BuddyDB = (function () {
     return batch.commit();
   }
   const markRead = (chatId) => db.doc(`chats/${chatId}`).update({ [`readAt.${cache.uid}`]: now() });
+  // "Delete for me": hides the chat and its earlier messages for this user only.
+  const deleteChat = (chatId) => db.doc(`chats/${chatId}`).update({ [`deletedAt.${cache.uid}`]: now() });
   const setBlocked = (chatId, on) => db.doc(`chats/${chatId}`).update({ blockedBy: on ? FV().arrayUnion(cache.uid) : FV().arrayRemove(cache.uid) });
 
   // ---------- Reviews & reports ----------
@@ -364,7 +366,7 @@ window.BuddyDB = (function () {
     ready, cache, me, onChange: (fn) => subs.add(fn), friendlyError, ms,
     signUpEmail, signInEmail, resetPassword, signInGoogle, signOut, finishRedirect, currentAuthUser: () => cache.authUser,
     createProfile, saveProfile, savePrivate, getProfile, findLocals, findTravellers, reviewsFor,
-    pairId, requestMeetup, setMeetupStatus, cancelMeetup, watchMessages, sendMessage, markRead, setBlocked,
+    pairId, requestMeetup, setMeetupStatus, cancelMeetup, watchMessages, sendMessage, markRead, setBlocked, deleteChat,
     addReview, report, uploadAvatar, uploadVerificationFile, isR2Photo, loadPhoto, deleteAccount,
   };
 })();
