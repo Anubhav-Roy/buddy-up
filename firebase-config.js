@@ -4,7 +4,7 @@
 // domains (Google Cloud console → Credentials) and keep Firebase "Authorized domains" tight.
 window.BUDDY_FIREBASE_CONFIG = {
   apiKey: "AIzaSyCazOA4xrZS4sA1pf5JF0fEz1Cx8xfbKqg",
-  authDomain: "buddyup-32479.firebaseapp.com", // e.g. "your-project.firebaseapp.com"
+  authDomain: "auth.buddyup.fyi", // e.g. "your-project.firebaseapp.com"
   projectId: "buddyup-32479",
   appId: "1:865586811357:web:54a60795da076ff48fe634"};
 
