@@ -11,10 +11,3 @@ window.BUDDY_FIREBASE_CONFIG = {
 // Photo API (Cloudflare Worker + R2, see worker/). Profile photos are uploaded to and served
 // from here; it must match the photo URL pattern in firestore.rules.
 window.BUDDY_PHOTO_API = "https://buddyup.fyi";
-
-// Local testing only (ignored unless the site runs on localhost): these numbers skip the
-// real SMS and are verified with their fixed code. Keep in sync with Firebase console →
-// Authentication → Sign-in method → Phone → Phone numbers for testing.
-window.BUDDY_TEST_PHONES = {
-  "+4915227513054": "123456",
-};

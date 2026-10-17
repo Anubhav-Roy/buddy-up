@@ -412,7 +412,7 @@
         <div class="steps">
           <div class="step coral"><div class="num">🏠</div><h3>Prove your roots</h3><p>Tell us how long you've lived in the city (at least 6 months), your neighbourhood and postcode.</p></div>
           <div class="step coral"><div class="num">🧭</div><h3>Show your local knowledge</h3><p>Answer a few questions only a real local could: hidden spots, food, getting around.</p></div>
-          <div class="step coral"><div class="num">🪪</div><h3>Verify your identity</h3><p>Phone, ID and a selfie check. Travellers only ever see verified locals.</p></div>
+          <div class="step coral"><div class="num">🪪</div><h3>Verify your identity</h3><p>An ID and selfie check. Travellers only ever see verified locals.</p></div>
         </div>
         <div class="center" style="margin-top:34px"><button class="btn btn-coral" id="become-local">Sign up as a local</button></div>
       </div></section>
@@ -602,9 +602,6 @@
     state.screen = "verify";
     if (!state.verify || state.verify.uid !== user.uid) state.verify = { uid: user.uid, v: clone(user.verification || { step: 0 }) };
     const v = state.verify.v;
-    // Live Firestore updates re-render this page; keep a pending SMS code unless the user or step changed.
-    const phoneKey = user.uid + ":" + v.step;
-    if (state.verify.phoneKey !== phoneKey) { BuddyPhone.reset(); v.codeSent = false; state.verify.sendError = ""; state.verify.phoneKey = phoneKey; }
     const s = VERIFY_STEPS[v.step];
     const last = v.step === VERIFY_STEPS.length - 1;
     const canTravel = user.role === "traveller" || !!user.trip;
@@ -644,24 +641,8 @@
       const label = inp.closest(".upload");
       if (inp.files[0]) { label.classList.add("done"); label.querySelector(".label").textContent = "✓ " + inp.files[0].name + " (uploads when you continue)"; }
     }));
-    $("#sendcode")?.addEventListener("click", async () => {
-      const btn = $("#sendcode"), err = $("#err");
-      const phone = BuddyPhone.toE164($('[name="phone"]').value.trim());
-      if (!phone) return (err.textContent = "Enter your mobile number with the country code, e.g. +351 912 345 678.");
-      err.textContent = "";
-      v.phone = phone;
-      btn.disabled = true;
-      btn.textContent = "Sending…";
-      const r = await BuddyPhone.send(phone, btn);
-      btn.disabled = false;
-      btn.textContent = r.ok ? "Resend code" : "Send code";
-      state.verify.sendError = r.ok ? "" : r.error;
-      if (!r.ok) { v.codeSent = false; return (err.textContent = r.error); }
-      v.codeSent = true;
-      toast(`We've sent a 6-digit code to ${phone}.`);
-    });
     $("#back")?.addEventListener("click", () => { v.step--; DB.savePrivate({ verification: v }).catch(fail); render(); });
-    $("#logout")?.addEventListener("click", () => { BuddyPhone.reset(); DB.signOut(); go("#/"); });
+    $("#logout")?.addEventListener("click", () => { DB.signOut(); go("#/"); });
     $("#to-traveller")?.addEventListener("click", () => switchMode(user, "traveller"));
     $("#vform").addEventListener("submit", (e) => { e.preventDefault(); submitVerifyStep(user, v, new FormData(e.target)); });
   }
@@ -697,13 +678,6 @@
       <div class="field"><label>How would you get from the main train station to your neighbourhood using public transport?</label><textarea class="textarea" name="transit">${esc(v.transit)}</textarea></div>
       <p class="hint">Tip: specific answers (names, lines, streets) get approved faster.</p>`;
     if (step === 2) return `
-      <div class="row">
-        <div class="field"><label>Mobile number</label>
-          <div class="otp-row"><input class="input" name="phone" value="${esc(v.phone)}" placeholder="+351 912 345 678"/><button type="button" class="btn btn-outline" id="sendcode">Send code</button></div></div>
-        <div class="field"><label>6-digit code</label>${v.phoneVerified
-          ? `<div class="check-result ok" style="margin:0">✓ ${esc(v.phone)} verified</div>`
-          : `<input class="input" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="••••••"/>`}</div>
-      </div>
       <label class="upload ${v.idFile ? "done" : ""}"><input type="file" name="idDoc" accept="image/*"/><span class="ico">🪪</span><span class="label">${v.idFile ? "✓ ID uploaded. Choose a file to replace it" : "Upload a photo of a government ID or proof of address"}</span></label>
       <label class="upload ${v.selfieFile ? "done" : ""}"><input type="file" name="selfie" accept="image/*" capture="user"/><span class="ico">🤳</span><span class="label">${v.selfieFile ? "✓ Selfie uploaded. Choose a file to replace it" : "Upload a selfie so we can match it to your ID"}</span></label>
       <p class="hint">🔒 Your ID and selfie are stored privately. Only the buddyup review team can see them.</p>`;
@@ -804,17 +778,6 @@
       if (fields.some((k) => get(k).length < 20)) return (err.textContent = "Please give a bit more detail (20+ characters each).");
       fields.forEach((k) => (v[k] = get(k)));
     } else if (v.step === 2) {
-      if (!v.phoneVerified) {
-        if (!v.codeSent) return (err.textContent = state.verify.sendError ? `The code wasn't sent: ${state.verify.sendError}` : "Tap “Send code” to get a code by SMS.");
-        busy("Checking code…");
-        const r = await BuddyPhone.confirm(get("code"));
-        busy();
-        if (!r.ok) return (err.textContent = r.error);
-        v.phone = r.phone;
-        v.phoneVerified = true;
-        DB.savePrivate({ phone: r.phone, phoneVerifiedAt: Date.now() }).catch(fail);
-        DB.saveProfile({ phoneVerified: true }).catch(fail);
-      }
       const id = fd.get("idDoc"), selfie = fd.get("selfie");
       if (!v.idFile && !id?.name) return (err.textContent = "Please upload an ID or proof of address.");
       try {
@@ -851,9 +814,8 @@
   function trustScore(v) {
     let s = RESIDENCY.find((r) => r.v === v.residency)?.score || 0;
     s += Math.min(25, Math.round((v.hiddenSpots.length + v.localDish.length + v.transit.length) / 12));
-    if (v.phoneVerified) s += 15;
-    if (v.idFile) s += 15;
-    if (v.selfieFile) s += 10;
+    if (v.idFile) s += 20;
+    if (v.selfieFile) s += 20;
     if (v.languages?.length > 1) s += 5;
     if (v.flags?.length) s -= 10;
     return Math.max(0, Math.min(100, s));
@@ -2060,7 +2022,6 @@
           <h3 style="margin-top:28px">How we verify locals</h3>
           ${guideList([["🏠", "Residency", "At least 6 months in the city; postcode checked against their neighbourhood."],
             ["🧭", "Local knowledge", "Questions about hidden spots, food and getting around."],
-            ["📱", "Phone check", "A one-time SMS code."],
             ["🪪", "ID & selfie", "Stored privately and reviewed by our team before approval."]])}
         </section>
       </div>`;

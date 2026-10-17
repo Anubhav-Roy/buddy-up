@@ -11,7 +11,7 @@ Find a verified local to show you around a city, or a fellow traveller (buddy) t
 
 buddyup stores its data in Firebase on the free **Spark** plan: **Authentication** (email/password + Google) and **Cloud Firestore** (profiles, trips, availability, meetups, chat, reviews, reports). Profile photos go to **Cloudflare R2** through a small Worker (below); local ID/selfie photos are compressed and saved in a write-only Firestore document. Your project details go in `firebase-config.js`.
 
-1. **Authentication → Sign-in method**: enable **Email/Password** and **Google** (how people log in), and **Phone** — used only to text a one-time code that verifies a local's number, never as a way to log in (the temporary phone user Firebase creates is deleted right after). Real SMS needs the paid **Blaze** plan; on the free plan add test numbers with fixed codes under *Phone numbers for testing*.
+1. **Authentication → Sign-in method**: enable **Email/Password** and **Google** (how people log in).
 2. **Firestore Database → Create database** (production mode, pick a region near your users). Then **Rules** → paste `firestore.rules` → **Publish**.
 3. **Authentication → Settings → Authorized domains**: `localhost` is there by default; add your real domain when you host the site.
 4. Restrict the browser API key to your domains: Google Cloud console → APIs & Services → Credentials.
@@ -34,7 +34,7 @@ Travellers must add a photo (picked or taken with the camera) before they can us
 | Path | Contents | Who can read |
 |---|---|---|
 | `users/{uid}` | name, photo URL (R2), bio, cancellations count, interests, mode, home city, trip + free times, availability, `approved` | any signed-in user |
-| `users/{uid}/private/info` | email, phone, birthdate, verification answers, postcode | only that user |
+| `users/{uid}/private/info` | email, birthdate, verification answers, postcode | only that user |
 | `meetups/{id}` | requests between two users, status, time slot | the two participants |
 | `chats/{uidA_uidB}` + `/messages` | conversations | the two participants |
 | `reviews/{meetupId_uid}` | ratings & reviews after completed meetups | any signed-in user |
@@ -54,7 +54,7 @@ Rules also enforce: requests at least ~a day ahead, only the recipient can accep
 - **Profile photo**: travellers add a photo (upload or live camera selfie) before anything else — "we need an image to establish credibility"
 - **Discover (travellers)**: destination (with city suggestions), dates and a month calendar of the date/time ranges they're free → **Find people** → locals and buddies together, tagged Local / Buddy, with filters for type, day, interest, language and 4★+ rating
 - **Every traveller is a buddy**: the trip times a traveller enters to search are also when other travellers in that city can find them (minus times they already have a confirmed meetup). They never see themselves
-- **Local verification** (4 steps): residency (min. 6 months), neighbourhood + postcode — cross-checked with OpenStreetMap and flagged for review if they don't match — languages (incl. "Other" with custom entry), local-knowledge questions, phone OTP via Firebase + ID/selfie stored privately in Firestore, safety pledge → trust score
+- **Local verification** (4 steps): residency (min. 6 months), neighbourhood + postcode — cross-checked with OpenStreetMap and flagged for review if they don't match — languages (incl. "Other" with custom entry), local-knowledge questions, ID/selfie stored privately in Firestore (no SMS step), safety pledge → trust score
 - **Results**: only people free for at least an hour at the same date/time, starting at least 24h ahead; cards show matching times and ratings; requests pick a shared time and get a local- or buddy-specific suggested first message
 - **Local availability**: once approved, locals must add date/time ranges on a month calendar for the next 5 weeks (at least one time in the next 4 weeks) before getting requests, and are prompted to extend it when it drops below 30 days
 - **Local dashboard**: in review → timeline, trust score, review flags, approval by a reviewer in the Firebase console; approved → meetup requests only in the local's free slots (accept & chat / decline / view profile), upcoming meetups, availability summary, travellers-in-town count. Locals don't browse travellers — travellers reach out
@@ -66,5 +66,5 @@ Rules also enforce: requests at least ~a day ahead, only the recipient can accep
 ## Not done yet
 
 - Approving locals is done by hand in the Firebase console — an admin screen and email notifications would come next.
-- Push notifications and server-side checks (e.g. Cloud Functions to re-verify phone numbers and compute trust scores) aren't built yet.
+- Push notifications and server-side checks (e.g. Cloud Functions to compute trust scores) aren't built yet.
 - The postcode check calls OpenStreetMap Nominatim from the browser; production should do it server-side with a commercial geocoder.
