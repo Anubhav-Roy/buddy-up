@@ -17,7 +17,25 @@
   const titleCase = (s) => String(s || "").trim().replace(/\s+/g, " ").replace(/(^|[\s\-(])(\p{L})/gu, (m, a, b) => a + b.toUpperCase());
   const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
   const clock = (ts) => new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  const shortTime = (ts) => (new Date(ts).toDateString() === new Date().toDateString() ? clock(ts) : new Date(ts).toLocaleDateString([], { day: "numeric", month: "short" }));
+  // Dates are always shown as dd/mm/yyyy. `d` is a Date, a timestamp or a "YYYY-MM-DD" string.
+  const dmy = (d) => {
+    if (typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d)) { const [y, m, day] = d.split("-"); return `${day}/${m}/${y}`; }
+    const x = new Date(d);
+    return `${String(x.getDate()).padStart(2, "0")}/${String(x.getMonth() + 1).padStart(2, "0")}/${x.getFullYear()}`;
+  };
+  // "dd/mm/yyyy" → "YYYY-MM-DD", or "" if it isn't a real date.
+  const parseDmy = (v) => {
+    const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(v || "");
+    if (!m) return "";
+    const d = new Date(+m[3], +m[2] - 1, +m[1]);
+    return d.getDate() === +m[1] && d.getMonth() === +m[2] - 1 ? `${m[3]}-${m[2]}-${m[1]}` : "";
+  };
+  // Whole years old on `on` (default today) for a "YYYY-MM-DD" birthdate.
+  const ageFrom = (birth, on = new Date()) => {
+    const [y, m, d] = birth.split("-").map(Number);
+    return on.getFullYear() - y - (on.getMonth() + 1 < m || (on.getMonth() + 1 === m && on.getDate() < d) ? 1 : 0);
+  };
+  const shortTime = (ts) => (new Date(ts).toDateString() === new Date().toDateString() ? clock(ts) : dmy(ts));
 
   const svg = (d, extra = "") => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" ${extra}>${d}</svg>`;
   const I = {
@@ -54,11 +72,21 @@
     setTimeout(() => el.remove(), 3200);
   }
 
+  // R2 photos are fetched with the viewer's sign-in token (DB.loadPhoto), so they start as a blank
+  // image and are filled in once loaded; failures fall back to initials like any broken photo.
+  const BLANK = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+  const imgSrc = (url) => (DB.isR2Photo(url) ? `src="${BLANK}" data-photo="${esc(url)}"` : `src="${esc(url)}"`);
+  new MutationObserver(() => $$("img[data-photo]").forEach((img) => {
+    const url = img.dataset.photo;
+    img.removeAttribute("data-photo");
+    DB.loadPhoto(url).then((src) => (img.src = src)).catch(() => img.dispatchEvent(new Event("error")));
+  })).observe(document.body, { childList: true, subtree: true });
+
   function photo(p, size) {
-    return `<img class="avatar" src="${esc(p.photo)}" alt="${esc(p.name)}" data-initials="${esc(initials(p.name))}" style="width:${size}px;height:${size}px" loading="lazy" />`;
+    return `<img class="avatar" ${imgSrc(p.photo)} alt="${esc(p.name)}" data-initials="${esc(initials(p.name))}" style="width:${size}px;height:${size}px" loading="lazy" />`;
   }
   const userAvatar = (u, size) => (u.photoURL
-    ? `<img class="avatar" src="${esc(u.photoURL)}" alt="${esc(u.name)}" data-initials="${esc(initials(u.name))}" style="width:${size}px;height:${size}px" referrerpolicy="no-referrer"/>`
+    ? `<img class="avatar" ${imgSrc(u.photoURL)} alt="${esc(u.name)}" data-initials="${esc(initials(u.name))}" style="width:${size}px;height:${size}px" referrerpolicy="no-referrer"/>`
     : initialsAvatar(u.name, size));
   function initialsAvatar(name, size) {
     return `<div class="avatar avatar-initials" style="width:${size}px;height:${size}px;font-size:${Math.round(size / 2.8)}px">${esc(initials(name))}</div>`;
@@ -82,13 +110,15 @@
   const settle = () => new Promise((r) => setTimeout(r, 40));
 
   // ---------- State & routing ----------
+  // Filters on the "find people" results.
+  const noFilters = () => ({ type: "all", day: "", interest: "", language: "", rated: false });
   const state = {
     authTab: "signup", role: "traveller", interests: [], showPw: false,
-    filter: null, chatSearch: "", pcAck: null, signingUp: false, screen: "",
+    filters: noFilters(), chatSearch: "", pcAck: null, signingUp: false, screen: "",
     verify: null, results: null, thread: null, completing: new Set(),
   };
 
-  // Routes: #/discover (trip) → #/discover/find → #/discover/<local|buddy>, #/availability, #/meetups,
+  // Routes: #/discover (trip) → #/discover/people, #/availability, #/meetups,
   // #/messages[/<chatId>], #/safety, #/profile
   function route() {
     const [, page = "discover", id] = location.hash.split("/");
@@ -107,9 +137,13 @@
     if (!c.uid) return renderLanding();
     if (!c.profile) return renderCompleteProfile();
     const user = me();
+    if (!user.birthdate) return renderAddBirthdate();
+    if (user.age !== ageFrom(user.birthdate)) DB.saveProfile({ age: ageFrom(user.birthdate) }).catch(fail); // birthdays
     if (user.mode === "local" && !user.verification?.completed) return renderVerify(user);
+    if (user.mode === "traveller" && !user.photoUploaded) return renderAddPhoto(user);
     if (page === "trip") return go("#/discover");
     if (user.availability) releaseCancelledSlots(user); // locals only have availability
+    if (user.trip) syncBusyTimes(user);
     renderApp(user);
   }
 
@@ -124,7 +158,7 @@
       <section class="verify-page"><div class="verify">
         ${logo()}
         <h1 style="margin-top:20px">Firebase isn't connected</h1>
-        <p class="sub">buddyup stores accounts and profiles in Firebase. ${location.protocol === "file:" ? "Open it from a web address (run <code>node server.js</code> and visit http://localhost:5173) — it can't run as a file." : "Add your project details to <code>firebase-config.js</code> and reload."}</p>
+        <p class="sub">buddyup stores accounts and profiles in Firebase. ${location.protocol === "file:" ? "Open it from a web address (run <code>node server.js</code> and visit http://localhost:5173). It can't run as a file." : "Add your project details to <code>firebase-config.js</code> and reload."}</p>
       </div></section>`;
   }
 
@@ -161,20 +195,6 @@
 
   // ---------- Illustrations ----------
   const ART = {
-    mountains: `
-      <svg viewBox="0 0 600 300" preserveAspectRatio="xMidYMid slice">
-        <defs><linearGradient id="sky1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bff0df"/><stop offset="1" stop-color="#e6f7f2"/></linearGradient></defs>
-        <rect width="600" height="300" fill="url(#sky1)"/>
-        <circle cx="450" cy="85" r="30" fill="#ff8a5c"/>
-        <path d="M0 190 L120 100 L200 150 L320 40 L420 140 L480 110 L600 170 V300 H0Z" fill="#6fd6b8"/>
-        <path d="M290 72 L320 40 L352 86 L336 80 L322 96 L308 78Z" fill="#fff"/>
-        <path d="M0 220 L100 170 L200 215 L300 160 L410 220 L510 185 L600 210 V300 H0Z" fill="#1fb393"/>
-        <path d="M0 250 Q150 215 300 240 T600 235 V300 H0Z" fill="#149479"/>
-        <g fill="#0f6f5b">${[25, 60, 95, 470, 505, 540, 575].map((x, i) => `<path d="M${x} ${250 - (i % 3) * 10} l13 40 h-26z M${x} ${235 - (i % 3) * 10} l10 28 h-20z"/>`).join("")}</g>
-        <path d="M0 280 Q300 255 600 280 V300 H0Z" fill="#0f6f5b"/>
-        <path d="M120 120 Q 250 30 420 70" stroke="#fff" stroke-width="2.5" stroke-dasharray="5 7" fill="none"/>
-        <path d="M424 62 l14 6 -14 6 3 -6z" fill="#fff"/>
-      </svg>`,
     city: `
       <svg viewBox="0 0 600 300" preserveAspectRatio="xMidYMid slice">
         <defs><linearGradient id="sky2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1fb393"/><stop offset="1" stop-color="#bff0df"/></linearGradient></defs>
@@ -188,6 +208,52 @@
         <path d="M240 145 Q300 70 360 110" stroke="#fff" stroke-width="2.5" stroke-dasharray="5 6" fill="none"/>
       </svg>`,
   };
+
+  // ---------- Date fields ----------
+  // Browsers show <input type="date"> in the device's own format, so dates are typed as
+  // dd/mm/yyyy instead. A hidden native date input next to it holds the "YYYY-MM-DD" value the
+  // rest of the code reads (via its `name`), and the calendar button opens its picker.
+  function dateField(name, value = "", { min = "", max = "", label = "Date" } = {}) {
+    return `<div class="date-field">
+      <input class="input" data-date-text inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" aria-label="${esc(label)} (dd/mm/yyyy)" value="${value ? dmy(value) : ""}"/>
+      <button type="button" class="date-pick" aria-label="Choose ${esc(label.toLowerCase())} from a calendar">${I.calendar}</button>
+      <input type="date" class="date-native" name="${name}" value="${esc(value)}" min="${min}" max="${max}" tabindex="-1" aria-hidden="true"/>
+    </div>`;
+  }
+  // Set a date field from code (keeps the visible dd/mm/yyyy text in step).
+  function setDate(native, value) {
+    native.value = value || "";
+    const text = native.closest(".date-field")?.querySelector("[data-date-text]");
+    if (text) text.value = value ? dmy(value) : "";
+  }
+  function bindDateFields(root) {
+    $$(".date-field", root).forEach((box) => {
+      const text = $("[data-date-text]", box), native = $(".date-native", box);
+      text.addEventListener("input", () => {
+        let v = text.value.replace(/\D/g, "").slice(0, 8);
+        if (v.length > 4) v = `${v.slice(0, 2)}/${v.slice(2, 4)}/${v.slice(4)}`;
+        else if (v.length > 2) v = `${v.slice(0, 2)}/${v.slice(2)}`;
+        text.value = v;
+        const value = parseDmy(v);
+        if (value !== native.value) { native.value = value; native.dispatchEvent(new Event("change")); }
+      });
+      $(".date-pick", box).addEventListener("click", () => { try { native.showPicker(); } catch { text.focus(); } });
+      native.addEventListener("change", (e) => { if (e.isTrusted) text.value = native.value ? dmy(native.value) : ""; });
+    });
+  }
+
+  // Everyone gives their date of birth. It's kept private; only their age is on the profile.
+  const MIN_AGE = 18;
+  const birthMax = () => ymd(new Date(new Date().getFullYear() - MIN_AGE, new Date().getMonth(), new Date().getDate()));
+  const birthField = (value = "") => `<div class="field"><label>Date of birth</label>${dateField("birthdate", value, { min: "1900-01-01", max: birthMax(), label: "Date of birth" })}
+    <p class="hint" style="margin-top:6px">Only your age is shown on your profile, never your birthday.</p></div>`;
+  function birthError(value) {
+    if (!value) return "Please enter your date of birth as dd/mm/yyyy.";
+    const age = ageFrom(value);
+    if (age < MIN_AGE) return `You need to be ${MIN_AGE} or older to use buddyup.`;
+    if (age > 110) return "Please check your date of birth.";
+    return "";
+  }
 
   // ---------- Sign-in ----------
   // City suggestions on an input. `cityOnly` stores "Lisbon" instead of "Lisbon, Portugal".
@@ -232,8 +298,9 @@
             </div>
             <div class="row">
               <div class="field"><label>Full name</label><input class="input" name="name" value="${esc(name)}" autocomplete="name" placeholder="Jane Cooper"/></div>
-              <div class="field"><label>${local ? "City you live in" : "Where are you from?"}</label><input class="input" name="city" placeholder="${local ? "Lisbon" : "City or country"}"/></div>
+              <div class="field"><label>${local ? "City you live in" : "Where are you from?"}</label><input class="input" name="city" placeholder="${local ? "Start typing your city" : "City or country"}"/></div>
             </div>
+            ${birthField()}
             <div class="field"><label>What are you into?</label>
               <div class="chips">${INTERESTS.slice(0, 10).map((t) => `<button type="button" class="chip ${state.interests.includes(t) ? "active" : ""}" data-interest="${esc(t)}">${esc(t)}</button>`).join("")}</div></div>
             <label class="check"><input type="checkbox" name="adult"/> I'm 18 or older and agree to the buddyup community guidelines.</label>
@@ -244,6 +311,7 @@
       </section>`;
     const form = $("#complete");
     suggestCities($('[name="city"]', form), local);
+    bindDateFields(form);
     $("#cancel").addEventListener("click", () => DB.signOut());
     bindRoleAndInterests(form, renderCompleteProfile, "#complete");
     form.addEventListener("submit", async (e) => {
@@ -251,20 +319,21 @@
       const f = Object.fromEntries(new FormData(form));
       const err = $("#err");
       if (!f.name?.trim() || !f.city?.trim()) return (err.textContent = local ? "Please add your name and the city you live in." : "Please add your name and where you're from.");
+      if (birthError(f.birthdate)) return (err.textContent = birthError(f.birthdate));
       if (!f.adult) return (err.textContent = "You need to be 18+ and accept the guidelines.");
       try {
-        await createProfileFor(au, { name: f.name.trim(), city: f.city });
-        toast(local ? "Profile created — let's verify you're a local." : `Welcome to buddyup, ${f.name.trim().split(" ")[0]}! 🎉`);
+        await createProfileFor(au, { name: f.name.trim(), city: f.city, birthdate: f.birthdate });
+        toast(local ? "Profile created! Now let's verify you're a local." : `Welcome to buddyup, ${f.name.trim().split(" ")[0]}! 🎉`);
         go("#/discover");
       } catch (ex) { err.textContent = DB.friendlyError(ex); }
     });
   }
 
-  function createProfileFor(au, { name, city }) {
+  function createProfileFor(au, { name, city, birthdate }) {
     const local = state.role === "local";
     return DB.createProfile(au.uid,
-      { name, role: state.role, mode: state.role, interests: state.interests, from: local ? "" : titleCase(city), localCity: local ? titleCase(city) : "", photoURL: au.photoURL || "", available: true, trip: null },
-      { email: au.email || "", verification: local ? { step: 0 } : null },
+      { name, role: state.role, mode: state.role, interests: state.interests, from: local ? "" : titleCase(city), localCity: local ? titleCase(city) : "", photoURL: au.photoURL || "", available: true, trip: null, age: ageFrom(birthdate) },
+      { email: au.email || "", verification: local ? { step: 0 } : null, birthdate },
     );
   }
 
@@ -274,7 +343,11 @@
       const values = Object.fromEntries(new FormData(form)); // keep typed values across the re-render
       state.role = b.dataset.role;
       rerender();
-      Object.entries(values).forEach(([k, v]) => { const el = $(`${formSel} [name="${k}"]`); if (el && el.type !== "checkbox") el.value = v; });
+      Object.entries(values).forEach(([k, v]) => {
+        const el = $(`${formSel} [name="${k}"]`);
+        if (el?.classList.contains("date-native")) setDate(el, v);
+        else if (el && el.type !== "checkbox") el.value = v;
+      });
     }));
     $$("[data-interest]", form).forEach((c) => c.addEventListener("click", () => {
       const t = c.dataset.interest;
@@ -291,14 +364,14 @@
         <nav class="landing-nav-links"><a href="#" data-scroll="how">How it works</a><a href="#" data-scroll="safety">Safety</a><a href="#" data-scroll="locals">For locals</a></nav>
         <div class="nav-right">
           <button class="btn btn-soft btn-sm" data-auth="login">Log in</button>
-          <button class="btn btn-primary btn-sm" data-auth="signup">Sign up free</button>
+          <button class="btn btn-primary btn-sm" data-auth="signup">Sign up<span class="wide-only"> free</span></button>
         </div>
       </div></header>
 
       <section class="hero"><div class="container">
         <div class="fade">
           <h1>Explore any city with <em>someone who gets it.</em></h1>
-          <p class="lead">Meet a verified local who'll show you the city they love — or pair up with a fellow traveller who's in town right now.</p>
+          <p class="lead">Meet a verified local who'll show you the city they love, or pair up with a fellow traveller who's in town right now.</p>
           <div class="stats-row">
             <div><strong>Verified</strong><span>local hosts</span></div>
             <div><strong>2-way</strong><span>reviews</span></div>
@@ -323,7 +396,7 @@
         <div class="section-head"><h2>How buddyup works</h2><p>Three steps from landing in a new city to exploring it with someone.</p></div>
         <div class="steps">
           <div class="step"><div class="num">1</div><h3>Tell us where you're going</h3><p>Sign up, then enter the city you're travelling to and what you're into.</p></div>
-          <div class="step"><div class="num">2</div><h3>Find a local or a buddy</h3><p>Browse verified locals who'll show you around, or fellow travellers in town right now.</p></div>
+          <div class="step"><div class="num">2</div><h3>Find people</h3><p>See verified locals who'll show you around and fellow travellers in town, all free when you are.</p></div>
           <div class="step"><div class="num">3</div><h3>Chat, then meet</h3><p>Send a request, plan in the in-app chat and meet somewhere public. If a local showed you around, tip generously!</p></div>
         </div>
       </div></section>
@@ -337,13 +410,13 @@
         <div class="section-head"><h2>Love your city? Become a local.</h2><p>Meet people from around the world and show them the places you love. You can switch between traveller and local any time.</p></div>
         <div class="steps">
           <div class="step coral"><div class="num">🏠</div><h3>Prove your roots</h3><p>Tell us how long you've lived in the city (at least 6 months), your neighbourhood and postcode.</p></div>
-          <div class="step coral"><div class="num">🧭</div><h3>Show your local knowledge</h3><p>Answer a few questions only a real local could — hidden spots, food, getting around.</p></div>
+          <div class="step coral"><div class="num">🧭</div><h3>Show your local knowledge</h3><p>Answer a few questions only a real local could: hidden spots, food, getting around.</p></div>
           <div class="step coral"><div class="num">🪪</div><h3>Verify your identity</h3><p>Phone, ID and a selfie check. Travellers only ever see verified locals.</p></div>
         </div>
         <div class="center" style="margin-top:34px"><button class="btn btn-coral" id="become-local">Sign up as a local</button></div>
       </div></section>
 
-      <footer class="footer"><div class="container">${logo()}<span>© ${new Date().getFullYear()} buddyup · Prototype</span></div></footer>`;
+      <footer class="footer"><div class="container">${logo()}<span>© ${new Date().getFullYear()} buddyup</span></div></footer>`;
 
     // In-page links scroll instead of using #anchors, which the hash router owns.
     $$("[data-scroll]").forEach((a) => a.addEventListener("click", (e) => { e.preventDefault(); document.getElementById(a.dataset.scroll).scrollIntoView({ behavior: "smooth" }); }));
@@ -379,10 +452,11 @@
         ${socialButtons("or sign up with your email")}
         <div class="row">
           <div class="field"><label>Full name</label><input class="input" name="name" autocomplete="name" placeholder="Jane Cooper"/></div>
-          <div class="field"><label>${local ? "City you live in" : "Where are you from?"}</label><input class="input" name="city" placeholder="${local ? "Lisbon" : "City or country"}"/></div>
+          <div class="field"><label>${local ? "City you live in" : "Where are you from?"}</label><input class="input" name="city" placeholder="${local ? "Start typing your city" : "City or country"}"/></div>
         </div>
         <div class="field"><label>Email</label><input class="input" name="email" type="email" autocomplete="email" placeholder="you@example.com"/></div>
         <div class="field"><label>Password</label>${pwField("password", "At least 8 characters", "new-password")}</div>
+        ${birthField()}
         <div class="field"><label>What are you into?</label>
           <div class="chips">${INTERESTS.slice(0, 10).map((t) => `<button type="button" class="chip ${state.interests.includes(t) ? "active" : ""}" data-interest="${esc(t)}">${esc(t)}</button>`).join("")}</div></div>
         <label class="check"><input type="checkbox" name="adult"/> I'm 18 or older and agree to the buddyup community guidelines.</label>
@@ -417,6 +491,7 @@
     const signup = $("#signup");
     if (signup) {
       suggestCities($('[name="city"]', signup), state.role === "local");
+      bindDateFields(signup);
       bindRoleAndInterests(signup, () => switchAuth("signup"), "#signup");
       signup.addEventListener("submit", async (e) => {
         e.preventDefault();
@@ -427,16 +502,17 @@
         if (!f.name?.trim() || !f.city?.trim()) return (err.textContent = local ? "Please add your name and the city you live in." : "Please add your name and where you're from.");
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return (err.textContent = "That email doesn't look right.");
         if ((f.password || "").length < 8) return (err.textContent = "Password needs at least 8 characters.");
+        if (birthError(f.birthdate)) return (err.textContent = birthError(f.birthdate));
         if (!f.adult) return (err.textContent = "You need to be 18+ and accept the guidelines.");
         state.signingUp = true; // hold the loading screen until the profile exists
         render();
         try {
           const cred = await DB.signUpEmail(email, f.password);
           await cred.user.updateProfile({ displayName: f.name.trim() });
-          await createProfileFor(cred.user, { name: f.name.trim(), city: f.city });
+          await createProfileFor(cred.user, { name: f.name.trim(), city: f.city, birthdate: f.birthdate });
           cred.user.sendEmailVerification().catch(() => {});
           state.signingUp = false;
-          toast(local ? "Account created — let's verify you're a local." : `Welcome to buddyup, ${f.name.trim().split(" ")[0]}! 🎉`);
+          toast(local ? "Account created! Now let's verify you're a local." : `Welcome to buddyup, ${f.name.trim().split(" ")[0]}! 🎉`);
           window.scrollTo(0, 0);
           go("#/discover");
         } catch (ex) {
@@ -454,7 +530,7 @@
       const f = Object.fromEntries(new FormData(login));
       try {
         await DB.signInEmail((f.email || "").trim(), f.password || "");
-        state.filter = null;
+        state.filters = noFilters();
         window.scrollTo(0, 0);
         location.hash = "#/discover";
       } catch (ex) { $("#err").textContent = DB.friendlyError(ex); }
@@ -473,7 +549,7 @@
     if (user.mode === mode) return;
     if (mode === "local" && !user.verification) return openBecomeLocal(user);
     DB.saveProfile({ mode }).catch(fail);
-    state.filter = null;
+    state.filters = noFilters();
     await settle();
     toast(mode === "traveller" ? "Switched to traveller mode 🎒" : user.verification.completed ? "Switched to local mode 🏠" : "Let's finish your local verification.");
     go("#/discover");
@@ -485,9 +561,9 @@
       <div class="modal-body plain">
         <div class="become-ico">🏠</div>
         <h3>Become a local</h3>
-        <p style="margin:8px 0 20px">Show travellers around the city you live in. We'll ask a few questions to confirm you really live there — it takes about 5 minutes. You can switch back to traveller mode any time.</p>
+        <p style="margin:8px 0 20px">Show travellers around the city you live in. We'll ask a few questions to confirm you really live there. It takes about 5 minutes. You can switch back to traveller mode any time.</p>
         <form id="become" novalidate>
-          <div class="field"><label>Which city do you live in?</label><input class="input" name="city" placeholder="Lisbon"/></div>
+          <div class="field"><label>Which city do you live in?</label><input class="input" name="city" placeholder="Start typing your city"/></div>
           <div class="error" id="become-err"></div>
           <button class="btn btn-coral btn-block">Start verification ${I.arrow}</button>
         </form>
@@ -515,7 +591,7 @@
     { v: "born", label: "Born & raised", score: 30 },
   ];
   const VERIFY_STEPS = [
-    { title: "Your roots", sub: "How well do you know {city}? Be honest — this helps travellers trust you." },
+    { title: "Your roots", sub: "How well do you know {city}? Be honest, as this helps travellers trust you." },
     { title: "Local knowledge", sub: "A few questions only a real local could answer well. Our team reviews these." },
     { title: "Identity check", sub: "We verify every local's identity. Your documents are never shown to other users." },
     { title: "Safety pledge", sub: "buddyup only works if everyone feels safe. Please confirm the following." },
@@ -565,7 +641,7 @@
     });
     $$(".upload input").forEach((inp) => inp.addEventListener("change", () => {
       const label = inp.closest(".upload");
-      if (inp.files[0]) { label.classList.add("done"); label.querySelector(".label").textContent = "✓ " + inp.files[0].name + " — uploads when you continue"; }
+      if (inp.files[0]) { label.classList.add("done"); label.querySelector(".label").textContent = "✓ " + inp.files[0].name + " (uploads when you continue)"; }
     }));
     $("#sendcode")?.addEventListener("click", async () => {
       const btn = $("#sendcode"), err = $("#err");
@@ -599,8 +675,8 @@
       <input type="hidden" name="residency" value="${esc(v.residency || "")}"/>
       <div class="options">${RESIDENCY.map((r) => `<button type="button" class="option ${v.residency === r.v ? "on" : ""}" data-v="${r.v}">${r.label}</button>`).join("")}</div>
       <div class="row">
-        <div class="field"><label>Neighbourhood you live in</label><input class="input" name="neighbourhood" value="${esc(v.neighbourhood)}" placeholder="e.g. Alfama"/></div>
-        <div class="field"><label>Postal / ZIP code</label><input class="input" name="postcode" value="${esc(v.postcode)}" placeholder="e.g. 1100-095"/></div>
+        <div class="field"><label>Neighbourhood you live in</label><input class="input" name="neighbourhood" value="${esc(v.neighbourhood)}" placeholder="Your neighbourhood"/></div>
+        <div class="field"><label>Postal / ZIP code</label><input class="input" name="postcode" value="${esc(v.postcode)}" placeholder="Postal code"/></div>
       </div>
       <div id="pc-result">${pc && pc.status !== "ok" ? postcodeNotice(pc) : ""}</div>
       <div class="field"><label>Languages you speak</label>
@@ -627,9 +703,9 @@
           ? `<div class="check-result ok" style="margin:0">✓ ${esc(v.phone)} verified</div>`
           : `<input class="input" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="••••••"/>`}</div>
       </div>
-      <label class="upload ${v.idFile ? "done" : ""}"><input type="file" name="idDoc" accept="image/*"/><span class="ico">🪪</span><span class="label">${v.idFile ? "✓ ID uploaded — choose a file to replace it" : "Upload a photo of a government ID or proof of address"}</span></label>
-      <label class="upload ${v.selfieFile ? "done" : ""}"><input type="file" name="selfie" accept="image/*" capture="user"/><span class="ico">🤳</span><span class="label">${v.selfieFile ? "✓ Selfie uploaded — choose a file to replace it" : "Upload a selfie so we can match it to your ID"}</span></label>
-      <p class="hint">🔒 Your ID and selfie are stored privately — only the buddyup review team can see them.</p>`;
+      <label class="upload ${v.idFile ? "done" : ""}"><input type="file" name="idDoc" accept="image/*"/><span class="ico">🪪</span><span class="label">${v.idFile ? "✓ ID uploaded. Choose a file to replace it" : "Upload a photo of a government ID or proof of address"}</span></label>
+      <label class="upload ${v.selfieFile ? "done" : ""}"><input type="file" name="selfie" accept="image/*" capture="user"/><span class="ico">🤳</span><span class="label">${v.selfieFile ? "✓ Selfie uploaded. Choose a file to replace it" : "Upload a selfie so we can match it to your ID"}</span></label>
+      <p class="hint">🔒 Your ID and selfie are stored privately. Only the buddyup review team can see them.</p>`;
     return `
       <label class="check"><input type="checkbox" name="p1"/> I'll meet travellers in public places, especially the first time.</label>
       <label class="check"><input type="checkbox" name="p2"/> I won't ask for payment. Tips are entirely voluntary and up to the traveller.</label>
@@ -676,7 +752,7 @@
       if (km <= 3) return { status: "ok", km };
       const a = place.address;
       const there = a.neighbourhood || a.quarter || a.suburb || a.village || a.city_district || a.borough;
-      return { status: "mismatch", km, message: `Postcode ${postcode} is about ${km.toFixed(1)} km from ${neighbourhood}${there ? ` — it looks like it's in ${there}` : ""}. Please double-check, or continue and a reviewer will confirm it.` };
+      return { status: "mismatch", km, message: `Postcode ${postcode} is about ${km.toFixed(1)} km from ${neighbourhood}${there ? `, which looks like it's in ${there}` : ""}. Please double-check, or continue and a reviewer will confirm it.` };
     } catch {
       return { status: "error", message: "We couldn't check your postcode right now, so a reviewer will confirm it manually." };
     }
@@ -824,8 +900,7 @@
           <a class="user-pill" href="#/profile" title="${esc(user.name)}">${userAvatar(user, 36)}</a>
         </div>
       </div></header>
-      <main class="container" id="page"></main>
-      ${!["safety", "messages"].includes(current) ? `<a class="sos" href="#/safety" title="Safety centre">SOS</a>` : ""}`;
+      <main class="container" id="page"></main>`;
     $$("[data-switch]").forEach((b) => b.addEventListener("click", () => switchMode(me(), b.dataset.switch)));
     pages[current](user, $("#page"), id);
   }
@@ -846,8 +921,8 @@
       .map(([e, t, s]) => `<div><span class="ico">${e}</span><strong>${t}</strong>${s}</div>`).join("");
   }
 
-  const fmtDate = (d) => new Date(d).toLocaleDateString([], { day: "numeric", month: "short" });
-  const fmtYmd = (s) => new Date(s + "T00:00").toLocaleDateString([], { day: "numeric", month: "short" });
+  const fmtDate = (d) => dmy(d);
+  const fmtYmd = (s) => dmy(s);
   const tripDates = (t) => (t?.start ? `${fmtYmd(t.start)}${t.end ? ` – ${fmtYmd(t.end)}` : ""}` : "");
 
   // ---------- Dates & times ----------
@@ -866,7 +941,7 @@
     return t;
   };
   const bookable = (slot) => slotTime(slot, "start") - Date.now() >= 864e5;
-  const dayLabel = (d) => new Date(d + "T00:00").toLocaleDateString([], { weekday: "short", day: "numeric", month: "short" });
+  const dayLabel = (d) => `${new Date(d + "T00:00").toLocaleDateString([], { weekday: "short" })} ${dmy(d)}`;
   const slotLabel = (slot) => { const [d, from, to] = slot.split("|"); return `${dayLabel(d)} · ${from}–${to}`; };
   const daysFrom = (start, n) => Array.from({ length: n }, (_, i) => addDays(start, i));
   const tomorrow = () => addDays(new Date(), 1);
@@ -1043,11 +1118,12 @@
     return { uid, id: uid, name: p.name || "buddyup member", photo: p.photo || "", from: p.from || "", city: p.city || "", label: p.label || "Buddy" };
   };
   const labelBadge = (label) => `<span class="badge ${label === "Local" ? "badge-local" : "badge-buddy"}">${esc(label)}</span>`;
-  const STATUS = { requested: ["Waiting for reply", "badge-wait"], confirmed: ["Confirmed", "badge-buddy"], completed: ["Completed", "badge-buddy"], declined: ["Declined", "badge-wait"], cancelled: ["Cancelled", "badge-wait"] };
+  const STATUS = { requested: ["Waiting for reply", "badge-wait"], confirmed: ["Confirmed", "badge-buddy"], completed: ["Completed", "badge-buddy"], reviewDue: ["Needs your review", "badge-local"], declined: ["Declined", "badge-wait"], cancelled: ["Cancelled", "badge-wait"] };
   const myReviewOf = (m) => DB.cache.reviewsByMe.find((r) => r.meetupId === m.id);
   const theirReviewOf = (m) => DB.cache.reviewsToMe.find((r) => r.meetupId === m.id);
 
   const notStarted = (m) => slotTime(m.slot, "start") > Date.now();
+  const ended = (m) => slotTime(m.slot, "end") <= Date.now();
 
   function meetupActions(m, { chat = true } = {}) {
     const uid = DB.cache.uid;
@@ -1061,7 +1137,7 @@
 
   function meetupRow(m) {
     const p = otherPerson(m);
-    const [label, cls] = STATUS[m.status] || ["", ""];
+    const [label, cls] = STATUS[m.status === "completed" && !myReviewOf(m) ? "reviewDue" : m.status] || ["", ""];
     const mine = myReviewOf(m), theirs = theirReviewOf(m);
     const expired = m.status === "requested" && !bookable(m.slot);
     return `
@@ -1111,10 +1187,10 @@
     const all = DB.cache.meetups.slice().sort((a, b) => DB.ms(a.slotStart) - DB.ms(b.slotStart));
     const groups = [
       ["Requests for you", all.filter((m) => m.status === "requested" && m.to === uid && bookable(m.slot))],
-      ["Needs your review", all.filter((m) => m.status === "completed" && !myReviewOf(m))],
-      ["Upcoming", all.filter((m) => m.status === "confirmed")],
+      ["Upcoming", all.filter((m) => m.status === "confirmed" && !ended(m))],
       ["Waiting for a reply", all.filter((m) => m.status === "requested" && m.from === uid)],
-      ["Past meetups", all.filter((m) => m.status === "completed" && myReviewOf(m)).reverse()],
+      // Every meetup that has happened, newest first; ones you haven't reviewed keep a "Rate & review" button.
+      ["Past meetups", all.filter((m) => m.status === "completed" || (m.status === "confirmed" && ended(m))).reverse()],
       ["Cancelled", all.filter((m) => m.status === "cancelled").reverse()],
     ].filter(([, list]) => list.length);
     root.innerHTML = `
@@ -1144,6 +1220,10 @@
             : `${esc(p.name)} may already be making room for this. If your plans have changed, cancelling now is kinder than leaving them waiting.`}
           ${confirmed && hours < 48 ? `<br/><br/><strong>It's only ${plural(Math.max(hours, 0), "hour")} away</strong>, so please also message ${esc(p.name)} in the chat.` : ""}
         </div>
+        ${confirmed ? `
+          <div class="check-result warn">⚠️ <strong>This will affect your future searches.</strong> Cancelled meetups are recorded on your profile, shown to the people you contact, and move you lower in other people's search results.</div>
+          <label class="check"><input type="checkbox" id="cack"/> I understand this cancellation will be recorded on my profile.</label>`
+          : `<p class="hint" style="margin-top:10px">${esc(p.name)} hasn't accepted yet, so cancelling this request isn't recorded on your profile.</p>`}
         <div class="field" style="margin-top:14px"><label for="creason">Why are you cancelling?</label>
           <textarea class="textarea" id="creason" maxlength="500" placeholder="e.g. I'm unwell, my flight changed, a family emergency…"></textarea>
           <p class="hint">${esc(p.name)} will see this reason.</p></div>
@@ -1157,6 +1237,7 @@
     $("#csend").addEventListener("click", async () => {
       const reason = $("#creason").value.trim();
       if (reason.length < 10) return ($("#cerr").textContent = "Please give a short reason (10+ characters).");
+      if (confirmed && !$("#cack").checked) return ($("#cerr").textContent = "Please confirm you understand the cancellation will be recorded.");
       const u = me();
       $("#csend").disabled = true;
       try {
@@ -1178,6 +1259,15 @@
     const gone = new Set(mine.filter((m) => m.status === "cancelled").map((m) => m.slot));
     const keep = booked.filter((s) => live.has(s) || !gone.has(s));
     if (keep.length !== booked.length) DB.saveProfile({ availability: { ...user.availability, booked: keep } }).catch(fail);
+  }
+
+  // Every traveller is a buddy to other travellers at the times on their trip. Times they already
+  // have a confirmed meetup are kept in trip.booked (only they can edit their own profile), so
+  // nobody else is offered them.
+  function syncBusyTimes(user) {
+    const today = ymd(new Date());
+    const busy = [...new Set(DB.cache.meetups.filter((m) => m.status === "confirmed" && m.slot.slice(0, 10) >= today).map((m) => m.slot))].sort();
+    if (JSON.stringify(busy) !== JSON.stringify([...(user.trip.booked || [])].sort())) DB.saveProfile({ trip: { ...user.trip, booked: busy } }).catch(fail);
   }
 
   function openReview(m) {
@@ -1218,10 +1308,7 @@
   // ---------- Discover (traveller): trip details, then find a local or a buddy ----------
   const MAX_TRIP_DAYS = 30;
   const tripReady = (u) => !!(u.trip?.city && u.trip.start && u.trip.end && Object.keys(u.trip.windows || {}).length);
-  const MODES = [
-    { key: "local", cls: "local", art: "city", title: "Find a local", desc: "Verified locals who'll show you the city through their eyes." },
-    { key: "buddy", cls: "buddy", art: "mountains", title: "Find a buddy", desc: "Other travellers in town at the same time. Split the adventure, double the fun." },
-  ];
+  const TYPES = [["all", "Everyone"], ["local", "Locals"], ["buddy", "Buddies"]];
 
   const RES_LABEL = { "6to12m": "under a year", "1to3y": "1–3 years", "3to10y": "3–10 years", "10y": "10+ years", born: "born & raised" };
   // A Firestore user as a card/profile in the UI. `kind` is the role they're shown in.
@@ -1234,21 +1321,26 @@
       city: isLocal ? u.localCity : t.city || "", residency: u.residency, tripStart: t.start, tripEnd: t.end,
       interests: u.interests || [], languages: u.languages || [], bio: u.bio || "",
       verified: isLocal ? !!u.approved : false, phoneVerified: !!u.phoneVerified,
-      windows: (isLocal ? u.availability?.windows : t.windows) || {}, booked: isLocal ? u.availability?.booked || [] : [],
+      windows: (isLocal ? u.availability?.windows : t.windows) || {}, booked: (isLocal ? u.availability?.booked : t.booked) || [],
+      cancellations: u.cancellations || 0, age: u.age || null,
     };
   }
 
-  // Real people in the trip city who are free for at least an hour when the traveller is.
-  async function peopleFor(user, mode) {
+  // Real people in the trip city — verified locals and other travellers — who are free for at
+  // least an hour when the traveller is. People who've cancelled confirmed meetups come last.
+  async function peopleFor(user) {
     const today = ymd(new Date());
-    const found = mode === "local" ? await DB.findLocals(user.trip.city) : await DB.findTravellers(user.trip.city);
+    const [locals, travellers] = await Promise.all([DB.findLocals(user.trip.city), DB.findTravellers(user.trip.city)]);
     const mine = user.interests || [];
-    const people = found
-      .filter((u) => u.uid !== user.uid && (mode === "local" ? u.available !== false && u.availability : u.trip?.end >= today))
-      .map((u) => toPerson(u, mode))
-      .map((p) => ({ ...p, match: matchWindows(user.trip.windows, p.windows, p.booked), overlap: p.interests.filter((t) => mine.includes(t)).length }))
+    const seen = new Set([user.uid]);
+    const people = [
+      ...locals.filter((u) => u.available !== false && u.availability).map((u) => toPerson(u, "local")),
+      ...travellers.filter((u) => u.trip?.end >= today).map((u) => toPerson(u, "buddy")),
+    ]
+      .filter((p) => !seen.has(p.uid) && seen.add(p.uid)) // someone can be both; show them as a local
+      .map((p) => ({ ...p, match: matchWindows(user.trip.windows, p.windows, [...p.booked, ...(user.trip.booked || [])]), overlap: p.interests.filter((t) => mine.includes(t)).length }))
       .filter((p) => p.match.length)
-      .sort((a, b) => b.match.length - a.match.length || b.overlap - a.overlap);
+      .sort((a, b) => a.cancellations - b.cancellations || b.match.length - a.match.length || b.overlap - a.overlap);
     const reviews = await DB.reviewsFor(people.map((p) => p.uid)).catch(() => []);
     people.forEach((p) => (p.reviews = reviews.filter((r) => r.to === p.uid)));
     return people;
@@ -1257,39 +1349,39 @@
   function discoverPage(user, root, mode) {
     if (user.mode === "local") return hostDashboard(user, root);
     if (mode && !tripReady(user)) return go("#/discover");
-    if (mode === "find") return findPage(user, root);
-    if (mode) return MODES.some((m) => m.key === mode) ? resultsPage(user, root, mode) : go("#/discover");
+    if (mode === "people") return resultsPage(user, root);
+    if (mode === "local" || mode === "buddy") { state.filters = { ...noFilters(), type: mode }; return go("#/discover/people"); } // old links
+    if (mode) return go("#/discover/people");
 
     const t = user.trip || {};
     const windows = clone(t.windows);
     const today = ymd(new Date());
-    const popular = ["Lisbon", "Tokyo", "Mumbai", "Barcelona", "Mexico City", "Bali", "Berlin", "New York"];
     root.innerHTML = `
       <div class="page">
         <div class="greet fade">
           <h1>Hey ${esc(user.name.split(" ")[0])}, where are you travelling to?</h1>
-          <p class="muted">Tell us where you're going and when you're free — we'll only show locals and buddies who are free at the same times.</p>
+          <p class="muted">Tell us where you're going and when you're free, and we'll only show locals and buddies who are free at the same times.</p>
         </div>
         <section class="panel trip-panel fade">
           <form id="tripform" novalidate>
             <div class="trip-top">
               <div class="field"><label>Destination</label>
-                <div class="city-bar big">${I.pin}<input name="city" value="${esc(t.city || "")}" placeholder="City or country, e.g. Lisbon" autocomplete="off"/></div></div>
-              <div class="field"><label>Arriving</label><input class="input" type="date" name="start" min="${today}" value="${esc(t.start || "")}"/></div>
-              <div class="field"><label>Leaving</label><input class="input" type="date" name="end" min="${t.start || today}" value="${esc(t.end || "")}"/></div>
+                <div class="city-bar big">${I.pin}<input name="city" value="${esc(t.city || "")}" placeholder="Start typing a city or country" autocomplete="off"/></div></div>
+              <div class="field"><label>Arriving</label>${dateField("start", t.start || "", { min: today, label: "Arriving" })}</div>
+              <div class="field"><label>Leaving</label>${dateField("end", t.end || "", { min: t.start || today, label: "Leaving" })}</div>
             </div>
-            <div class="chips">${popular.map((c) => `<button type="button" class="chip" data-city="${c}">${c}</button>`).join("")}</div>
             <div id="times"></div>
           </form>
         </section>
         <div class="trip-next">
           <div class="error" id="err"></div>
-          <button type="button" class="next-arrow" id="next" aria-label="Next: find a local or a buddy">Next ${I.arrow}</button>
+          <button type="button" class="next-arrow" id="next">Find people ${I.arrow}</button>
         </div>
       </div>`;
 
     const form = $("#tripform");
     suggestCities(form.city, true);
+    bindDateFields(form);
     // Meetups need a day's notice, so the calendar starts tomorrow at the earliest.
     const range = () => {
       const s = form.start.value, e = form.end.value;
@@ -1315,7 +1407,8 @@
       Object.keys(windows).forEach((d) => { if (d < ymd(r.from) || d > ymd(r.to)) delete windows[d]; });
       box.innerHTML = `
         <div class="times-head"><h3>When are you free to meet?</h3><span class="muted" id="times-count"></span></div>
-        <p class="hint" style="margin-bottom:14px">Pick a date and add the times you're free — or apply them to every day of your trip. Requests are sent at least a day ahead.</p>
+        <p class="hint" style="margin-bottom:14px">Pick a date and add the times you're free, or apply them to every day of your trip. Requests are sent at least a day ahead.</p>
+        <p class="hint" style="margin:-6px 0 14px">🎒 Other travellers heading to the same city will see you as a buddy at these times.</p>
         <div id="cal"></div>`;
       mountCalendar($("#cal"), { from: r.from, to: r.to, windows, repeat: false, onChange: summary });
       summary();
@@ -1323,12 +1416,11 @@
     drawTimes();
     form.start.addEventListener("change", () => {
       form.end.min = form.start.value || today;
-      if (form.end.value && form.end.value < form.start.value) form.end.value = form.start.value;
+      if (form.end.value && form.end.value < form.start.value) setDate(form.end, form.start.value);
       drawTimes();
     });
     form.end.addEventListener("change", drawTimes);
     form.addEventListener("submit", (e) => e.preventDefault());
-    $$("[data-city]", root).forEach((b) => b.addEventListener("click", () => { form.city.value = b.dataset.city; }));
 
     $("#next").addEventListener("click", () => {
       const err = $("#err");
@@ -1336,76 +1428,82 @@
       const fail = (msg) => { err.textContent = msg; err.scrollIntoView({ behavior: "smooth", block: "center" }); };
       if (!city) return fail("Where are you headed? Add a destination above.");
       if (!start || !end) return fail("Add the dates you're travelling.");
-      if (!r || r.empty) return fail("Meetups need at least a day's notice — choose dates from tomorrow onwards.");
+      if (!r || r.empty) return fail("Meetups need at least a day's notice, so choose dates from tomorrow onwards.");
       if (!Object.keys(windows).length) return fail("Add at least one time you're free to meet on the calendar.");
-      DB.saveProfile({ trip: { city, start, end, windows } }).catch(fail);
-      state.filter = null;
+      DB.saveProfile({ trip: { city, start, end, windows, booked: t.booked || [] } }).catch(fail);
+      state.filters = noFilters();
       window.scrollTo(0, 0);
-      settle().then(() => go("#/discover/find"));
+      settle().then(() => go("#/discover/people"));
     });
   }
 
-  // Step 2 for travellers: choose between a local and a buddy for the saved trip.
-  function findPage(user, root) {
-    const t = user.trip;
-    root.innerHTML = `
-      <div class="page">
-        <a class="back-link" href="#/discover">${I.back} Edit trip</a>
-        <div class="greet fade">
-          <h1>Who do you want to explore ${esc(t.city)} with?</h1>
-          <a class="change-link" href="#/discover">${I.pin} ${esc(t.city)} · ${tripDates(t)} · ${windowsSummary(t.windows, t.start, t.end)} free · Change</a>
-        </div>
-        <div class="modes">${MODES.map((m) => `
-          <a class="mode ${m.cls}" href="#/discover/${m.key}">
-            <div class="art">${ART[m.art]}</div>
-            <div class="body"><div><h3>${m.title}</h3><p>${m.desc}</p></div><span class="go">${I.arrow}</span></div>
-          </a>`).join("")}
-        </div>
-        <div class="safety-strip">${safetyCards()}</div>
-      </div>`;
-    $$(".mode", root).forEach((a) => a.addEventListener("click", () => { state.filter = null; window.scrollTo(0, 0); }));
-  }
-
-  async function resultsPage(user, root, mode) {
-    const label = mode === "local" ? "Verified locals" : "Buddies";
+  // Step 2 for travellers: everyone free at the same times, locals and buddies together, with filters.
+  async function resultsPage(user, root) {
     const head = (count) => `
-      <a class="back-link" href="#/discover/find">${I.back} Back</a>
+      <a class="back-link" href="#/discover">${I.back} Edit trip</a>
       <div class="results-head fade">
-        <div><h1>${label} in ${esc(user.trip.city)}</h1>
+        <div><h1>People in ${esc(user.trip.city)}</h1>
           <span class="count">${count} · ${tripDates(user.trip)} · <a href="#/discover">change times</a></span></div>
-        <a class="btn btn-outline btn-sm" href="#/discover/${mode === "local" ? "buddy" : "local"}">${mode === "local" ? "Find a buddy instead" : "Find a local instead"}</a>
       </div>`;
-    const key = `${mode}|${user.trip.city}|${JSON.stringify(user.trip.windows)}`;
+    const key = `${user.trip.city}|${JSON.stringify(user.trip.windows)}|${(user.trip.booked || []).join()}`;
     if (state.results?.key !== key) {
       root.innerHTML = `<div class="page">${head("Looking for people free when you are…")}<div class="grid">${'<div class="pcard skeleton"></div>'.repeat(4)}</div></div>`;
       try {
-        state.results = { key, all: await peopleFor(user, mode) };
+        state.results = { key, all: await peopleFor(user) };
       } catch (e) {
         root.innerHTML = `<div class="page">${head("")}<div class="empty"><div class="art">⚠️</div>${esc(DB.friendlyError(e))}</div></div>`;
         return;
       }
-      if (route().page !== "discover" || route().id !== mode) return; // navigated away while loading
+      if (route().page !== "discover" || route().id !== "people") return; // navigated away while loading
     }
     const all = state.results.all;
-    const people = state.filter ? all.filter((p) => p.interests.includes(state.filter)) : all;
-    const tags = [...new Set(all.flatMap((p) => p.interests))].slice(0, 10);
-    const emptyText = mode === "local"
-      ? `No verified locals in ${esc(user.trip.city)} are free at the times you picked yet.<br/>buddyup is new — try more times, or invite a friend who lives there to become a local.`
-      : `No other travellers in ${esc(user.trip.city)} are free at the same times yet.<br/>Try adding more times, or share buddyup with friends who are travelling.`;
+    const f = state.filters;
+    const uniq = (list) => [...new Set(list)].sort();
+    const days = uniq(all.flatMap((p) => p.match.map((s) => s.slice(0, 10))));
+    const interests = uniq(all.flatMap((p) => p.interests));
+    const languages = uniq(all.flatMap((p) => p.languages));
+    // Every filter except `type`, so the type tabs can show how many of each there are.
+    const passes = (p) => (!f.day || p.match.some((s) => s.startsWith(f.day + "|")))
+      && (!f.interest || p.interests.includes(f.interest))
+      && (!f.language || p.languages.includes(f.language))
+      && (!f.rated || +ratingSummary(p.reviews || []).avg >= 4);
+    const matching = all.filter(passes);
+    const people = matching.filter((p) => f.type === "all" || p.type === f.type)
+      .map((p) => (f.day ? { ...p, match: p.match.filter((s) => s.startsWith(f.day + "|")) } : p));
+    const filtered = JSON.stringify(f) !== JSON.stringify(noFilters());
+    const select = (name, label, list, fmt = esc) => (list.length ? `
+      <select class="input" data-f="${name}" aria-label="${label}">
+        <option value="">${label}</option>
+        ${list.map((v) => `<option value="${esc(v)}" ${f[name] === v ? "selected" : ""}>${fmt(v)}</option>`).join("")}
+      </select>` : "");
 
     root.innerHTML = `
       <div class="page">
         ${head(`${plural(people.length, "person").replace("persons", "people")} free when you are`)}
-        ${all.length ? `<div class="chips filters">
-          <button class="chip ${!state.filter ? "active" : ""}" data-filter="">All</button>
-          ${tags.map((t) => `<button class="chip ${state.filter === t ? "active" : ""}" data-filter="${esc(t)}">${esc(t)}</button>`).join("")}
-        </div>` : ""}
-        ${mode === "local" && all.length ? `<div class="note"><span class="e">💛</span><div><b>buddyup is free — always.</b> Locals volunteer their time to show you around. If you had a great time, it's a lovely gesture to leave them a <b>generous tip</b>.</div></div>` : ""}
+        ${all.length ? `
+          <div class="filter-bar">
+            <div class="seg" role="group" aria-label="Show">${TYPES.map(([k, l]) => `
+              <button class="${f.type === k ? "on" : ""}" data-type="${k}">${l} <span>${matching.filter((p) => k === "all" || p.type === k).length}</span></button>`).join("")}
+            </div>
+            ${select("day", "Any day", days, (d) => dayLabel(d))}
+            ${select("interest", "Any interest", interests)}
+            ${select("language", "Any language", languages)}
+            <label class="chip ${f.rated ? "active" : ""}"><input type="checkbox" data-f="rated" ${f.rated ? "checked" : ""}/>★ 4+ rated</label>
+            ${filtered ? `<button class="link-btn" id="clear">Clear filters</button>` : ""}
+          </div>` : ""}
+        ${people.some((p) => p.type === "local") ? `<div class="note"><span class="e">💛</span><div><b>buddyup is always free.</b> Locals volunteer their time to show you around. If you had a great time, it's a lovely gesture to leave them a <b>generous tip</b>.</div></div>` : ""}
         ${people.length ? `<div class="grid">${people.map((p, i) => personCard(p, i, activeMeetupWith(p.uid))).join("")}</div>`
-          : `<div class="empty"><div class="art">🗓️</div>${all.length ? "No one matches that filter yet." : `${emptyText}<br/><br/><a class="btn btn-primary" href="#/discover">Add more times</a>`}</div>`}
+          : `<div class="empty"><div class="art">🗓️</div>${all.length
+            ? `No one matches these filters.<br/><br/><button class="btn btn-primary" id="clear2">Clear filters</button>`
+            : `No locals or travellers in ${esc(user.trip.city)} are free at the times you picked yet.<br/>buddyup is new, so try adding more times, or invite friends who live there or are travelling.<br/><br/><a class="btn btn-primary" href="#/discover">Add more times</a>`}</div>`}
+        <div class="safety-strip">${safetyCards()}</div>
       </div>`;
 
-    $$("[data-filter]", root).forEach((c) => c.addEventListener("click", () => { state.filter = c.dataset.filter || null; resultsPage(user, root, mode); }));
+    const refilter = (patch) => { Object.assign(state.filters, patch); resultsPage(user, root); };
+    $$("[data-type]", root).forEach((b) => b.addEventListener("click", () => refilter({ type: b.dataset.type })));
+    $$("select[data-f]", root).forEach((el) => el.addEventListener("change", () => refilter({ [el.dataset.f]: el.value })));
+    $('[data-f="rated"]', root)?.addEventListener("change", (e) => refilter({ rated: e.target.checked }));
+    ["#clear", "#clear2"].forEach((id) => $(id, root)?.addEventListener("click", () => { state.filters = noFilters(); resultsPage(user, root); }));
     $$(".pcard", root).forEach((c) => c.addEventListener("click", (e) => {
       const p = people.find((x) => x.id === c.dataset.id);
       const active = activeMeetupWith(p.uid);
@@ -1429,7 +1527,7 @@
         <div class="cover ${p.type === "local" ? "local" : ""}">${typeBadge(p)}</div>
         <div class="face">${face(p, 84)}</div>
         <div class="inner">
-          <h4>${esc(p.name)} ${p.verified ? I.tick : ""}</h4>
+          <h4>${esc(p.name)}${p.age ? `<span class="age">, ${p.age}</span>` : ""} ${p.verified ? I.tick : ""}</h4>
           <div class="sub">${subline(p)}</div>
           <div class="stats"><span>${ratingText(p.reviews || [])}</span></div>
           ${p.bio ? `<p class="bio">${esc(p.bio)}</p>` : ""}
@@ -1459,7 +1557,7 @@
         <a class="back-link" href="#/discover">${I.back} Dashboard</a>
         <div class="greet fade">
           <h1>${user.availability ? "Your availability" : "You're verified! When are you free to host?"}</h1>
-          <p class="muted">Add the dates and times you're free over the next 5 weeks — at least one time in the next 4 weeks. Travellers can only request you at these times, and always at least a day in advance.</p>
+          <p class="muted">Add the dates and times you're free over the next 5 weeks, with at least one time in the next 4 weeks. Travellers can only request you at these times, and always at least a day in advance.</p>
         </div>
         <section class="panel fade"><div id="cal"></div></section>
         <div class="save-bar"><span id="count"></span><div class="error" id="err" style="margin:0;flex:1"></div><button class="btn btn-primary" id="save">Save availability</button></div>
@@ -1497,7 +1595,7 @@
         ${user.approved ? `
           <section class="panel">
             <h3>Availability</h3>
-            <label class="list-item" style="cursor:pointer"><span class="li-ico">🟢</span><span class="grow">Available to host<small>${user.available !== false ? `Travellers in ${city} can find you` : "Paused — you won't get new requests"}</small></span>
+            <label class="list-item" style="cursor:pointer"><span class="li-ico">🟢</span><span class="grow">Available to host<small>${user.available !== false ? `Travellers in ${city} can find you` : "Paused: you won't get new requests"}</small></span>
               <input type="checkbox" id="avail" ${user.available !== false ? "checked" : ""} class="switch"/></label>
             <div class="list-item"><span class="li-ico">📅</span><span class="grow">${av ? `Free on ${plural(freeDays, "day")} in the next 30 days` : "Not set yet"}<small>${av ? `Set until ${fmtYmd(av.horizon)}` : "Required before you get requests"}</small></span></div>
             <a class="btn ${needsAvailability(user) ? "btn-primary" : "btn-outline"} btn-block" href="#/availability">${av ? "Edit availability" : "Add availability"}</a>
@@ -1506,7 +1604,7 @@
           <h3>Hosting tips</h3>
           ${[["☕", "Start somewhere public", "A busy café or landmark for the first hour."],
              ["🗺️", "Share the plan", "Tell the traveller where you're going before you set off."],
-             ["💛", "Tips are optional", "Never ask for money — travellers tip if they want to."]]
+             ["💛", "Tips are optional", "Never ask for money. Travellers tip if they want to."]]
             .map(([e, t, s]) => `<div class="list-item"><span class="li-ico">${e}</span><span class="grow">${t}<small>${s}</small></span></div>`).join("")}
         </section>
         <section class="panel switch-card">
@@ -1529,7 +1627,7 @@
                 </div>
                 <ol class="timeline">
                   <li class="done"><b>Application submitted</b><small>${v.submittedAt ? fmtDate(v.submittedAt) : ""}</small></li>
-                  <li class="current"><b>Team review</b><small>We check your answers, ID and selfie — usually within 24 hours.</small></li>
+                  <li class="current"><b>Team review</b><small>We check your answers, ID and selfie, usually within 24 hours.</small></li>
                   <li><b>Add your availability</b><small>Choose when you're free over the next month.</small></li>
                   <li><b>Go live</b><small>Travellers free at the same times can request you.</small></li>
                 </ol>
@@ -1542,7 +1640,7 @@
         </div>`;
     } else {
       const pending = DB.cache.meetups.filter((m) => m.status === "requested" && m.to === uid && bookable(m.slot));
-      const upcoming = DB.cache.meetups.filter((m) => m.status === "confirmed").sort((a, b) => DB.ms(a.slotStart) - DB.ms(b.slotStart));
+      const upcoming = DB.cache.meetups.filter((m) => m.status === "confirmed" && !ended(m)).sort((a, b) => DB.ms(a.slotStart) - DB.ms(b.slotStart));
       const mine = ratingSummary(DB.cache.reviewsToMe);
       root.innerHTML = `
         <div class="page">
@@ -1564,7 +1662,7 @@
                 </section>` : ""}
               <section class="panel fade">
                 <div class="panel-head"><h3>Meetup requests</h3>${pending.length ? `<span class="badge badge-local">${pending.length} new</span>` : ""}</div>
-                ${pending.length ? pending.map(requestCard).join("") : `<div class="empty small"><div class="art">📭</div>No new requests right now.${!av ? "<br/>Add your availability so travellers can request you." : user.available === false ? "<br/>You're paused — turn on “Available to host” to get requests." : ""}</div>`}
+                ${pending.length ? pending.map(requestCard).join("") : `<div class="empty small"><div class="art">📭</div>No new requests right now.${!av ? "<br/>Add your availability so travellers can request you." : user.available === false ? "<br/>You're paused. Turn on “Available to host” to get requests." : ""}</div>`}
               </section>
               <section class="panel fade">
                 <div class="panel-head"><h3>Upcoming meetups</h3><a class="change-link" href="#/meetups" style="margin:0">All meetups ${I.chev}</a></div>
@@ -1626,7 +1724,7 @@
     const [d, from, to] = slot.split("|");
     const when = `${dayLabel(d)}, any time between ${from} and ${to}`;
     return p.type === "local"
-      ? `Hi ${p.name}! I'm ${first}${user.from ? ` from ${user.from}` : ""}, visiting ${p.city} ${tripDates(user.trip)}. I'd love to see the city through a local's eyes — especially ${shared.toLowerCase()}. Would you be up for showing me around on ${when}?`
+      ? `Hi ${p.name}! I'm ${first}${user.from ? ` from ${user.from}` : ""}, visiting ${p.city} ${tripDates(user.trip)}. I'd love to see the city through a local's eyes, especially ${shared.toLowerCase()}. Would you be up for showing me around on ${when}?`
       : `Hey ${p.name}! I'm ${first}, also in ${p.city} ${tripDates(user.trip)}. Fancy teaming up for some ${shared.toLowerCase()} on ${when}? Happy to meet at a café first.`;
   }
 
@@ -1652,8 +1750,8 @@
       <h5>Your first message</h5>
       <div class="prompt-tip ${isLocal ? "local" : ""}">
         ${isLocal
-          ? `💡 <b>Messaging a local?</b> Say what you'd love to see or do, mention your interests and confirm the time. Locals give their time for free — be friendly and specific.`
-          : `💡 <b>Messaging a buddy?</b> Share your travel plans and what you'd like to do together — food, sights, a night out — and suggest somewhere public to meet.`}
+          ? `💡 <b>Messaging a local?</b> Say what you'd love to see or do, mention your interests and confirm the time. Locals give their time for free, so be friendly and specific.`
+          : `💡 <b>Messaging a buddy?</b> Share your travel plans and what you'd like to do together (food, sights, a night out) and suggest somewhere public to meet.`}
       </div>
       <textarea class="textarea" id="hello" maxlength="600"></textarea>
       <div class="chips prompt-chips">${(isLocal
@@ -1672,16 +1770,16 @@
       <div class="modal-body">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
           <div>
-            <h3>${esc(p.name)} ${p.verified ? I.tick : ""}</h3>
+            <h3>${esc(p.name)}${p.age ? `<span class="age">, ${p.age}</span>` : ""} ${p.verified ? I.tick : ""}</h3>
             <div class="muted" style="font-size:13.5px;margin-top:2px">${subline(p)}</div>
           </div>
           ${typeBadge(p)}
         </div>
-        <div class="stats" style="margin-top:12px"><span id="m-rating">${ratingText(p.reviews || [])}</span>${isLocal ? `<span>${p.verified ? "🪪 Verified local" : "⏳ Not verified yet"}</span>` : ""}${p.phoneVerified ? "<span>📱 Phone verified</span>" : ""}</div>
+        <div class="stats" style="margin-top:12px"><span id="m-rating">${ratingText(p.reviews || [])}</span>${isLocal ? `<span>${p.verified ? "🪪 Verified local" : "⏳ Not verified yet"}</span>` : ""}${p.phoneVerified ? "<span>📱 Phone verified</span>" : ""}${p.cancellations ? `<span>↩️ ${plural(p.cancellations, "cancelled meetup")}</span>` : ""}</div>
         ${p.bio ? `<h5>About</h5><p>${esc(p.bio)}</p>` : ""}
         ${p.interests.length ? `<h5>Interests</h5><div class="chips">${p.interests.map((t) => `<span class="chip tag">${esc(t)}</span>`).join("")}</div>` : ""}
         ${p.languages.length ? `<h5>Speaks</h5><p>${p.languages.map(esc).join(" · ")}</p>` : ""}
-        <h5>Reviews</h5><div id="m-reviews">${p.reviews ? reviewsBlock(p.reviews, `No reviews yet — ${esc(p.name)} is new to buddyup.`) : `<p class="hint">Loading reviews…</p>`}</div>
+        <h5>Reviews</h5><div id="m-reviews">${p.reviews ? reviewsBlock(p.reviews, `No reviews yet. ${esc(p.name)} is new to buddyup.`) : `<p class="hint">Loading reviews…</p>`}</div>
         ${isLocal && canRequest ? `<div class="note"><span class="e">💛</span><div>${esc(p.name)} is showing people around for free. A <b>generous tip</b> at the end is a great way to say thanks!</div></div>` : ""}
         ${actions}
       </div>`);
@@ -1689,7 +1787,7 @@
     if (!p.reviews) {
       DB.reviewsFor([p.uid]).then((list) => {
         if (!$("#m-reviews")) return;
-        $("#m-reviews").innerHTML = reviewsBlock(list, `No reviews yet — ${esc(p.name)} is new to buddyup.`);
+        $("#m-reviews").innerHTML = reviewsBlock(list, `No reviews yet. ${esc(p.name)} is new to buddyup.`);
         $("#m-rating").innerHTML = ratingText(list);
       }).catch(() => { if ($("#m-reviews")) $("#m-reviews").innerHTML = `<p class="hint">Couldn't load reviews.</p>`; });
     }
@@ -1712,7 +1810,7 @@
       $("#send").addEventListener("click", async () => {
         const text = box.value.trim();
         if (text.length < 10) return toast("Write a short message so they know what you'd like to do.");
-        if (!bookable(slot)) return toast("That time is less than a day away — pick a later one.");
+        if (!bookable(slot)) return toast("That time is less than a day away. Pick a later one.");
         $("#send").disabled = true;
         const kind = isLocal ? "local" : "buddy";
         const people = {
@@ -1752,7 +1850,7 @@
       try {
         await DB.report({ about: uid, chatId: chatId || null, reason, detail: $("#rdetail").value.trim() });
         closeModal();
-        toast(`Thanks — ${name} has been reported. Our safety team will review it.`);
+        toast(`Thanks. ${name} has been reported. Our safety team will review it.`);
       } catch (e) { $("#rerr").textContent = DB.friendlyError(e); }
     });
   }
@@ -1925,69 +2023,45 @@
   // Send the meetup details to someone you trust via the phone's share sheet (or clipboard).
   async function shareMeetup(chat, p) {
     const m = latestMeetup(chat.id);
-    const u = me();
-    const text = `buddyup safety: I'm meeting ${p.name}${m ? ` on ${slotLabel(m.slot)}` : ""}${p.city ? ` in ${p.city}` : ""}.${u.trustedContact ? "" : ""} I'll check in afterwards.`;
+    const text = `buddyup safety: I'm meeting ${p.name}${m ? ` on ${slotLabel(m.slot)}` : ""}${p.city ? ` in ${p.city}` : ""}. I'll check in afterwards.`;
     try {
       if (navigator.share) await navigator.share({ title: "My buddyup meetup", text });
-      else { await navigator.clipboard.writeText(text); toast("Meetup details copied — paste them to a friend."); }
+      else { await navigator.clipboard.writeText(text); toast("Meetup details copied. Paste them to a friend."); }
     } catch { /* share sheet dismissed */ }
   }
 
   // ---------- Safety ----------
+  const guideList = (items) => `<div class="tips-grid">${items.map(([e, t, d]) => `<div class="list-item"><span class="li-ico">${e}</span><span class="grow">${t}<small>${d}</small></span></div>`).join("")}</div>`;
+
   function safetyPage(user, root) {
-    const blocked = DB.cache.chats.filter((c) => (c.blockedBy || []).includes(user.uid)).length;
     root.innerHTML = `
-      <div class="page" style="padding-top:0">
-        <div class="two-col">
-          <div class="panel center fade">
-            <h3>Emergency</h3>
-            <a class="sos-big" href="tel:112">SOS</a>
-            <p class="hint">In immediate danger? Tap SOS to call local emergency services (112 / 911).</p>
-            <div style="margin-top:22px;text-align:left">
-              <button class="list-item" id="contact"><span class="li-ico">👥</span><span class="grow">Trusted contact<small>${user.trustedContact ? esc(user.trustedContact) : "Not set — add someone"}</small></span><span class="chev">${I.chev}</span></button>
-              <a class="list-item" href="#/messages"><span class="li-ico">⛔</span><span class="grow">Blocked users<small>${plural(blocked, "person").replace("persons", "people")} blocked · manage from the chat menu</small></span><span class="chev">${I.chev}</span></a>
-            </div>
-          </div>
-          <div class="panel fade" style="animation-delay:.05s">
-            <h3>Meet-up tips</h3>
-            <div class="tips-grid">
-              ${[["☕", "Meet in public", "Busy cafés, squares and landmarks for first meetups."],
-                 ["📲", "Tell someone", "Share who you're meeting, where and when (chat menu → Share meetup details)."],
-                 ["💬", "Stay on buddyup", "Keep chatting in-app until you trust each other."],
-                 ["💸", "No pressure to pay", "buddyup is free. Tips to locals are always optional."],
-                 ["🔋", "Stay charged", "Keep your phone charged and know your way back."],
-                 ["🚩", "Trust your gut", "It's always OK to leave. Report anything that feels off."]]
-                .map(([e, t, s]) => `<div class="list-item"><span class="li-ico">${e}</span><span class="grow">${t}<small>${s}</small></span></div>`).join("")}
-            </div>
-            <h3 style="margin-top:28px">How we verify locals</h3>
-            <div class="tips-grid">
-              ${[["🏠", "Residency", "At least 6 months in the city; postcode checked against their neighbourhood."],
-                 ["🧭", "Local knowledge", "Questions about hidden spots, food and getting around."],
-                 ["📱", "Phone check", "A one-time SMS code sent by Firebase."],
-                 ["🪪", "ID & selfie", "Stored privately and reviewed by our team before approval."]]
-                .map(([e, t, s]) => `<div class="list-item"><span class="li-ico">${e}</span><span class="grow">${t}<small>${s}</small></span></div>`).join("")}
-            </div>
-          </div>
-        </div>
+      <div class="page">
+        <div class="greet fade"><h1>Safety guidelines</h1><p class="muted">buddyup works because everyone looks out for each other. Please read these before your first meetup.</p></div>
+        <section class="panel fade">
+          <h3>Before you meet</h3>
+          ${guideList([["💬", "Chat in-app first", "Get to know each other on buddyup and keep the conversation here until you trust each other."],
+            ["👀", "Check the profile", "Look at their photo, reviews and verification. Locals have passed residency, ID and selfie checks."],
+            ["📲", "Tell someone", "Share who you're meeting, where and when with a friend (chat menu → Share meetup details)."],
+            ["📍", "Plan a public spot", "Agree on a busy café, square or landmark for the first meetup, never a private home."]])}
+          <h3 style="margin-top:28px">During the meetup</h3>
+          ${guideList([["☕", "Stay in public", "Keep first meetups in busy, well-lit places, especially at night."],
+            ["🔋", "Stay charged", "Keep your phone charged and know how you'll get back."],
+            ["🍹", "Watch your drink", "Keep your drink and belongings with you at all times."],
+            ["🚩", "Trust your gut", "It's always OK to leave. You don't owe anyone an explanation."]])}
+          <h3 style="margin-top:28px">Money &amp; respect</h3>
+          ${guideList([["💸", "No pressure to pay", "buddyup is free. Tips to locals are always optional. Never pay in advance."],
+            ["🤝", "Respect boundaries", "No means no. Don't pressure anyone into plans, places or photos they're not comfortable with."]])}
+          <h3 style="margin-top:28px">If something feels wrong</h3>
+          ${guideList([["🛑", "Report it", "Use Report on the profile or in the chat menu. Our team reviews every report and the person isn't told who reported them."],
+            ["⛔", "Block them", "Blocking from the chat menu stops all messages straight away."],
+            ["🚨", "In an emergency", "Contact local emergency services first (112 in Europe, 911 in North America), then tell us."]])}
+          <h3 style="margin-top:28px">How we verify locals</h3>
+          ${guideList([["🏠", "Residency", "At least 6 months in the city; postcode checked against their neighbourhood."],
+            ["🧭", "Local knowledge", "Questions about hidden spots, food and getting around."],
+            ["📱", "Phone check", "A one-time SMS code."],
+            ["🪪", "ID & selfie", "Stored privately and reviewed by our team before approval."]])}
+        </section>
       </div>`;
-    $("#contact").addEventListener("click", () => {
-      openModal(`
-        <button class="modal-close" data-close aria-label="Close">${I.close}</button>
-        <div class="modal-body plain">
-          <h3>Trusted contact</h3>
-          <p class="hint" style="margin:6px 0 18px">Only you can see this. Share your meetup details with them from the chat menu.</p>
-          <form id="tc"><div class="field"><input class="input" name="c" value="${esc(user.trustedContact || "")}" placeholder="Name and phone number"/></div>
-          <button class="btn btn-primary btn-block">Save contact</button></form>
-        </div>`);
-      $("#tc").addEventListener("submit", async (e) => {
-        e.preventDefault();
-        DB.savePrivate({ trustedContact: e.target.c.value.trim() }).catch(fail);
-        closeModal();
-        toast("Trusted contact saved.");
-        await settle();
-        render();
-      });
-    });
   }
 
   // ---------- Profile ----------
@@ -2027,24 +2101,27 @@
             ${modeRow("traveller", "🎒", "Traveller", travellerStatus)}
             ${modeRow("local", "🏠", "Local", localStatus)}
             ${user.mode === "traveller" ? `<a class="list-item" href="#/discover"><span class="li-ico">📍</span><span class="grow">Change destination &amp; times<small>${travellerStatus}</small></span><span class="chev">${I.chev}</span></a>` : ""}
+            ${user.cancellations ? `<div class="list-item"><span class="li-ico">↩️</span><span class="grow">${plural(user.cancellations, "cancelled meetup")}<small>Cancelling confirmed meetups moves you lower in search results.</small></span></div>` : ""}
             ${user.mode === "local" && user.approved ? `<a class="list-item" href="#/availability"><span class="li-ico">📅</span><span class="grow">Availability<small>${user.availability ? `Set until ${fmtYmd(user.availability.horizon)}` : "Not set yet"}</small></span><span class="chev">${I.chev}</span></a>` : ""}
             <h3 style="margin-top:26px">Settings</h3>
             <button class="list-item" id="edit"><span class="li-ico">✏️</span><span class="grow">Edit profile<small>Photo, name, bio and interests</small></span><span class="chev">${I.chev}</span></button>
             <div class="list-item"><span class="li-ico">🔐</span><span class="grow">Account<small>${esc(user.email || "")}${DB.currentAuthUser()?.providerData?.some((x) => x.providerId === "google.com") ? " · Google sign-in" : ""}</small></span></div>
             <button class="list-item" id="invite"><span class="li-ico">🔗</span><span class="grow">Invite friends</span><span class="chev">${I.chev}</span></button>
             <button class="list-item danger" id="logout"><span class="li-ico">↩️</span><span class="grow">Log out</span></button>
+            <button class="list-item danger" id="delete-account"><span class="li-ico">🗑️</span><span class="grow">Delete account<small>Permanently delete your profile and data</small></span></button>
           </div>
         </div>
         <section class="panel fade" style="margin-top:28px">
           <h3>Reviews about you</h3>
-          ${reviewsBlock(DB.cache.reviewsToMe, "No reviews yet — after each meetup, the people you meet can rate and review you here.")}
+          ${reviewsBlock(DB.cache.reviewsToMe, "No reviews yet. After each meetup, the people you meet can rate and review you here.")}
         </section>
       </div>`;
     $$("[data-switch]", root).forEach((b) => b.addEventListener("click", () => switchMode(me(), b.dataset.switch)));
     $("#photo").addEventListener("change", (e) => uploadPhoto(e.target.files[0]));
     $("#edit").addEventListener("click", () => openEditProfile(me()));
+    $("#delete-account").addEventListener("click", () => openDeleteAccount());
     $("#invite").addEventListener("click", async () => {
-      const text = `Join me on buddyup — find a local or a travel buddy wherever you go: ${location.origin}${location.pathname}`;
+      const text = `Join me on buddyup to find a local or a travel buddy wherever you go: ${location.origin}${location.pathname}`;
       try { if (navigator.share) await navigator.share({ title: "buddyup", text }); else { await navigator.clipboard.writeText(text); toast("Invite link copied!"); } } catch { /* dismissed */ }
     });
     $("#logout").addEventListener("click", () => {
@@ -2054,6 +2131,48 @@
       state.authTab = "login";
       DB.signOut();
       go("#/");
+    });
+  }
+
+  function openDeleteAccount() {
+    const hasPassword = DB.currentAuthUser()?.providerData?.some((x) => x.providerId === "password");
+    openModal(`
+      <button class="modal-close" data-close aria-label="Close">${I.close}</button>
+      <div class="modal-body plain">
+        <h3>Delete your account?</h3>
+        <div class="check-result warn" style="margin:12px 0">⚠️ <strong>This is permanent and can't be undone.</strong> You'd have to sign up again from scratch.</div>
+        <p>We'll delete your profile and photo, your trip and availability, your private details (email, phone, verification answers, ID and selfie) and your sign-in.</p>
+        <p style="margin-top:8px">Upcoming meetups and requests are cancelled and the other person is told. Messages you've sent stay in their chat, which is closed, and reviews you've written stay, signed “Former member”.</p>
+        ${hasPassword
+          ? `<div class="field" style="margin-top:16px"><label for="dpw">Your password</label><input class="input" id="dpw" type="password" autocomplete="current-password"/></div>`
+          : `<p class="hint" style="margin-top:12px">You'll be asked to sign in with Google again to confirm it's you.</p>`}
+        <div class="field" style="margin-top:12px"><label for="dconfirm">Type DELETE to confirm</label><input class="input" id="dconfirm" autocomplete="off" autocapitalize="characters"/></div>
+        <div class="error" id="derr"></div>
+        <div class="modal-buttons">
+          <button class="btn btn-soft" data-close>Keep my account</button>
+          <button class="btn btn-danger" id="dsend">Delete permanently</button>
+        </div>
+      </div>`);
+    $("#dsend").addEventListener("click", async () => {
+      const btn = $("#dsend"), err = $("#derr");
+      if ($("#dconfirm").value.trim() !== "DELETE") return (err.textContent = "Type DELETE (in capitals) to confirm.");
+      if (hasPassword && !$("#dpw").value) return (err.textContent = "Enter your password to confirm it's you.");
+      btn.disabled = true;
+      btn.textContent = "Deleting…";
+      try {
+        state.thread?.unsub();
+        state.thread = null;
+        state.results = null;
+        await DB.deleteAccount($("#dpw")?.value || "");
+        closeModal();
+        state.authTab = "signup";
+        toast("Your buddyup account has been deleted.");
+        go("#/");
+      } catch (e) {
+        btn.disabled = false;
+        btn.textContent = "Delete permanently";
+        err.textContent = e?.message && !e.code ? e.message : DB.friendlyError(e);
+      }
     });
   }
 
@@ -2078,10 +2197,11 @@
           <div class="edit-photo">
             ${userAvatar(user, 72)}
             <label class="btn btn-outline btn-sm">📷 Change photo<input type="file" id="ephoto" accept="image/*" hidden/></label>
+            <button type="button" class="btn btn-soft btn-sm" id="eselfie">🤳 Take a selfie</button>
           </div>
           <div class="field"><label>Name</label><input class="input" name="name" value="${esc(user.name)}" maxlength="60"/></div>
           ${user.role === "traveller" || user.from ? `<div class="field"><label>Where are you from?</label><input class="input" name="from" value="${esc(user.from || "")}" placeholder="City or country"/></div>` : ""}
-          <div class="field"><label>About you</label><textarea class="textarea" name="bio" maxlength="400" placeholder="A line or two about you — what you love doing, what you'd like to see.">${esc(user.bio || "")}</textarea></div>
+          <div class="field"><label>About you</label><textarea class="textarea" name="bio" maxlength="400" placeholder="A line or two about you: what you love doing, what you'd like to see.">${esc(user.bio || "")}</textarea></div>
           <div class="field"><label>Interests</label>
             <div class="chips">${INTERESTS.map((t) => `<button type="button" class="chip ${interests.includes(t) ? "active" : ""}" data-interest="${esc(t)}">${esc(t)}</button>`).join("")}</div></div>
           <div class="error" id="eerr"></div>
@@ -2091,6 +2211,7 @@
     const form = $("#editform");
     suggestCities(form.from, false);
     $("#ephoto").addEventListener("change", (e) => { closeModal(); uploadPhoto(e.target.files[0]); });
+    $("#eselfie").addEventListener("click", () => { closeModal(); openCamera(uploadPhoto); });
     $$("[data-interest]", form).forEach((c) => c.addEventListener("click", () => {
       const t = c.dataset.interest;
       interests = interests.includes(t) ? interests.filter((x) => x !== t) : [...interests, t];
@@ -2110,13 +2231,157 @@
     });
   }
 
+  // ---------- Date of birth (accounts made before it was asked at sign-up) ----------
+  function renderAddBirthdate() {
+    state.screen = "birthdate";
+    app.innerHTML = `
+      <header class="nav"><div class="container">${logo()}<button class="btn btn-soft btn-sm" id="logout">Log out</button></div></header>
+      <section class="verify-page">
+        <div class="verify fade">
+          <h1>When were you born?</h1>
+          <p class="sub">We now show everyone's age on their profile so people know who they're meeting. buddyup is for people aged ${MIN_AGE} and over.</p>
+          <form id="bform" novalidate>
+            ${birthField()}
+            <div class="error" id="err"></div>
+            <button class="btn btn-primary btn-block" type="submit">Continue ${I.arrow}</button>
+          </form>
+        </div>
+      </section>`;
+    const form = $("#bform");
+    bindDateFields(form);
+    $("#logout").addEventListener("click", () => DB.signOut());
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const birthdate = form.birthdate.value;
+      if (birthError(birthdate)) return ($("#err").textContent = birthError(birthdate));
+      try {
+        await Promise.all([DB.savePrivate({ birthdate }), DB.saveProfile({ age: ageFrom(birthdate) })]);
+        await settle();
+        render();
+      } catch (ex) { $("#err").textContent = DB.friendlyError(ex); }
+    });
+  }
+
+  // ---------- Profile photo (required for travellers) ----------
+  function renderAddPhoto() {
+    state.screen = "photo";
+    let picked = null; // a File, or a Blob from the camera
+    app.innerHTML = `
+      <header class="nav"><div class="container">${logo()}<button class="btn btn-soft btn-sm" id="logout">Log out</button></div></header>
+      <section class="verify-page">
+        <div class="verify fade">
+          <h1>Add a photo of yourself</h1>
+          <p class="sub">We need a photo of you to establish credibility. Locals and fellow travellers are much more likely to meet someone they can see, and everyone knows who they're meeting.</p>
+          <div class="photo-step">
+            <div class="photo-preview" id="preview">${I.user}</div>
+            <div class="photo-actions">
+              <button type="button" class="btn btn-primary" id="camera">📷 Take a selfie</button>
+              <label class="btn btn-outline">🖼️ Choose a photo<input type="file" id="file" accept="image/*" hidden/></label>
+            </div>
+          </div>
+          <ul class="photo-rules">
+            <li>Just you, with your face clearly visible. No sunglasses, heavy filters or group shots.</li>
+            <li>JPG, PNG or HEIC up to 10 MB. We shrink it and remove location data before uploading.</li>
+            <li>Only people signed in to buddyup can see your photo.</li>
+          </ul>
+          <div class="error" id="err"></div>
+          <button class="btn btn-primary btn-block" id="save" disabled>Continue ${I.arrow}</button>
+        </div>
+      </section>`;
+    const pick = (file) => {
+      if (!file) return;
+      if (file.size > 10 * 1024 * 1024) return ($("#err").textContent = "That photo is over 10 MB. Please choose a smaller one.");
+      picked = file;
+      $("#preview").innerHTML = `<img src="${URL.createObjectURL(file)}" alt="Your photo"/>`;
+      $("#err").textContent = "";
+      $("#save").disabled = false;
+    };
+    $("#file").addEventListener("change", (e) => pick(e.target.files[0]));
+    $("#camera").addEventListener("click", () => openCamera(pick));
+    $("#logout").addEventListener("click", () => DB.signOut());
+    $("#save").addEventListener("click", async () => {
+      const btn = $("#save");
+      btn.disabled = true;
+      btn.textContent = "Uploading…";
+      try {
+        await DB.uploadAvatar(picked);
+        toast("Looking good! Your photo is on your profile.");
+        await settle();
+        render();
+      } catch (e) {
+        btn.disabled = false;
+        btn.innerHTML = `Continue ${I.arrow}`;
+        $("#err").textContent = e?.message && !e.code ? e.message : DB.friendlyError(e);
+      }
+    });
+  }
+
+  // Selfie from the device camera. Without live camera support, falls back to the phone's
+  // camera app (or a file picker on desktop).
+  async function openCamera(onPhoto) {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      const inp = document.createElement("input");
+      Object.assign(inp, { type: "file", accept: "image/*", capture: "user" });
+      inp.addEventListener("change", () => onPhoto(inp.files[0]));
+      return inp.click();
+    }
+    let stream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 1280 } }, audio: false });
+    } catch (e) {
+      return toast(e?.name === "NotAllowedError"
+        ? "Camera access is blocked. Allow it in your browser settings, or choose a photo instead."
+        : "We couldn't open a camera on this device. Choose a photo instead.");
+    }
+    openModal(`
+      <button class="modal-close" data-close aria-label="Close">${I.close}</button>
+      <div class="modal-body plain center">
+        <h3 style="justify-content:center">Take a selfie</h3>
+        <p class="hint" style="margin:4px 0 14px">Face the camera in good light, with your whole face in view.</p>
+        <div class="camera"><video id="cam" autoplay playsinline muted></video><canvas id="shot" hidden></canvas></div>
+        <div class="camera-actions">
+          <button class="btn btn-primary" id="snap">📸 Capture</button>
+          <button class="btn btn-soft" id="retake" hidden>Retake</button>
+          <button class="btn btn-primary" id="use" hidden>Use this photo</button>
+        </div>
+      </div>`, () => stream.getTracks().forEach((t) => t.stop()));
+    const video = $("#cam"), canvas = $("#shot");
+    video.srcObject = stream;
+    let shot = null;
+    const taken = (on) => {
+      video.hidden = on; canvas.hidden = !on;
+      $("#snap").hidden = on; $("#retake").hidden = !on; $("#use").hidden = !on;
+    };
+    $("#snap").addEventListener("click", () => {
+      const side = Math.min(video.videoWidth, video.videoHeight);
+      if (!side) return;
+      canvas.width = canvas.height = side; // square crop from the centre, mirrored like the preview
+      const ctx = canvas.getContext("2d");
+      ctx.translate(side, 0);
+      ctx.scale(-1, 1);
+      ctx.drawImage(video, (video.videoWidth - side) / 2, (video.videoHeight - side) / 2, side, side, 0, 0, side, side);
+      canvas.toBlob((b) => { shot = b; taken(true); }, "image/jpeg", 0.92);
+    });
+    $("#retake").addEventListener("click", () => taken(false));
+    $("#use").addEventListener("click", () => { closeModal(); onPhoto(shot); });
+  }
+
   // ---------- Modal ----------
-  function openModal(html) {
+  // `onClose` runs however the modal goes away (e.g. to switch the camera off).
+  let modalCleanup = null;
+  function openModal(html, onClose) {
+    closeModal();
+    modalCleanup = onClose || null;
     modalRoot.innerHTML = `<div class="modal-backdrop"><div class="modal">${html}</div></div>`;
     $$("[data-close]", modalRoot).forEach((b) => b.addEventListener("click", closeModal));
     $(".modal-backdrop", modalRoot).addEventListener("click", (e) => { if (e.target.classList.contains("modal-backdrop")) closeModal(); });
   }
-  function closeModal() { modalRoot.innerHTML = ""; }
+  function closeModal() {
+    const fn = modalCleanup;
+    modalCleanup = null;
+    fn?.();
+    modalRoot.innerHTML = "";
+  }
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
 
   // ---------- Boot ----------

@@ -1,0 +1,20 @@
+# buddyup photo API (Cloudflare Worker + R2). Deploy: `npx wrangler deploy` from this folder.
+name = "buddyup-photos"
+main = "index.js"
+compatibility_date = "2026-10-01"
+
+# Served on the site's own domain, so photo URLs look like https://buddyup.fyi/photos/…
+routes = [
+  { pattern = "buddyup.fyi/api/photo", zone_name = "buddyup.fyi" },
+  { pattern = "buddyup.fyi/photos/*", zone_name = "buddyup.fyi" },
+]
+
+# Private bucket — leave "Public access" off in the R2 dashboard; the Worker checks sign-in.
+[[r2_buckets]]
+binding = "PHOTOS"
+bucket_name = "buddyup-photos"
+
+[vars]
+FIREBASE_PROJECT_ID = "buddyup-32479"
+# Sites allowed to call the API from the browser (localhost is for `node server.js`).
+ALLOWED_ORIGINS = "https://buddyup.fyi,https://www.buddyup.fyi,http://localhost:5173"

@@ -29,9 +29,9 @@
     "auth/code-expired": "That code has expired. Tap “Send code” to get a new one.",
     "auth/missing-verification-code": "Please enter the 6-digit code from the SMS.",
     "auth/operation-not-allowed": "Phone verification isn't enabled in Firebase yet (Authentication → Sign-in method → Phone).",
-    "auth/billing-not-enabled": "SMS needs the Firebase Blaze plan — or add a test number under Authentication → Sign-in method → Phone.",
+    "auth/billing-not-enabled": "SMS needs the Firebase Blaze plan, or add a test number under Authentication → Sign-in method → Phone.",
     "auth/unauthorized-domain": "This website's address isn't authorised in Firebase yet (Authentication → Settings → Authorized domains).",
-    "auth/network-request-failed": "Network error — check your connection and try again.",
+    "auth/network-request-failed": "Network error. Check your connection and try again.",
   };
   const friendly = (e) => {
     console.warn("buddyup phone verification:", e?.code, e?.message);
@@ -79,7 +79,7 @@
     toE164,
 
     async send(rawPhone, buttonEl) {
-      if (!this.available()) return { ok: false, error: "Phone verification isn't set up yet — buddyup needs Firebase configured and must be opened from a web address." };
+      if (!this.available()) return { ok: false, error: "Phone verification isn't set up yet. buddyup needs Firebase configured and must be opened from a web address." };
       const phone = toE164(rawPhone);
       if (!phone) return { ok: false, error: ERRORS["auth/invalid-phone-number"] };
       pending = null;

@@ -12,10 +12,28 @@ service cloud.firestore {
     // `approved` (verified local) can only be set by a reviewer in the console / Admin SDK.
     match /users/{uid} {
       allow read: if signedIn();
-      // Profile photos are small data URLs, so cap their size.
-      function photoOk() { return !("photoURL" in request.resource.data) || request.resource.data.photoURL.size() < 200000; }
-      allow create: if isMe(uid) && request.resource.data.approved == false && photoOk();
-      allow update: if isMe(uid) && request.resource.data.approved == resource.data.approved && photoOk();
+      // Profile photos: the user's own photo in R2 (served by the Worker on buddyup.fyi), their
+      // Google account photo, or — for older profiles — a small JPEG data URL. `photoUploaded`
+      // (required for travellers) only counts with an R2 photo.
+      function photoOk() {
+        let d = request.resource.data;
+        let r2 = 'https://buddyup[.]fyi/photos/profiles/' + uid + '/[0-9a-f-]{36}[.]jpg';
+        return (!("photoURL" in d) || (d.photoURL is string && d.photoURL.size() < 200000
+            && (d.photoURL == "" || d.photoURL.matches(r2)
+              || d.photoURL.matches('https://[a-z0-9-]+[.]googleusercontent[.]com/.*')
+              || d.photoURL.matches('data:image/jpeg;base64,.*'))))
+          && (d.get("photoUploaded", false) == false || d.get("photoURL", "").matches(r2));
+      }
+      // Cancelled confirmed meetups (see /meetups): start at 0 and can never go down.
+      function cancellationsOk() {
+        return request.resource.data.get("cancellations", 0) is int
+          && request.resource.data.get("cancellations", 0) >= (resource == null ? 0 : resource.data.get("cancellations", 0))
+          && (resource != null || request.resource.data.get("cancellations", 0) == 0);
+      }
+      // Age (from the birthdate kept in private/info): buddyup is 18+.
+      function ageOk() { return !("age" in request.resource.data) || (request.resource.data.age is int && request.resource.data.age >= 18 && request.resource.data.age <= 110); }
+      allow create: if isMe(uid) && request.resource.data.approved == false && photoOk() && cancellationsOk() && ageOk();
+      allow update: if isMe(uid) && request.resource.data.approved == resource.data.approved && photoOk() && cancellationsOk() && ageOk();
       allow delete: if isMe(uid);
 
       match /private/{doc} {
@@ -28,6 +46,7 @@ service cloud.firestore {
         allow read: if false;
         allow create, update: if isMe(uid) && doc in ["id", "selfie"]
           && request.resource.data.image is string && request.resource.data.image.size() < 900000;
+        allow delete: if isMe(uid); // account deletion
       }
     }
 
@@ -35,6 +54,12 @@ service cloud.firestore {
     // completed once the time slot has ended, and record that they've reviewed it.
     match /meetups/{id} {
       function inMeetup() { return signedIn() && request.auth.uid in resource.data.participants; }
+      // Cancelling a confirmed meetup must add one to the canceller's public cancellation count
+      // in the same batch (it lowers their place in search results).
+      function cancellationCounted() {
+        let me = /databases/$(database)/documents/users/$(request.auth.uid);
+        return getAfter(me).data.get("cancellations", 0) == get(me).data.get("cancellations", 0) + 1;
+      }
       allow read: if inMeetup();
       allow create: if signedIn()
         && request.resource.data.from == request.auth.uid
@@ -57,6 +82,7 @@ service cloud.firestore {
           && request.resource.data.cancelledBy == request.auth.uid
           && request.resource.data.cancelReason is string
           && request.resource.data.cancelReason.size() >= 10 && request.resource.data.cancelReason.size() <= 500
+          && (resource.data.status != "confirmed" || cancellationCounted())
           && onlyChanges(["status", "cancelledAt", "cancelledBy", "cancelReason"]))
         // either side completes it after the slot has ended
         || (resource.data.status == "confirmed" && request.time > resource.data.slotEnd
@@ -99,6 +125,9 @@ service cloud.firestore {
         && request.resource.data.to != request.auth.uid
         && request.resource.data.rating is int && request.resource.data.rating >= 1 && request.resource.data.rating <= 5
         && request.resource.data.text is string && request.resource.data.text.size() <= 1000;
+      // When someone deletes their account, the reviews they wrote stay but are signed "Former member".
+      allow update: if signedIn() && resource.data.from == request.auth.uid
+        && onlyChanges(["fromName"]) && request.resource.data.fromName == "Former member";
     }
 
     // Safety reports: users can file them, only the team (console / Admin SDK) can read them.

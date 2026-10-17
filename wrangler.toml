@@ -1,0 +1,10 @@
+# The buddyup website: static files served by the "buddy-up" Worker on buddyup.fyi.
+# Deploy: `node build.js && npx wrangler deploy` (needs Node 22+). Only public/ is uploaded.
+# The photo API is a separate Worker in worker/.
+name = "buddy-up"
+compatibility_date = "2026-10-12"
+workers_dev = true
+routes = [{ pattern = "buddyup.fyi", custom_domain = true }]
+
+[assets]
+directory = "./public"
