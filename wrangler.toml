@@ -1,10 +1,14 @@
 # The buddyup website: static files served by the "buddy-up" Worker on buddyup.fyi.
-# Deploy: `node build.js && npx wrangler deploy` (needs Node 22+). Only public/ is uploaded.
+# Deploy: `npx wrangler deploy` (needs Node 22+); Cloudflare also runs it on every push to main.
+# Wrangler runs build.js first, which writes public/ (only those files are uploaded).
 # The photo API is a separate Worker in worker/.
 name = "buddy-up"
 compatibility_date = "2026-10-12"
 workers_dev = true
 routes = [{ pattern = "buddyup.fyi", custom_domain = true }]
+
+[build]
+command = "node build.js"
 
 [assets]
 directory = "./public"
