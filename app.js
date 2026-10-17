@@ -2070,30 +2070,14 @@
   const CONTACT_EMAIL = "contact@buddyup.fyi";
   const footer = () => `<footer class="footer"><div class="container">${logo()}<span><a href="#/contact">Contact us</a> · © ${new Date().getFullYear()} buddyup</span></div></footer>`;
 
-  function contactBody(user) {
-    // Signed-in people get their account email in the draft so we can find them quickly.
-    const body = user?.email ? `\n\n\n(My buddyup account: ${user.email})` : "";
-    const mailto = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("buddyup support")}&body=${encodeURIComponent(body)}`;
+  function contactBody() {
     return `
       <div class="page">
-        <div class="greet fade"><h1>Contact us</h1><p class="muted">Questions, feedback or a problem with your account? Email us and a real person will get back to you.</p></div>
-        <section class="panel fade">
-          <div class="contact-mail">
-            <span class="li-ico">✉️</span>
-            <div><small>Email</small><a href="${mailto}">${CONTACT_EMAIL}</a></div>
-          </div>
-          <div class="contact-actions">
-            <a class="btn btn-primary" href="${mailto}">Email us</a>
-            <button type="button" class="btn btn-outline" id="copy-email">Copy address</button>
-          </div>
-          <h3 style="margin-top:28px">Help us help you</h3>
-          ${guideList([["👤", "Your account", "Tell us the email you signed up with, so we can find your account."],
-            ["📝", "What happened", "What you were doing and any error message you saw. A screenshot helps a lot."],
-            ["📱", "Your device", "Phone or computer, and which browser you use."]])}
-          <h3 style="margin-top:28px">Quicker ways for some things</h3>
-          ${guideList([["🚩", "A safety concern about someone", "Report them from their profile or the chat menu so our team sees the details straight away."],
-            ["🚨", "In an emergency", "Contact local emergency services first (112 in Europe, 911 in North America)."],
-            ["🗑️", "Deleting your account", "You can do it yourself any time from Profile → Delete account."]])}
+        <section class="contact fade">
+          <h1>Get in touch</h1>
+          <p class="muted">We'd love to hear from you.</p>
+          <a class="contact-email" href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>
+          <button type="button" class="link-btn" id="copy-email">Copy email address</button>
         </section>
       </div>`;
   }
@@ -2104,14 +2088,14 @@
     });
   }
   function contactPage(user, root) {
-    root.innerHTML = contactBody(user);
+    root.innerHTML = contactBody();
     bindContact(root);
   }
   function renderContactStandalone() {
     state.screen = "contact";
     app.innerHTML = `
       <header class="nav"><div class="container">${logo()}<a class="btn btn-soft btn-sm" href="#/">${DB.cache.uid ? "Back" : "Back to buddyup"}</a></div></header>
-      <main class="container" id="page">${contactBody(null)}</main>
+      <main class="container" id="page">${contactBody()}</main>
       ${footer()}`;
     bindContact(app);
   }
