@@ -134,6 +134,7 @@
     if (!DB.ready) return renderSetupNeeded();
     const c = DB.cache;
     if (!c.authKnown || (c.uid && !c.loaded) || state.signingUp) return renderLoading();
+    if (page === "contact" && (!c.uid || !c.profile)) return renderContactStandalone();
     if (!c.uid) return renderLanding();
     if (!c.profile) return renderCompleteProfile();
     const user = me();
@@ -361,7 +362,7 @@
     app.innerHTML = `
       <header class="nav"><div class="container">
         ${logo()}
-        <nav class="landing-nav-links"><a href="#" data-scroll="how">How it works</a><a href="#" data-scroll="safety">Safety</a><a href="#" data-scroll="locals">For locals</a></nav>
+        <nav class="landing-nav-links"><a href="#" data-scroll="how">How it works</a><a href="#" data-scroll="safety">Safety</a><a href="#" data-scroll="locals">For locals</a><a href="#/contact">Contact</a></nav>
         <div class="nav-right">
           <button class="btn btn-soft btn-sm" data-auth="login">Log in</button>
           <button class="btn btn-primary btn-sm" data-auth="signup">Sign up<span class="wide-only"> free</span></button>
@@ -416,7 +417,7 @@
         <div class="center" style="margin-top:34px"><button class="btn btn-coral" id="become-local">Sign up as a local</button></div>
       </div></section>
 
-      <footer class="footer"><div class="container">${logo()}<span>© ${new Date().getFullYear()} buddyup</span></div></footer>`;
+      ${footer()}`;
 
     // In-page links scroll instead of using #anchors, which the hash router owns.
     $$("[data-scroll]").forEach((a) => a.addEventListener("click", (e) => { e.preventDefault(); document.getElementById(a.dataset.scroll).scrollIntoView({ behavior: "smooth" }); }));
@@ -875,7 +876,7 @@
   function renderApp(user) {
     state.screen = "app";
     const { page, id } = route();
-    const pages = { discover: discoverPage, availability: availabilityPage, meetups: meetupsPage, messages: messagesPage, safety: safetyPage, profile: profilePage };
+    const pages = { discover: discoverPage, availability: availabilityPage, meetups: meetupsPage, messages: messagesPage, safety: safetyPage, profile: profilePage, contact: contactPage };
     const current = pages[page] ? page : "discover";
     const isLocal = user.mode === "local";
     const n = counts();
@@ -2054,7 +2055,8 @@
           <h3 style="margin-top:28px">If something feels wrong</h3>
           ${guideList([["🛑", "Report it", "Use Report on the profile or in the chat menu. Our team reviews every report and the person isn't told who reported them."],
             ["⛔", "Block them", "Blocking from the chat menu stops all messages straight away."],
-            ["🚨", "In an emergency", "Contact local emergency services first (112 in Europe, 911 in North America), then tell us."]])}
+            ["🚨", "In an emergency", "Contact local emergency services first (112 in Europe, 911 in North America), then tell us."],
+            ["✉️", "Email us", `Write to <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a> about anything else that worries you.`]])}
           <h3 style="margin-top:28px">How we verify locals</h3>
           ${guideList([["🏠", "Residency", "At least 6 months in the city; postcode checked against their neighbourhood."],
             ["🧭", "Local knowledge", "Questions about hidden spots, food and getting around."],
@@ -2062,6 +2064,56 @@
             ["🪪", "ID & selfie", "Stored privately and reviewed by our team before approval."]])}
         </section>
       </div>`;
+  }
+
+  // ---------- Contact ----------
+  const CONTACT_EMAIL = "contact@buddyup.fyi";
+  const footer = () => `<footer class="footer"><div class="container">${logo()}<span><a href="#/contact">Contact us</a> · © ${new Date().getFullYear()} buddyup</span></div></footer>`;
+
+  function contactBody(user) {
+    // Signed-in people get their account email in the draft so we can find them quickly.
+    const body = user?.email ? `\n\n\n(My buddyup account: ${user.email})` : "";
+    const mailto = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("buddyup support")}&body=${encodeURIComponent(body)}`;
+    return `
+      <div class="page">
+        <div class="greet fade"><h1>Contact us</h1><p class="muted">Questions, feedback or a problem with your account? Email us and a real person will get back to you.</p></div>
+        <section class="panel fade">
+          <div class="contact-mail">
+            <span class="li-ico">✉️</span>
+            <div><small>Email</small><a href="${mailto}">${CONTACT_EMAIL}</a></div>
+          </div>
+          <div class="contact-actions">
+            <a class="btn btn-primary" href="${mailto}">Email us</a>
+            <button type="button" class="btn btn-outline" id="copy-email">Copy address</button>
+          </div>
+          <h3 style="margin-top:28px">Help us help you</h3>
+          ${guideList([["👤", "Your account", "Tell us the email you signed up with, so we can find your account."],
+            ["📝", "What happened", "What you were doing and any error message you saw. A screenshot helps a lot."],
+            ["📱", "Your device", "Phone or computer, and which browser you use."]])}
+          <h3 style="margin-top:28px">Quicker ways for some things</h3>
+          ${guideList([["🚩", "A safety concern about someone", "Report them from their profile or the chat menu so our team sees the details straight away."],
+            ["🚨", "In an emergency", "Contact local emergency services first (112 in Europe, 911 in North America)."],
+            ["🗑️", "Deleting your account", "You can do it yourself any time from Profile → Delete account."]])}
+        </section>
+      </div>`;
+  }
+  function bindContact(root) {
+    $("#copy-email", root).addEventListener("click", async () => {
+      try { await navigator.clipboard.writeText(CONTACT_EMAIL); toast("Email address copied."); }
+      catch { toast(CONTACT_EMAIL); }
+    });
+  }
+  function contactPage(user, root) {
+    root.innerHTML = contactBody(user);
+    bindContact(root);
+  }
+  function renderContactStandalone() {
+    state.screen = "contact";
+    app.innerHTML = `
+      <header class="nav"><div class="container">${logo()}<a class="btn btn-soft btn-sm" href="#/">${DB.cache.uid ? "Back" : "Back to buddyup"}</a></div></header>
+      <main class="container" id="page">${contactBody(null)}</main>
+      ${footer()}`;
+    bindContact(app);
   }
 
   // ---------- Profile ----------
@@ -2107,6 +2159,7 @@
             <button class="list-item" id="edit"><span class="li-ico">✏️</span><span class="grow">Edit profile<small>Photo, name, bio and interests</small></span><span class="chev">${I.chev}</span></button>
             <div class="list-item"><span class="li-ico">🔐</span><span class="grow">Account<small>${esc(user.email || "")}${DB.currentAuthUser()?.providerData?.some((x) => x.providerId === "google.com") ? " · Google sign-in" : ""}</small></span></div>
             <button class="list-item" id="invite"><span class="li-ico">🔗</span><span class="grow">Invite friends</span><span class="chev">${I.chev}</span></button>
+            <a class="list-item" href="#/contact"><span class="li-ico">✉️</span><span class="grow">Contact us<small>${CONTACT_EMAIL}</small></span><span class="chev">${I.chev}</span></a>
             <button class="list-item danger" id="logout"><span class="li-ico">↩️</span><span class="grow">Log out</span></button>
             <button class="list-item danger" id="delete-account"><span class="li-ico">🗑️</span><span class="grow">Delete account<small>Permanently delete your profile and data</small></span></button>
           </div>

@@ -60,6 +60,7 @@ Rules also enforce: requests at least ~a day ahead, only the recipient can accep
 - **Local dashboard**: in review → timeline, trust score, review flags, approval by a reviewer in the Firebase console; approved → meetup requests only in the local's free slots (accept & chat / decline / view profile), upcoming meetups, availability summary, travellers-in-town count. Locals don't browse travellers — travellers reach out
 - **Meetups & reviews**: Meetups page (requests / upcoming / waiting / past — every completed meetup, with a review button until you've reviewed it — / cancelled); either side can cancel with a reason, after a warning that cancelling a confirmed meetup is recorded and lowers them in search; after a meetup's time ends, both sides rate 1–5 stars and write a review; ratings and reviews show on every profile, card and request
 - **Messages** (two-pane): live chat between real users (Firestore), unread badges, quick replies, report / block / share-meetup menu
+- **Contact us** page (`#/contact`, linked from the landing page, footer, Safety and Profile) with contact@buddyup.fyi
 - **Safety** guidelines page and **Profile** page (modes, trust score, settings, permanent account deletion — profile, photo, private details, ID/selfie and sign-in are deleted; upcoming meetups are cancelled; reviews they wrote are signed "Former member")
 
 ## Not done yet
