@@ -1548,8 +1548,9 @@ window.BuddyData = (function () {
     const user = me();
     if (!user.birthdate) return renderAddBirthdate();
     if (user.age !== ageFrom(user.birthdate)) DB.saveProfile({ age: ageFrom(user.birthdate) }).catch(fail); // birthdays
+    // Everyone adds a profile photo first; for locals it's also what reviewers match their ID against.
+    if (!user.photoUploaded) return renderAddPhoto(user);
     if (user.mode === "local" && !user.verification?.completed) return renderVerify(user);
-    if (user.mode === "traveller" && !user.photoUploaded) return renderAddPhoto(user);
     if (page === "trip") return go("#/discover");
     if (user.availability) releaseCancelledSlots(user); // locals only have availability
     if (user.trip) syncBusyTimes(user);
@@ -1788,7 +1789,7 @@ window.BuddyData = (function () {
           </div>
           <div class="hero-art">
             ${ART.city}
-            <div class="float-card" style="left:20px;top:22px">🏠<div><b>Verified local</b><small>Residency, ID &amp; selfie checked</small></div></div>
+            <div class="float-card" style="left:20px;top:22px">🏠<div><b>Verified local</b><small>Residency &amp; ID checked</small></div></div>
             <div class="float-card" style="right:20px;bottom:24px;animation-delay:-3s">💬<div><b>Request accepted!</b><small>“Meet you at the café at 11?”</small></div></div>
           </div>
         </div>
@@ -1820,7 +1821,7 @@ window.BuddyData = (function () {
         <div class="steps">
           <div class="step coral"><div class="num">🏠</div><h3>Prove your roots</h3><p>Tell us how long you've lived in the city (at least 6 months), your neighbourhood and postcode.</p></div>
           <div class="step coral"><div class="num">🧭</div><h3>Show your local knowledge</h3><p>Answer a few questions only a real local could: hidden spots, food, getting around.</p></div>
-          <div class="step coral"><div class="num">🪪</div><h3>Verify your identity</h3><p>An ID and selfie check. Travellers only ever see verified locals.</p></div>
+          <div class="step coral"><div class="num">🪪</div><h3>Verify your identity</h3><p>An ID check against your profile photo. Travellers only ever see verified locals.</p></div>
         </div>
         <div class="center" style="margin-top:34px"><button class="btn btn-coral" id="become-local">Sign up as a local</button></div>
       </div></section>
@@ -2086,9 +2087,8 @@ window.BuddyData = (function () {
       <div class="field"><label>How would you get from the main train station to your neighbourhood using public transport?</label><textarea class="textarea" name="transit">${esc(v.transit)}</textarea></div>
       <p class="hint">Tip: specific answers (names, lines, streets) get approved faster.</p>`;
     if (step === 2) return `
-      <label class="upload ${v.idFile ? "done" : ""}"><input type="file" name="idDoc" accept="image/*"/><span class="ico">🪪</span><span class="label">${v.idFile ? "✓ ID uploaded. Choose a file to replace it" : "Upload a photo of a government ID or proof of address"}</span></label>
-      <label class="upload ${v.selfieFile ? "done" : ""}"><input type="file" name="selfie" accept="image/*" capture="user"/><span class="ico">🤳</span><span class="label">${v.selfieFile ? "✓ Selfie uploaded. Choose a file to replace it" : "Upload a selfie so we can match it to your ID"}</span></label>
-      <p class="hint">🔒 Your ID and selfie are stored privately. Only the buddyup review team can see them.</p>`;
+      <label class="upload ${v.idFile ? "done" : ""}"><input type="file" name="idDoc" accept="image/*"/><span class="ico">🪪</span><span class="label">${v.idFile ? "✓ ID uploaded. Choose a file to replace it" : "Upload a photo of your passport, ID card or driving licence"}</span></label>
+      <p class="hint">🔒 Your ID is stored privately. Only the buddyup review team sees it, to match it with your profile photo.</p>`;
     return `
       <label class="check"><input type="checkbox" name="p1"/> I'll meet travellers in public places, especially the first time.</label>
       <label class="check"><input type="checkbox" name="p2"/> I won't ask for payment. Tips are entirely voluntary and up to the traveller.</label>
@@ -2186,11 +2186,10 @@ window.BuddyData = (function () {
       if (fields.some((k) => get(k).length < 20)) return (err.textContent = "Please give a bit more detail (20+ characters each).");
       fields.forEach((k) => (v[k] = get(k)));
     } else if (v.step === 2) {
-      const id = fd.get("idDoc"), selfie = fd.get("selfie");
-      if (!v.idFile && !id?.name) return (err.textContent = "Please upload an ID or proof of address.");
+      const id = fd.get("idDoc");
+      if (!v.idFile && !id?.name) return (err.textContent = "Please upload a photo of your passport, ID card or driving licence.");
       try {
         if (id?.name) { busy("Uploading ID…"); v.idFile = await DB.uploadVerificationFile("id", id); }
-        if (selfie?.name) { busy("Uploading selfie…"); v.selfieFile = await DB.uploadVerificationFile("selfie", selfie); }
       } catch (ex) { busy(); return (err.textContent = ex?.code ? DB.friendlyError(ex) : ex.message); }
       busy();
     } else {
@@ -2198,7 +2197,7 @@ window.BuddyData = (function () {
       v.about = get("about");
       v.completed = true;
       v.submittedAt = Date.now();
-      v.trustScore = trustScore(v);
+      v.trustScore = trustScore(v, user);
       DB.savePrivate({ verification: v }).catch(fail);
       DB.saveProfile({ trustScore: v.trustScore, bio: v.about || user.bio || "", localSubmittedAt: v.submittedAt }).catch(fail);
       state.verify = null;
@@ -2219,11 +2218,11 @@ window.BuddyData = (function () {
     render();
   }
 
-  function trustScore(v) {
+  function trustScore(v, user) {
     let s = RESIDENCY.find((r) => r.v === v.residency)?.score || 0;
     s += Math.min(25, Math.round((v.hiddenSpots.length + v.localDish.length + v.transit.length) / 12));
     if (v.idFile) s += 20;
-    if (v.selfieFile) s += 20;
+    if (user.photoUploaded || v.selfieFile) s += 20; // a photo to match the ID against
     if (v.languages?.length > 1) s += 5;
     if (v.flags?.length) s -= 10;
     return Math.max(0, Math.min(100, s));
@@ -2998,7 +2997,7 @@ window.BuddyData = (function () {
                 </div>
                 <ol class="timeline">
                   <li class="done"><b>Application submitted</b><small>${v.submittedAt ? fmtDate(v.submittedAt) : ""}</small></li>
-                  <li class="current"><b>Team review</b><small>We check your answers, ID and selfie, usually within 24 hours.</small></li>
+                  <li class="current"><b>Team review</b><small>We check your answers and match your ID with your profile photo, usually within 24 hours.</small></li>
                   <li><b>Add your availability</b><small>Choose when you're free over the next month.</small></li>
                   <li><b>Go live</b><small>Travellers free at the same times can request you.</small></li>
                 </ol>
@@ -3411,7 +3410,7 @@ window.BuddyData = (function () {
         <section class="panel fade">
           <h3>Before you meet</h3>
           ${guideList([["💬", "Chat in-app first", "Get to know each other on buddyup and keep the conversation here until you trust each other."],
-            ["👀", "Check the profile", "Look at their photo, reviews and verification. Locals have passed residency, ID and selfie checks."],
+            ["👀", "Check the profile", "Look at their photo, reviews and verification. Locals have passed residency and ID checks."],
             ["📲", "Tell someone", "Share who you're meeting, where and when with a friend (chat menu → Share meetup details)."],
             ["📍", "Plan a public spot", "Agree on a busy café, square or landmark for the first meetup, never a private home."]])}
           <h3 style="margin-top:28px">During the meetup</h3>
@@ -3430,7 +3429,7 @@ window.BuddyData = (function () {
           <h3 style="margin-top:28px">How we verify locals</h3>
           ${guideList([["🏠", "Residency", "At least 6 months in the city; postcode checked against their neighbourhood."],
             ["🧭", "Local knowledge", "Questions about hidden spots, food and getting around."],
-            ["🪪", "ID & selfie", "Stored privately and reviewed by our team before approval."]])}
+            ["🪪", "ID check", "Matched with their profile photo by our team before approval, and stored privately."]])}
         </section>
       </div>`;
   }
@@ -3677,7 +3676,7 @@ window.BuddyData = (function () {
       <section class="verify-page">
         <div class="verify fade">
           <h1>Add a photo of yourself</h1>
-          <p class="sub">We need a photo of you to establish credibility. Locals and fellow travellers are much more likely to meet someone they can see, and everyone knows who they're meeting.</p>
+          <p class="sub">We need a photo of you to establish credibility. People are much more likely to meet someone they can see, and everyone knows who they're meeting.</p>
           <div class="photo-step">
             <div class="photo-preview" id="preview">${I.user}</div>
             <div class="photo-actions">

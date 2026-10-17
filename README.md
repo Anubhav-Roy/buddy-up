@@ -27,7 +27,7 @@ Travellers must add a photo (picked or taken with the camera) before they can us
 4. `BUDDY_PHOTO_API` in `firebase-config.js` must be `https://buddyup.fyi` — it has to match the photo URL pattern in `firestore.rules`.
 5. Add `buddyup.fyi` (and `www.buddyup.fyi` if used) under Firebase → Authentication → Settings → Authorized domains.
 
-**Approving locals:** locals can't approve themselves (the rules block it). A reviewer opens Firestore → `users` → the local's document, checks their answers in `private/info` and their ID/selfie in `users/<uid>/verification/id` and `/selfie` (the `image` field is a photo you can paste into a browser tab), then sets `approved` to `true`. The local's dashboard updates live.
+**Approving locals:** locals can't approve themselves (the rules block it). A reviewer opens Firestore → `users` → the local's document, checks their answers in `private/info` and their photo ID in `users/<uid>/verification/id` (the `image` field is a photo you can paste into a browser tab), compares it with their profile photo (Cloudflare → R2 → `buddyup-photos` → `profiles/<uid>/`), then sets `approved` to `true`. The local's dashboard updates live.
 
 **Where data lives**
 
@@ -51,10 +51,10 @@ Rules also enforce: requests at least ~a day ahead, only the recipient can accep
 - Landing page (hero, how it works, safety, for locals) with sign up / log in and Traveller / Local choice
 - **Traveller ⇄ Local**: everyone can switch modes from the header; a traveller can "Become a local" (starts verification), a local can switch to traveller any time
 - **Date of birth**: asked at sign-up (accounts made earlier are asked once); kept in `private/info`, and only the age is public and shown on people's cards and profiles. All dates are shown and typed as dd/mm/yyyy
-- **Profile photo**: travellers add a photo (upload or live camera selfie) before anything else — "we need an image to establish credibility"
+- **Profile photo**: everyone (travellers and locals) adds a photo (upload or live camera selfie) before anything else — "we need an image to establish credibility"
 - **Discover (travellers)**: destination (with city suggestions), dates and a month calendar of the date/time ranges they're free → **Find people** → locals and buddies together, tagged Local / Buddy, with filters for type, day, interest, language and 4★+ rating
 - **Every traveller is a buddy**: the trip times a traveller enters to search are also when other travellers in that city can find them (minus times they already have a confirmed meetup). They never see themselves
-- **Local verification** (4 steps): residency (min. 6 months), neighbourhood + postcode — cross-checked with OpenStreetMap and flagged for review if they don't match — languages (incl. "Other" with custom entry), local-knowledge questions, ID/selfie stored privately in Firestore (no SMS step), safety pledge → trust score
+- **Local verification** (4 steps): residency (min. 6 months), neighbourhood + postcode — cross-checked with OpenStreetMap and flagged for review if they don't match — languages (incl. "Other" with custom entry), local-knowledge questions, a photo ID stored privately in Firestore and matched against their profile photo (no SMS step), safety pledge → trust score
 - **Results**: only people free for at least an hour at the same date/time, starting at least 24h ahead; cards show matching times and ratings; requests pick a shared time and get a local- or buddy-specific suggested first message
 - **Local availability**: once approved, locals must add date/time ranges on a month calendar for the next 5 weeks (at least one time in the next 4 weeks) before getting requests, and are prompted to extend it when it drops below 30 days
 - **Local dashboard**: in review → timeline, trust score, review flags, approval by a reviewer in the Firebase console; approved → meetup requests only in the local's free slots (accept & chat / decline / view profile), upcoming meetups, availability summary, travellers-in-town count. Locals don't browse travellers — travellers reach out
