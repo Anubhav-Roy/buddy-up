@@ -32,7 +32,9 @@ service cloud.firestore {
       }
       // Age (from the birthdate kept in private/info): buddyup is 18+.
       function ageOk() { return !("age" in request.resource.data) || (request.resource.data.age is int && request.resource.data.age >= 18 && request.resource.data.age <= 110); }
-      allow create: if isMe(uid) && request.resource.data.approved == false && photoOk() && cancellationsOk() && ageOk();
+      // Accounts are Google-only: a profile can only be created from a Google sign-in.
+      allow create: if isMe(uid) && request.auth.token.firebase.sign_in_provider == "google.com"
+        && request.resource.data.approved == false && photoOk() && cancellationsOk() && ageOk();
       allow update: if isMe(uid) && request.resource.data.approved == resource.data.approved && photoOk() && cancellationsOk() && ageOk();
       allow delete: if isMe(uid);
 

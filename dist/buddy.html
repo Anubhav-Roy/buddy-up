@@ -685,6 +685,8 @@ code { font-size: 12px; background: var(--field); padding: 1px 5px; border-radiu
 .legal a, .legal-note a, .check a { color: var(--teal-dark); }
 .legal-note { margin: -6px 0 14px; }
 .footer-links { line-height: 1.9; }
+.social-btn.google-only { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; height: 50px; border-radius: 12px; background: #fff; border: 1.5px solid var(--line); font-size: 15px; font-weight: 500; color: var(--ink); transition: border-color 0.15s, box-shadow 0.15s; }
+.social-btn.google-only:hover { border-color: #cfd6e0; box-shadow: var(--shadow-sm); }
 
 </style>
   <style>
@@ -1414,6 +1416,8 @@ code { font-size: 12px; background: var(--field); padding: 1px 5px; border-radiu
 .legal a, .legal-note a, .check a { color: var(--teal-dark); }
 .legal-note { margin: -6px 0 14px; }
 .footer-links { line-height: 1.9; }
+.social-btn.google-only { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; height: 50px; border-radius: 12px; background: #fff; border: 1.5px solid var(--line); font-size: 15px; font-weight: 500; color: var(--ink); transition: border-color 0.15s, box-shadow 0.15s; }
+.social-btn.google-only:hover { border-color: #cfd6e0; box-shadow: var(--shadow-sm); }
 
 </style>
   <style>
@@ -2142,6 +2146,8 @@ code { font-size: 12px; background: var(--field); padding: 1px 5px; border-radiu
 .legal a, .legal-note a, .check a { color: var(--teal-dark); }
 .legal-note { margin: -6px 0 14px; }
 .footer-links { line-height: 1.9; }
+.social-btn.google-only { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; height: 50px; border-radius: 12px; background: #fff; border: 1.5px solid var(--line); font-size: 15px; font-weight: 500; color: var(--ink); transition: border-color 0.15s, box-shadow 0.15s; }
+.social-btn.google-only:hover { border-color: #cfd6e0; box-shadow: var(--shadow-sm); }
 
 </style>
   <style>
@@ -2870,6 +2876,8 @@ code { font-size: 12px; background: var(--field); padding: 1px 5px; border-radiu
 .legal a, .legal-note a, .check a { color: var(--teal-dark); }
 .legal-note { margin: -6px 0 14px; }
 .footer-links { line-height: 1.9; }
+.social-btn.google-only { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; height: 50px; border-radius: 12px; background: #fff; border: 1.5px solid var(--line); font-size: 15px; font-weight: 500; color: var(--ink); transition: border-color 0.15s, box-shadow 0.15s; }
+.social-btn.google-only:hover { border-color: #cfd6e0; box-shadow: var(--shadow-sm); }
 
 </style>
   <style>
@@ -3049,9 +3057,6 @@ window.BuddyDB = (function () {
   }
 
   // ---------- Auth ----------
-  const signUpEmail = (email, password) => auth.createUserWithEmailAndPassword(email, password);
-  const signInEmail = (email, password) => auth.signInWithEmailAndPassword(email, password);
-  const resetPassword = (email) => auth.sendPasswordResetEmail(email);
   async function signInGoogle() {
     const provider = new firebase.auth.GoogleAuthProvider();
     provider.setCustomParameters({ prompt: "select_account" });
@@ -3262,13 +3267,10 @@ window.BuddyDB = (function () {
   }
 
   // ---------- Account deletion ----------
-  // Firebase only deletes an account soon after sign-in, so confirm it's really them first:
-  // with their password, or a fresh Google sign-in.
-  function reauthenticate(password) {
+  // Firebase only deletes an account soon after sign-in, so confirm it's really them first
+  // with a fresh Google sign-in.
+  function reauthenticate() {
     const u = auth.currentUser;
-    if (u.providerData.some((p) => p.providerId === "password")) {
-      return u.reauthenticateWithCredential(firebase.auth.EmailAuthProvider.credential(u.email, password));
-    }
     const provider = new firebase.auth.GoogleAuthProvider();
     provider.setCustomParameters({ prompt: "select_account" });
     return u.reauthenticateWithPopup(provider);
@@ -3278,9 +3280,9 @@ window.BuddyDB = (function () {
   // (cancelled or declined, and the other person is told), public profile, private details,
   // ID/selfie, and finally the sign-in itself. Other people's chats keep the messages this user
   // sent (the conversation is closed), and reviews they wrote stay, signed "Former member".
-  async function deleteAccount(password) {
+  async function deleteAccount() {
     const uid = cache.uid, user = auth.currentUser;
-    await reauthenticate(password); // must be the first await so Google's popup isn't blocked
+    await reauthenticate(); // must be the first await so Google's popup isn't blocked
 
     if (PHOTO_API) {
       const res = await fetch(`${PHOTO_API}/api/photo`, { method: "DELETE", headers: { Authorization: `Bearer ${await user.getIdToken()}` } })
@@ -3309,7 +3311,7 @@ window.BuddyDB = (function () {
 
   return {
     ready, cache, me, onChange: (fn) => subs.add(fn), friendlyError, ms,
-    signUpEmail, signInEmail, resetPassword, signInGoogle, signOut, finishRedirect, currentAuthUser: () => cache.authUser,
+    signInGoogle, signOut, finishRedirect, currentAuthUser: () => cache.authUser,
     createProfile, saveProfile, savePrivate, acceptTerms, deleteIdPhoto, getProfile, findLocals, findTravellers, reviewsFor,
     pairId, requestMeetup, setMeetupStatus, cancelMeetup, watchMessages, sendMessage, markRead, setBlocked, deleteChat,
     addReview, report, uploadAvatar, uploadVerificationFile, isR2Photo, loadPhoto, deleteAccount,
@@ -3473,11 +3475,13 @@ window.BuddyCities = (function () {
   EXTRA_COUNTRIES.forEach((country) => ENTRIES.push({ city: "", country, label: country }));
   ENTRIES.forEach((e) => { e.cityKey = fold(e.city); e.countryKey = fold(e.country); });
 
-  function search(query, limit = 6) {
+  // `citiesOnly` leaves out country-only entries (for "the city you live in", destinations).
+  function search(query, limit = 6, citiesOnly = false) {
     const q = fold(String(query || "").split(",")[0].trim());
     if (q.length < 2) return [];
     const scored = [];
     ENTRIES.forEach((e) => {
+      if (citiesOnly && !e.city) return;
       let rank = -1;
       if (e.city && e.cityKey.startsWith(q)) rank = 0;
       else if (e.city && e.cityKey.split(/[\s\-'.]+/).some((w) => w.startsWith(q))) rank = 1;
@@ -3490,7 +3494,16 @@ window.BuddyCities = (function () {
   }
 
   let uid = 0;
-  function attach(input, { onPick } = {}) {
+  // The list entry a typed value matches exactly (case and accents ignored), or null. With
+  // `citiesOnly`, "Lisbon" and "Lisbon, Portugal" match the city; otherwise the full label
+  // ("Lisbon, Portugal", "Portugal") or a city name also matches.
+  function find(value, citiesOnly = false) {
+    const v = fold(String(value || "").trim().replace(/\s+/g, " "));
+    if (!v) return null;
+    return ENTRIES.find((e) => (!citiesOnly || e.city) && (fold(e.label) === v || (e.city && e.cityKey === v))) || null;
+  }
+
+  function attach(input, { onPick, citiesOnly = false } = {}) {
     if (input._acDetach) input._acDetach(); // re-attaching replaces the old instance
     const id = `ac-list-${++uid}`;
     const list = document.createElement("ul");
@@ -3543,7 +3556,7 @@ window.BuddyCities = (function () {
       onPick?.(item);
     };
     const open = () => {
-      items = search(input.value);
+      items = search(input.value, 6, citiesOnly);
       // Nothing to suggest, or the input already holds an exact suggestion.
       if (!items.length || (items.length === 1 && items[0].label === input.value)) return close();
       list.replaceChildren(...items.map((it, i) => {
@@ -3609,7 +3622,7 @@ window.BuddyCities = (function () {
     return detach;
   }
 
-  return { search, attach, size: { cities: ENTRIES.filter((e) => e.city).length, countries: new Set(ENTRIES.map((e) => e.country)).size } };
+  return { search, find, attach, size: { cities: ENTRIES.filter((e) => e.city).length, countries: new Set(ENTRIES.map((e) => e.country)).size } };
 })();
 
 </script>
@@ -3948,7 +3961,7 @@ window.BuddyLegal = (function () {
   // Filters on the "find people" results.
   const noFilters = () => ({ type: "all", day: "", interest: "", language: "", rated: false });
   const state = {
-    authTab: "signup", role: "traveller", interests: [], showPw: false,
+    authTab: "signup", role: "traveller", interests: [],
     filters: noFilters(), chatSearch: "", pcAck: null, signingUp: false, screen: "",
     verify: null, results: null, thread: null, completing: new Set(),
   };
@@ -4102,17 +4115,17 @@ window.BuddyLegal = (function () {
   }
 
   // ---------- Sign-in ----------
-  // City suggestions on an input. `cityOnly` stores "Lisbon" instead of "Lisbon, Portugal".
+  // City suggestions on an input. `cityOnly` suggests only cities and stores "Lisbon" instead of
+  // "Lisbon, Portugal". Values must come from the list: listCity() returns the stored form of a
+  // value that matches a list entry, or "" for anything typed freely.
   function suggestCities(input, cityOnly) {
     if (!input || !window.BuddyCities) return;
-    BuddyCities.attach(input, { onPick: (c) => { if (cityOnly && c.city) input.value = c.city; } });
+    BuddyCities.attach(input, { citiesOnly: cityOnly, onPick: (c) => { if (cityOnly && c.city) input.value = c.city; } });
   }
-
-  const socialButtons = (after) => `
-    <div class="socials">
-      <button type="button" class="social-btn" data-social="google">${I.google} Continue with Google</button>
-    </div>
-    <div class="divider">${after}</div>`;
+  function listCity(value, cityOnly) {
+    const e = window.BuddyCities?.find(value, cityOnly);
+    return !e ? "" : cityOnly ? e.city : e.label;
+  }
 
   async function googleSignIn() {
     if (location.protocol === "file:") return toast("Google sign-in only works when buddyup is served from a web address (e.g. http://localhost:5173), not from a file.");
@@ -4122,7 +4135,7 @@ window.BuddyLegal = (function () {
     } catch (e) { fail(e); }
   }
 
-  // Signed in (Google, or an email sign-up that didn't finish) but no buddyup profile yet.
+  // Signed in with Google but no buddyup profile yet.
   function renderCompleteProfile() {
     state.screen = "complete";
     const au = DB.currentAuthUser();
@@ -4165,7 +4178,9 @@ window.BuddyLegal = (function () {
       e.preventDefault();
       const f = Object.fromEntries(new FormData(form));
       const err = $("#err");
-      if (!f.name?.trim() || !f.city?.trim()) return (err.textContent = local ? "Please add your name and the city you live in." : "Please add your name and where you're from.");
+      if (!f.name?.trim()) return (err.textContent = "Please add your name.");
+      const city = listCity(f.city, local);
+      if (!city) return (err.textContent = local ? "Please choose the city you live in from the suggestions." : "Please choose where you're from (a city or country) from the suggestions.");
       if (birthError(f.birthdate)) return (err.textContent = birthError(f.birthdate));
       if (!f.adult) return (err.textContent = "Please confirm you're 18 or older and agree to the Terms of Service.");
       // Hold the loading screen until the profile and private details are both saved: they
@@ -4173,7 +4188,7 @@ window.BuddyLegal = (function () {
       state.signingUp = true;
       render();
       try {
-        await createProfileFor(au, { name: f.name.trim(), city: f.city, birthdate: f.birthdate });
+        await createProfileFor(au, { name: f.name.trim(), city, birthdate: f.birthdate });
         state.signingUp = false;
         toast(local ? "Profile created! Now let's verify you're a local." : `Welcome to buddyup, ${f.name.trim().split(" ")[0]}! 🎉`);
         go("#/discover");
@@ -4189,7 +4204,7 @@ window.BuddyLegal = (function () {
   function createProfileFor(au, { name, city, birthdate }) {
     const local = state.role === "local";
     return DB.createProfile(au.uid,
-      { name, role: state.role, mode: state.role, interests: state.interests, from: local ? "" : titleCase(city), localCity: local ? titleCase(city) : "", photoURL: au.photoURL || "", available: true, trip: null, age: ageFrom(birthdate) },
+      { name, role: state.role, mode: state.role, interests: state.interests, from: local ? "" : city, localCity: local ? city : "", photoURL: au.photoURL || "", available: true, trip: null, age: ageFrom(birthdate) },
       { email: au.email || "", verification: local ? { step: 0 } : null, birthdate, termsVersion: LEGAL_VERSION },
     );
   }
@@ -4291,10 +4306,9 @@ window.BuddyLegal = (function () {
     if (scroll) $(".auth-card").scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
-  function pwField(name, placeholder, autocomplete) {
-    return `<div class="input-wrap"><input class="input" name="${name}" type="${state.showPw ? "text" : "password"}" placeholder="${placeholder}" autocomplete="${autocomplete}"/>
-      <button type="button" class="eye" data-eye aria-label="Show password">${state.showPw ? I.eyeOff : I.eye}</button></div>`;
-  }
+  // Accounts are created and used with Google only; the rest of the profile (name, city, date of
+  // birth, Terms) is filled in on the next screen.
+  const googleButton = (label) => `<button type="button" class="social-btn google-only" data-social="google">${I.google} ${label}</button>`;
 
   function signupForm() {
     const local = state.role === "local";
@@ -4306,21 +4320,8 @@ window.BuddyLegal = (function () {
           <button type="button" class="role traveller ${!local ? "on" : ""}" data-role="traveller"><span class="ico">🎒</span><strong>Traveller</strong><small>Visiting a city, looking for a local or buddy</small></button>
           <button type="button" class="role local ${local ? "on" : ""}" data-role="local"><span class="ico">🏠</span><strong>Local</strong><small>I live here and love showing people around</small></button>
         </div>
-        ${socialButtons("or sign up with your email")}
-        <div class="row">
-          <div class="field"><label>Full name</label><input class="input" name="name" autocomplete="name" placeholder="Jane Cooper"/></div>
-          <div class="field"><label>${local ? "City you live in" : "Where are you from?"}</label><input class="input" name="city" placeholder="${local ? "Start typing your city" : "City or country"}"/></div>
-        </div>
-        <div class="field"><label>Email</label><input class="input" name="email" type="email" autocomplete="email" placeholder="you@example.com"/></div>
-        <div class="field"><label>Password</label>${pwField("password", "At least 8 characters", "new-password")}</div>
-        ${birthField()}
-        <div class="field"><label>What are you into?</label>
-          <div class="chips">${INTERESTS.slice(0, 10).map((t) => `<button type="button" class="chip ${state.interests.includes(t) ? "active" : ""}" data-interest="${esc(t)}">${esc(t)}</button>`).join("")}</div></div>
-        <label class="check"><input type="checkbox" name="adult"/><span>I'm 18 or older and I agree to the <a href="#/terms" target="_blank" rel="noopener">Terms of Service</a>.</span></label>
-            <p class="hint legal-note">Read how we handle your data in our <a href="#/privacy" target="_blank" rel="noopener">Privacy Policy</a>.</p>
-        <div class="error" id="err"></div>
-        <button class="btn ${local ? "btn-coral" : "btn-primary"} btn-block" type="submit">${local ? "Continue to verification" : "Create account"} ${I.arrow}</button>
-        ${local ? `<p class="hint center" style="margin-top:12px">🛡️ Locals complete a short verification so travellers know who they're meeting.</p>` : ""}
+        ${googleButton("Sign up with Google")}
+        <p class="hint center" style="margin-top:12px">Next, you'll add your name, city and date of birth.${local ? " Locals then complete a short verification so travellers know who they're meeting." : ""}</p>
       </form>`;
   }
 
@@ -4329,77 +4330,14 @@ window.BuddyLegal = (function () {
       <form id="login" novalidate>
         <h2>Welcome back 👋</h2>
         <p class="sub">Log in to find your local or buddy.</p>
-        ${socialButtons("or log in with your email")}
-        <div class="field"><label>Email</label><input class="input" name="email" type="email" autocomplete="email" placeholder="you@example.com"/></div>
-        <div class="field"><label>Password</label>${pwField("password", "••••••••", "current-password")}</div>
-        <div class="error" id="err"></div>
-        <button class="btn btn-primary btn-block" type="submit">Log in</button>
-        <p class="center" style="margin-top:14px"><button type="button" class="link-btn" id="forgot">Forgot your password?</button></p>
+        ${googleButton("Log in with Google")}
       </form>`;
   }
 
   function bindAuth() {
-    $("[data-eye]").forEach((b) => b.addEventListener("click", () => {
-      state.showPw = !state.showPw;
-      b.previousElementSibling.type = state.showPw ? "text" : "password";
-      b.innerHTML = state.showPw ? I.eyeOff : I.eye;
-    }));
     $("[data-social]").forEach((b) => b.addEventListener("click", googleSignIn));
-
     const signup = $("#signup");
-    if (signup) {
-      suggestCities($('[name="city"]', signup), state.role === "local");
-      bindDateFields(signup);
-      bindRoleAndInterests(signup, () => switchAuth("signup"), "#signup");
-      signup.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const f = Object.fromEntries(new FormData(signup));
-        const err = $("#err");
-        const email = (f.email || "").trim();
-        const local = state.role === "local";
-        if (!f.name?.trim() || !f.city?.trim()) return (err.textContent = local ? "Please add your name and the city you live in." : "Please add your name and where you're from.");
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return (err.textContent = "That email doesn't look right.");
-        if ((f.password || "").length < 8) return (err.textContent = "Password needs at least 8 characters.");
-        if (birthError(f.birthdate)) return (err.textContent = birthError(f.birthdate));
-        if (!f.adult) return (err.textContent = "Please confirm you're 18 or older and agree to the Terms of Service.");
-        state.signingUp = true; // hold the loading screen until the profile exists
-        render();
-        try {
-          const cred = await DB.signUpEmail(email, f.password);
-          await cred.user.updateProfile({ displayName: f.name.trim() });
-          await createProfileFor(cred.user, { name: f.name.trim(), city: f.city, birthdate: f.birthdate });
-          cred.user.sendEmailVerification().catch(() => {});
-          state.signingUp = false;
-          toast(local ? "Account created! Now let's verify you're a local." : `Welcome to buddyup, ${f.name.trim().split(" ")[0]}! 🎉`);
-          window.scrollTo(0, 0);
-          go("#/discover");
-        } catch (ex) {
-          state.signingUp = false;
-          render();
-          const box = $("#err");
-          if (box) box.textContent = DB.friendlyError(ex); else fail(ex);
-        }
-      });
-    }
-
-    const login = $("#login");
-    login?.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const f = Object.fromEntries(new FormData(login));
-      try {
-        await DB.signInEmail((f.email || "").trim(), f.password || "");
-        state.filters = noFilters();
-        window.scrollTo(0, 0);
-        location.hash = "#/discover";
-      } catch (ex) { $("#err").textContent = DB.friendlyError(ex); }
-    });
-    $("#forgot")?.addEventListener("click", async () => {
-      const email = ($('#login [name="email"]').value || "").trim();
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return ($("#err").textContent = "Enter your email above, then tap “Forgot your password?”.");
-      // Same message whether or not the account exists, so emails can't be probed.
-      await DB.resetPassword(email).catch(() => {});
-      toast(`If there's a buddyup account for ${email}, we've emailed a reset link.`);
-    });
+    if (signup) bindRoleAndInterests(signup, () => switchAuth("signup"), "#signup");
   }
 
   // ---------- Switching between traveller and local ----------
@@ -4429,8 +4367,8 @@ window.BuddyLegal = (function () {
     suggestCities($('#become [name="city"]'), true);
     $("#become").addEventListener("submit", async (e) => {
       e.preventDefault();
-      const city = titleCase(e.target.city.value);
-      if (!city) return ($("#become-err").textContent = "Please enter the city you live in.");
+      const city = listCity(e.target.city.value, true);
+      if (!city) return ($("#become-err").textContent = "Please choose the city you live in from the suggestions.");
       DB.saveProfile({ localCity: city, mode: "local" }).catch(fail);
       DB.savePrivate({ verification: { step: 0 } }).catch(fail);
       closeModal();
@@ -5188,7 +5126,7 @@ window.BuddyLegal = (function () {
           <form id="tripform" novalidate>
             <div class="trip-top">
               <div class="field"><label>Destination</label>
-                <div class="city-bar big">${I.pin}<input name="city" value="${esc(t.city || "")}" placeholder="Start typing a city or country" autocomplete="off"/></div></div>
+                <div class="city-bar big">${I.pin}<input name="city" value="${esc(t.city || "")}" placeholder="Start typing a city" autocomplete="off"/></div></div>
               <div class="field"><label>Arriving</label>${dateField("start", t.start || "", { min: today, label: "Arriving" })}</div>
               <div class="field"><label>Leaving</label>${dateField("end", t.end || "", { min: t.start || today, label: "Leaving" })}</div>
             </div>
@@ -5246,9 +5184,9 @@ window.BuddyLegal = (function () {
 
     $("#next").addEventListener("click", () => {
       const err = $("#err");
-      const city = titleCase(form.city.value), start = form.start.value, end = form.end.value, r = range();
+      const city = listCity(form.city.value, true), start = form.start.value, end = form.end.value, r = range();
       const fail = (msg) => { err.textContent = msg; err.scrollIntoView({ behavior: "smooth", block: "center" }); };
-      if (!city) return fail("Where are you headed? Add a destination above.");
+      if (!city) return fail(form.city.value.trim() ? "Please choose your destination city from the suggestions." : "Where are you headed? Choose a destination city above.");
       if (!start || !end) return fail("Add the dates you're travelling.");
       if (!r || r.empty) return fail("Meetups need at least a day's notice, so choose dates from tomorrow onwards.");
       if (!Object.keys(windows).length) return fail("Add at least one time you're free to meet on the calendar.");
@@ -6035,7 +5973,7 @@ window.BuddyLegal = (function () {
             ${user.mode === "local" && user.approved ? `<a class="list-item" href="#/availability"><span class="li-ico">📅</span><span class="grow">Availability<small>${user.availability ? `Set until ${fmtYmd(user.availability.horizon)}` : "Not set yet"}</small></span><span class="chev">${I.chev}</span></a>` : ""}
             <h3 style="margin-top:26px">Settings</h3>
             <button class="list-item" id="edit"><span class="li-ico">✏️</span><span class="grow">Edit profile<small>Photo, name, bio and interests</small></span><span class="chev">${I.chev}</span></button>
-            <div class="list-item"><span class="li-ico">🔐</span><span class="grow">Account<small>${esc(user.email || "")}${DB.currentAuthUser()?.providerData?.some((x) => x.providerId === "google.com") ? " · Google sign-in" : ""}</small></span></div>
+            <div class="list-item"><span class="li-ico">🔐</span><span class="grow">Account<small>${esc(user.email || "")} · Google sign-in</small></span></div>
             <button class="list-item" id="invite"><span class="li-ico">🔗</span><span class="grow">Invite friends</span><span class="chev">${I.chev}</span></button>
             <a class="list-item" href="#/contact"><span class="li-ico">✉️</span><span class="grow">Contact us<small>${CONTACT_EMAIL}</small></span><span class="chev">${I.chev}</span></a>
             <div class="list-item"><span class="li-ico">📄</span><span class="grow">Legal<small><a href="#/terms">Terms of Service</a> · <a href="#/privacy">Privacy Policy</a> · <a href="#/imprint">Imprint</a></small></span></div>
@@ -6067,7 +6005,6 @@ window.BuddyLegal = (function () {
   }
 
   function openDeleteAccount() {
-    const hasPassword = DB.currentAuthUser()?.providerData?.some((x) => x.providerId === "password");
     openModal(`
       <button class="modal-close" data-close aria-label="Close">${I.close}</button>
       <div class="modal-body plain">
@@ -6075,9 +6012,7 @@ window.BuddyLegal = (function () {
         <div class="check-result warn" style="margin:12px 0">⚠️ <strong>This is permanent and can't be undone.</strong> You'd have to sign up again from scratch.</div>
         <p>We'll delete your profile and photo, your trip and availability, your private details (email, phone, verification answers, ID and selfie) and your sign-in.</p>
         <p style="margin-top:8px">Upcoming meetups and requests are cancelled and the other person is told. Messages you've sent stay in their chat, which is closed, and reviews you've written stay, signed “Former member”.</p>
-        ${hasPassword
-          ? `<div class="field" style="margin-top:16px"><label for="dpw">Your password</label><input class="input" id="dpw" type="password" autocomplete="current-password"/></div>`
-          : `<p class="hint" style="margin-top:12px">You'll be asked to sign in with Google again to confirm it's you.</p>`}
+        <p class="hint" style="margin-top:12px">You'll be asked to sign in with Google again to confirm it's you.</p>
         <div class="field" style="margin-top:12px"><label for="dconfirm">Type DELETE to confirm</label><input class="input" id="dconfirm" autocomplete="off" autocapitalize="characters"/></div>
         <div class="error" id="derr"></div>
         <div class="modal-buttons">
@@ -6088,14 +6023,13 @@ window.BuddyLegal = (function () {
     $("#dsend").addEventListener("click", async () => {
       const btn = $("#dsend"), err = $("#derr");
       if ($("#dconfirm").value.trim() !== "DELETE") return (err.textContent = "Type DELETE (in capitals) to confirm.");
-      if (hasPassword && !$("#dpw").value) return (err.textContent = "Enter your password to confirm it's you.");
       btn.disabled = true;
       btn.textContent = "Deleting…";
       try {
         state.thread?.unsub();
         state.thread = null;
         state.results = null;
-        await DB.deleteAccount($("#dpw")?.value || "");
+        await DB.deleteAccount();
         closeModal();
         state.authTab = "signup";
         toast("Your buddyup account has been deleted.");
@@ -6154,7 +6088,11 @@ window.BuddyLegal = (function () {
       const name = form.name.value.trim();
       if (!name) return ($("#eerr").textContent = "Please add your name.");
       const patch = { name, bio: form.bio.value.trim(), interests };
-      if (form.from) patch.from = titleCase(form.from.value);
+      if (form.from) {
+        const from = form.from.value.trim() ? listCity(form.from.value, false) : "";
+        if (form.from.value.trim() && !from) return ($("#eerr").textContent = "Please choose where you're from (a city or country) from the suggestions.");
+        patch.from = from;
+      }
       DB.saveProfile(patch).catch(fail);
       closeModal();
       toast("Profile updated.");

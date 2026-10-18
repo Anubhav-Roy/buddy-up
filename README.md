@@ -11,7 +11,7 @@ Find a verified local to show you around a city, or a fellow traveller (buddy) t
 
 buddyup stores its data in Firebase on the free **Spark** plan: **Authentication** (email/password + Google) and **Cloud Firestore** (profiles, trips, availability, meetups, chat, reviews, reports). Profile photos go to **Cloudflare R2** through a small Worker (below); local ID/selfie photos are compressed and saved in a write-only Firestore document. Your project details go in `firebase-config.js`.
 
-1. **Authentication → Sign-in method**: enable **Email/Password** and **Google** (how people log in).
+1. **Authentication → Sign-in method**: enable **Google** (the only way to sign up and log in). Leave Email/Password and Phone **disabled**; the Firestore rules also refuse to create a profile for anyone not signed in with Google.
 2. **Firestore Database → Create database** (production mode, pick a region near your users). Then **Rules** → paste `firestore.rules` → **Publish**.
 3. **Authentication → Settings → Authorized domains**: `localhost` is there by default; add your real domain when you host the site.
 4. Restrict the browser API key to your domains: Google Cloud console → APIs & Services → Credentials.

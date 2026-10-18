@@ -115,9 +115,6 @@ window.BuddyDB = (function () {
   }
 
   // ---------- Auth ----------
-  const signUpEmail = (email, password) => auth.createUserWithEmailAndPassword(email, password);
-  const signInEmail = (email, password) => auth.signInWithEmailAndPassword(email, password);
-  const resetPassword = (email) => auth.sendPasswordResetEmail(email);
   async function signInGoogle() {
     const provider = new firebase.auth.GoogleAuthProvider();
     provider.setCustomParameters({ prompt: "select_account" });
@@ -328,13 +325,10 @@ window.BuddyDB = (function () {
   }
 
   // ---------- Account deletion ----------
-  // Firebase only deletes an account soon after sign-in, so confirm it's really them first:
-  // with their password, or a fresh Google sign-in.
-  function reauthenticate(password) {
+  // Firebase only deletes an account soon after sign-in, so confirm it's really them first
+  // with a fresh Google sign-in.
+  function reauthenticate() {
     const u = auth.currentUser;
-    if (u.providerData.some((p) => p.providerId === "password")) {
-      return u.reauthenticateWithCredential(firebase.auth.EmailAuthProvider.credential(u.email, password));
-    }
     const provider = new firebase.auth.GoogleAuthProvider();
     provider.setCustomParameters({ prompt: "select_account" });
     return u.reauthenticateWithPopup(provider);
@@ -344,9 +338,9 @@ window.BuddyDB = (function () {
   // (cancelled or declined, and the other person is told), public profile, private details,
   // ID/selfie, and finally the sign-in itself. Other people's chats keep the messages this user
   // sent (the conversation is closed), and reviews they wrote stay, signed "Former member".
-  async function deleteAccount(password) {
+  async function deleteAccount() {
     const uid = cache.uid, user = auth.currentUser;
-    await reauthenticate(password); // must be the first await so Google's popup isn't blocked
+    await reauthenticate(); // must be the first await so Google's popup isn't blocked
 
     if (PHOTO_API) {
       const res = await fetch(`${PHOTO_API}/api/photo`, { method: "DELETE", headers: { Authorization: `Bearer ${await user.getIdToken()}` } })
@@ -375,7 +369,7 @@ window.BuddyDB = (function () {
 
   return {
     ready, cache, me, onChange: (fn) => subs.add(fn), friendlyError, ms,
-    signUpEmail, signInEmail, resetPassword, signInGoogle, signOut, finishRedirect, currentAuthUser: () => cache.authUser,
+    signInGoogle, signOut, finishRedirect, currentAuthUser: () => cache.authUser,
     createProfile, saveProfile, savePrivate, acceptTerms, deleteIdPhoto, getProfile, findLocals, findTravellers, reviewsFor,
     pairId, requestMeetup, setMeetupStatus, cancelMeetup, watchMessages, sendMessage, markRead, setBlocked, deleteChat,
     addReview, report, uploadAvatar, uploadVerificationFile, isR2Photo, loadPhoto, deleteAccount,

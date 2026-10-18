@@ -153,11 +153,13 @@ window.BuddyCities = (function () {
   EXTRA_COUNTRIES.forEach((country) => ENTRIES.push({ city: "", country, label: country }));
   ENTRIES.forEach((e) => { e.cityKey = fold(e.city); e.countryKey = fold(e.country); });
 
-  function search(query, limit = 6) {
+  // `citiesOnly` leaves out country-only entries (for "the city you live in", destinations).
+  function search(query, limit = 6, citiesOnly = false) {
     const q = fold(String(query || "").split(",")[0].trim());
     if (q.length < 2) return [];
     const scored = [];
     ENTRIES.forEach((e) => {
+      if (citiesOnly && !e.city) return;
       let rank = -1;
       if (e.city && e.cityKey.startsWith(q)) rank = 0;
       else if (e.city && e.cityKey.split(/[\s\-'.]+/).some((w) => w.startsWith(q))) rank = 1;
@@ -170,7 +172,16 @@ window.BuddyCities = (function () {
   }
 
   let uid = 0;
-  function attach(input, { onPick } = {}) {
+  // The list entry a typed value matches exactly (case and accents ignored), or null. With
+  // `citiesOnly`, "Lisbon" and "Lisbon, Portugal" match the city; otherwise the full label
+  // ("Lisbon, Portugal", "Portugal") or a city name also matches.
+  function find(value, citiesOnly = false) {
+    const v = fold(String(value || "").trim().replace(/\s+/g, " "));
+    if (!v) return null;
+    return ENTRIES.find((e) => (!citiesOnly || e.city) && (fold(e.label) === v || (e.city && e.cityKey === v))) || null;
+  }
+
+  function attach(input, { onPick, citiesOnly = false } = {}) {
     if (input._acDetach) input._acDetach(); // re-attaching replaces the old instance
     const id = `ac-list-${++uid}`;
     const list = document.createElement("ul");
@@ -223,7 +234,7 @@ window.BuddyCities = (function () {
       onPick?.(item);
     };
     const open = () => {
-      items = search(input.value);
+      items = search(input.value, 6, citiesOnly);
       // Nothing to suggest, or the input already holds an exact suggestion.
       if (!items.length || (items.length === 1 && items[0].label === input.value)) return close();
       list.replaceChildren(...items.map((it, i) => {
@@ -289,5 +300,5 @@ window.BuddyCities = (function () {
     return detach;
   }
 
-  return { search, attach, size: { cities: ENTRIES.filter((e) => e.city).length, countries: new Set(ENTRIES.map((e) => e.country)).size } };
+  return { search, find, attach, size: { cities: ENTRIES.filter((e) => e.city).length, countries: new Set(ENTRIES.map((e) => e.country)).size } };
 })();
