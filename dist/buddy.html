@@ -692,6 +692,23 @@ code { font-size: 12px; background: var(--field); padding: 1px 5px; border-radiu
 .slot-pick .add-range { display: flex; align-items: center; gap: 8px; }
 .slot-pick select { flex: 1; min-width: 0; }
 
+/* ---------- Day picker (local availability) ---------- */
+.day-picker { max-width: 560px; margin: 0 auto; }
+.day-picker .mday { align-items: center; justify-content: center; text-align: center; }
+.day-picker .mday.has { border-color: var(--teal); }
+.day-picker .mday.today .num { text-decoration: underline; text-underline-offset: 3px; }
+.day-picker .copy-row { margin-top: 16px; justify-content: center; }
+@media (max-width: 760px) { .day-picker .mday .t { display: none; } }
+
+/* ---------- Discover: where you're looking ---------- */
+.start-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 640px; }
+.start-choices .role { padding: 22px; }
+.start-choices .role strong { font-size: 16px; }
+.place-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+.place-bar .seg button span { font-size: 12px; opacity: 0.75; margin-left: 4px; }
+.place-links { display: flex; gap: 16px; flex-wrap: wrap; }
+@media (max-width: 520px) { .start-choices { grid-template-columns: 1fr; } }
+
 </style>
   <style>
 /* ---------- City autocomplete (cities.js) ---------- */
@@ -1427,6 +1444,23 @@ code { font-size: 12px; background: var(--field); padding: 1px 5px; border-radiu
 .slot-pick .add-range { display: flex; align-items: center; gap: 8px; }
 .slot-pick select { flex: 1; min-width: 0; }
 
+/* ---------- Day picker (local availability) ---------- */
+.day-picker { max-width: 560px; margin: 0 auto; }
+.day-picker .mday { align-items: center; justify-content: center; text-align: center; }
+.day-picker .mday.has { border-color: var(--teal); }
+.day-picker .mday.today .num { text-decoration: underline; text-underline-offset: 3px; }
+.day-picker .copy-row { margin-top: 16px; justify-content: center; }
+@media (max-width: 760px) { .day-picker .mday .t { display: none; } }
+
+/* ---------- Discover: where you're looking ---------- */
+.start-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 640px; }
+.start-choices .role { padding: 22px; }
+.start-choices .role strong { font-size: 16px; }
+.place-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+.place-bar .seg button span { font-size: 12px; opacity: 0.75; margin-left: 4px; }
+.place-links { display: flex; gap: 16px; flex-wrap: wrap; }
+@media (max-width: 520px) { .start-choices { grid-template-columns: 1fr; } }
+
 </style>
   <style>
 /* ---------- City autocomplete (cities.js) ---------- */
@@ -2160,6 +2194,23 @@ code { font-size: 12px; background: var(--field); padding: 1px 5px; border-radiu
 .slot-pick { display: grid; gap: 10px; }
 .slot-pick .add-range { display: flex; align-items: center; gap: 8px; }
 .slot-pick select { flex: 1; min-width: 0; }
+
+/* ---------- Day picker (local availability) ---------- */
+.day-picker { max-width: 560px; margin: 0 auto; }
+.day-picker .mday { align-items: center; justify-content: center; text-align: center; }
+.day-picker .mday.has { border-color: var(--teal); }
+.day-picker .mday.today .num { text-decoration: underline; text-underline-offset: 3px; }
+.day-picker .copy-row { margin-top: 16px; justify-content: center; }
+@media (max-width: 760px) { .day-picker .mday .t { display: none; } }
+
+/* ---------- Discover: where you're looking ---------- */
+.start-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 640px; }
+.start-choices .role { padding: 22px; }
+.start-choices .role strong { font-size: 16px; }
+.place-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+.place-bar .seg button span { font-size: 12px; opacity: 0.75; margin-left: 4px; }
+.place-links { display: flex; gap: 16px; flex-wrap: wrap; }
+@media (max-width: 520px) { .start-choices { grid-template-columns: 1fr; } }
 
 </style>
   <style>
@@ -2895,6 +2946,23 @@ code { font-size: 12px; background: var(--field); padding: 1px 5px; border-radiu
 .slot-pick .add-range { display: flex; align-items: center; gap: 8px; }
 .slot-pick select { flex: 1; min-width: 0; }
 
+/* ---------- Day picker (local availability) ---------- */
+.day-picker { max-width: 560px; margin: 0 auto; }
+.day-picker .mday { align-items: center; justify-content: center; text-align: center; }
+.day-picker .mday.has { border-color: var(--teal); }
+.day-picker .mday.today .num { text-decoration: underline; text-underline-offset: 3px; }
+.day-picker .copy-row { margin-top: 16px; justify-content: center; }
+@media (max-width: 760px) { .day-picker .mday .t { display: none; } }
+
+/* ---------- Discover: where you're looking ---------- */
+.start-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 640px; }
+.start-choices .role { padding: 22px; }
+.start-choices .role strong { font-size: 16px; }
+.place-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+.place-bar .seg button span { font-size: 12px; opacity: 0.75; margin-left: 4px; }
+.place-links { display: flex; gap: 16px; flex-wrap: wrap; }
+@media (max-width: 520px) { .start-choices { grid-template-columns: 1fr; } }
+
 </style>
   <style>
 /* ---------- City autocomplete (cities.js) ---------- */
@@ -3089,11 +3157,13 @@ window.BuddyDB = (function () {
   // ---------- Profile ----------
   function prepare(patch) {
     const out = { ...patch };
-    if (patch.trip) {
-      out.trip = { ...patch.trip, windows: packWindows(patch.trip.windows) };
-      out.tripCity = patch.trip.city;
-      out.tripEnd = patch.trip.end || ""; // people who've just moved have no end date
+    // tripCity / homeCity are kept next to the maps so other people can query them.
+    if ("trip" in patch) {
+      out.trip = patch.trip ? { ...patch.trip, windows: packWindows(patch.trip.windows) } : null;
+      out.tripCity = patch.trip?.city || "";
+      out.tripEnd = patch.trip?.end || "";
     }
+    if ("home" in patch) out.homeCity = patch.home?.city || "";
     if (patch.availability) out.availability = { ...patch.availability, windows: packWindows(patch.availability.windows), booked: patch.availability.booked || [] };
     return out;
   }
@@ -3123,7 +3193,13 @@ window.BuddyDB = (function () {
   // ---------- People ----------
   const getProfile = async (uid) => { const s = await db.doc(`users/${uid}`).get(); return s.exists ? toUser(uid, s.data()) : null; };
   const findLocals = async (city) => (await db.collection("users").where("localCity", "==", city).where("approved", "==", true).limit(200).get()).docs.map((d) => toUser(d.id, d.data()));
-  const findTravellers = async (city) => (await db.collection("users").where("tripCity", "==", city).limit(200).get()).docs.map((d) => toUser(d.id, d.data()));
+  // Travellers with a trip to the city, and people who've just moved there.
+  async function findTravellers(city) {
+    const [trips, homes] = await Promise.all(["tripCity", "homeCity"].map((f) => db.collection("users").where(f, "==", city).limit(200).get()));
+    const byId = new Map();
+    [...trips.docs, ...homes.docs].forEach((d) => byId.set(d.id, toUser(d.id, d.data())));
+    return [...byId.values()];
+  }
 
   async function reviewsFor(uids) {
     const list = [...new Set(uids)].filter(Boolean);
@@ -3722,7 +3798,7 @@ window.BuddyLegal = (function () {
     <p>5.1 You alone decide whether you meet someone, and when, where and for how long. You take part in meetups on your own responsibility.</p>
     <p>5.2 Please follow our safety guidelines (Safety page in the app). In particular: meet in busy public places, at least the first time; tell someone you trust who you are meeting, where and when; keep conversations on buddyup until you trust each other; and leave whenever you feel uncomfortable.</p>
     <p>5.3 You are responsible for your own conduct, health and belongings during meetups. We recommend that you have adequate travel, health and personal liability insurance.</p>
-    <p>5.4 Meetup requests and acceptances are commitments between users. You may cancel a meetup before it starts, giving a reason. The other person sees your reason. Cancelling a meetup that has already been confirmed is recorded on your profile and moves you lower in other people's search results (section 9.3).</p>
+    <p>5.4 Meetup requests and acceptances are commitments between users. A meetup is arranged for a day; you agree on the time with the other person in the chat. You may cancel a meetup until the end of that day, giving a reason. The other person sees your reason. Cancelling a meetup that has already been confirmed is recorded on your profile and moves you lower in other people's search results (section 9.3).</p>
     <p>5.5 buddyup is not an emergency service and does not monitor meetups. In an emergency, contact the local emergency services (112 in the EU).</p>
 
     <h2>6. Rules of conduct</h2>
@@ -3755,7 +3831,7 @@ window.BuddyLegal = (function () {
     <h2>9. Our service</h2>
     <p>9.1 Because buddyup is free, there is no entitlement to any particular feature or to uninterrupted availability. We may change, restrict or discontinue features. We will tell you in good time before changes that significantly affect how you use buddyup, unless an immediate change is necessary for security or legal reasons.</p>
     <p>9.2 We do not guarantee that you will find a match, or that any user will reply to you or meet you.</p>
-    <p>9.3 How search results are ranked: we only show people who are free for at least an hour at the same times as you. Among them, people who have cancelled fewer confirmed meetups are shown first; after that, people with more matching times and more shared interests rank higher.</p>
+    <p>9.3 How search results are ranked: we only show people who are in the city on at least one of the same days as you. People who have just moved to a city are shown to each other until they have had a meetup together. Among them, people who have cancelled fewer confirmed meetups are shown first; after that, people with more matching times and more shared interests rank higher.</p>
 
     <h2>10. Liability</h2>
     <p>10.1 We are liable without limitation (a) for damage caused intentionally or through gross negligence, (b) for injury to life, body or health, (c) under the German Product Liability Act, and (d) where we have given a guarantee.</p>
@@ -3800,7 +3876,7 @@ window.BuddyLegal = (function () {
     <h3>2.1 Your account</h3>
     <p>Email address, password (stored only in encrypted form by our provider Firebase Authentication) or, if you sign in with Google, your Google account identifier, name, email and profile picture. Purpose: creating your account and letting you sign in. Legal basis: Art. 6(1)(b) GDPR (performing our contract with you). Kept until you delete your account.</p>
     <h3>2.2 Your profile</h3>
-    <p>Name, profile photo, age (calculated from your date of birth), where you are from or the city you live in, interests, the "about you" text, languages, whether you are using buddyup as a traveller or local, your trip (city, dates and the times you are free), a local's availability, ratings and reviews, the number of confirmed meetups you have cancelled, and, for locals, verification status, trust score and how long they have lived in the city. Your profile is visible to other signed-in users; it is what lets people find and decide to meet each other. Legal basis: Art. 6(1)(b) GDPR. Kept until you delete your account.</p>
+    <p>Name, profile photo, age (calculated from your date of birth), where you are from or the city you live in, interests, the "about you" text, languages, whether you are using buddyup as a traveller or local, your trip (city and dates, or that you have just moved there), the days a local is free, ratings and reviews, the number of confirmed meetups you have cancelled, and, for locals, verification status, trust score and how long they have lived in the city. Your profile is visible to other signed-in users; it is what lets people find and decide to meet each other. Legal basis: Art. 6(1)(b) GDPR. Kept until you delete your account.</p>
     <h3>2.3 Your date of birth</h3>
     <p>We use your date of birth to confirm that you are at least 18 and to show your age on your profile. The date itself is visible only to you; others see only your age. Legal basis: Art. 6(1)(b) GDPR. Kept until you delete your account.</p>
     <h3>2.4 Local verification</h3>
@@ -3979,7 +4055,7 @@ window.BuddyLegal = (function () {
   const state = {
     authTab: "signup", role: "traveller", interests: [],
     filters: noFilters(), chatSearch: "", pcAck: null, signingUp: false, screen: "",
-    verify: null, results: null, thread: null, completing: new Set(),
+    verify: null, results: null, thread: null, completing: new Set(), place: null,
   };
 
   // Routes: #/discover (trip) → #/discover/people, #/availability, #/meetups,
@@ -4010,12 +4086,10 @@ window.BuddyLegal = (function () {
     if (!user.photoUploaded) return renderAddPhoto(user);
     if (user.mode === "local" && !user.verification?.completed) return renderVerify(user);
     if (page === "trip") return go("#/discover");
-    if (user.availability) releaseCancelledSlots(user); // locals only have availability
     if (user.approved && user.verification?.idFile && !user.verification.idDeletedAt && !state.idDeleting) {
       state.idDeleting = true;
       DB.deleteIdPhoto().catch(() => {}).finally(() => (state.idDeleting = false));
     }
-    if (user.trip) syncBusyTimes(user);
     renderApp(user);
   }
 
@@ -4121,12 +4195,12 @@ window.BuddyLegal = (function () {
   const MIN_AGE = 18;
   const birthMax = () => ymd(new Date(new Date().getFullYear() - MIN_AGE, new Date().getMonth(), new Date().getDate()));
   const birthField = (value = "") => `<div class="field"><label>Date of birth</label>${dateField("birthdate", value, { min: "1900-01-01", max: birthMax(), label: "Date of birth" })}
-    <p class="hint" style="margin-top:6px">Only your age is shown on your profile, never your birthday.</p></div>`;
+    <p class="hint" style="margin-top:6px">Only your age is shown.</p></div>`;
   function birthError(value) {
-    if (!value) return "Please enter your date of birth as dd/mm/yyyy.";
+    if (!value) return "Enter your date of birth (dd/mm/yyyy).";
     const age = ageFrom(value);
     if (age < MIN_AGE) return `You need to be ${MIN_AGE} or older to use buddyup.`;
-    if (age > 110) return "Please check your date of birth.";
+    if (age > 110) return "Check your date of birth.";
     return "";
   }
 
@@ -4163,13 +4237,13 @@ window.BuddyLegal = (function () {
         <div class="verify fade">
           <div class="complete-head">
             ${au.photoURL ? `<img class="avatar" src="${esc(au.photoURL)}" alt="" data-initials="${esc(initials(name || "?"))}" style="width:64px;height:64px" referrerpolicy="no-referrer"/>` : initialsAvatar(name || "?", 64)}
-            <div><h1>Welcome${name ? `, ${esc(name.split(" ")[0])}` : ""}! 👋</h1>
-            <p class="muted">Signed in${au.email ? ` as ${esc(au.email)}` : ""}. A few details to finish your buddyup profile.</p></div>
+            <div><h1>Welcome${name ? `, ${esc(name.split(" ")[0])}` : ""}</h1>
+            <p class="muted">A few details to finish your profile.</p></div>
           </div>
           <form id="complete" novalidate>
             <div class="role-picker">
-              <button type="button" class="role traveller ${!local ? "on" : ""}" data-role="traveller"><span class="ico">🎒</span><strong>Traveller</strong><small>Visiting a city, looking for a local or buddy</small></button>
-              <button type="button" class="role local ${local ? "on" : ""}" data-role="local"><span class="ico">🏠</span><strong>Local</strong><small>I live here and love showing people around</small></button>
+              <button type="button" class="role traveller ${!local ? "on" : ""}" data-role="traveller"><span class="ico">🎒</span><strong>Traveller</strong><small>Visiting or new in a city</small></button>
+              <button type="button" class="role local ${local ? "on" : ""}" data-role="local"><span class="ico">🏠</span><strong>Local</strong><small>Showing people my city</small></button>
             </div>
             <div class="row">
               <div class="field"><label>Full name</label><input class="input" name="name" value="${esc(name)}" autocomplete="name" placeholder="Jane Cooper"/></div>
@@ -4194,11 +4268,11 @@ window.BuddyLegal = (function () {
       e.preventDefault();
       const f = Object.fromEntries(new FormData(form));
       const err = $("#err");
-      if (!f.name?.trim()) return (err.textContent = "Please add your name.");
+      if (!f.name?.trim()) return (err.textContent = "Add your name.");
       const city = listCity(f.city, local);
-      if (!city) return (err.textContent = local ? "Please choose the city you live in from the suggestions." : "Please choose where you're from (a city or country) from the suggestions.");
+      if (!city) return (err.textContent = local ? "Choose your city from the list." : "Choose a city or country from the list.");
       if (birthError(f.birthdate)) return (err.textContent = birthError(f.birthdate));
-      if (!f.adult) return (err.textContent = "Please confirm you're 18 or older and agree to the Terms of Service.");
+      if (!f.adult) return (err.textContent = "Tick the box to confirm you're 18+ and agree to the Terms.");
       // Hold the loading screen until the profile and private details are both saved: they
       // arrive separately, and rendering in between looks like the date of birth is missing.
       state.signingUp = true;
@@ -4206,7 +4280,7 @@ window.BuddyLegal = (function () {
       try {
         await createProfileFor(au, { name: f.name.trim(), city, birthdate: f.birthdate });
         state.signingUp = false;
-        toast(local ? "Profile created! Now let's verify you're a local." : `Welcome to buddyup, ${f.name.trim().split(" ")[0]}! 🎉`);
+        toast(local ? "Profile created. Next: local verification." : "Profile created.");
         go("#/discover");
       } catch (ex) {
         state.signingUp = false;
@@ -4258,17 +4332,12 @@ window.BuddyLegal = (function () {
 
       <section class="hero"><div class="container">
         <div class="fade">
-          <h1>Explore any city with <em>someone who gets it.</em></h1>
-          <p class="lead">Meet a verified local who'll show you the city they love, or pair up with a fellow traveller who's in town right now.</p>
-          <div class="stats-row">
-            <div><strong>Verified</strong><span>local hosts</span></div>
-            <div><strong>2-way</strong><span>reviews</span></div>
-            <div><strong>Free</strong><span>always</span></div>
-          </div>
+          <h1>See a city with <em>someone who knows it.</em></h1>
+          <p class="lead">Meet a verified local, or another traveller who's in town on the same days. Free.</p>
           <div class="hero-art">
             ${ART.city}
-            <div class="float-card" style="left:20px;top:22px">🏠<div><b>Verified local</b><small>Residency &amp; ID checked</small></div></div>
-            <div class="float-card" style="right:20px;bottom:24px;animation-delay:-3s">💬<div><b>Request accepted!</b><small>“Meet you at the café at 11?”</small></div></div>
+            <div class="float-card" style="left:20px;top:22px">🏠<div><b>Verified local</b><small>Residency and ID checked</small></div></div>
+            <div class="float-card" style="right:20px;bottom:24px;animation-delay:-3s">💬<div><b>Request accepted</b><small>“Coffee at 11 by the station?”</small></div></div>
           </div>
         </div>
         <div class="auth-card fade" style="animation-delay:.1s">
@@ -4281,25 +4350,25 @@ window.BuddyLegal = (function () {
       </div></section>
 
       <section class="section white" id="how"><div class="container">
-        <div class="section-head"><h2>How buddyup works</h2><p>Three steps from landing in a new city to exploring it with someone.</p></div>
+        <div class="section-head"><h2>How it works</h2></div>
         <div class="steps">
-          <div class="step"><div class="num">1</div><h3>Tell us where you're going</h3><p>Sign up, then enter the city you're travelling to and what you're into.</p></div>
-          <div class="step"><div class="num">2</div><h3>Find people</h3><p>See verified locals who'll show you around and fellow travellers in town, all free when you are.</p></div>
-          <div class="step"><div class="num">3</div><h3>Chat, then meet</h3><p>Send a request, plan in the in-app chat and meet somewhere public. If a local showed you around, tip generously!</p></div>
+          <div class="step"><div class="num">1</div><h3>Add your trip</h3><p>A city and your dates, or the city you've just moved to.</p></div>
+          <div class="step"><div class="num">2</div><h3>Find people</h3><p>Locals and other travellers who are around on the same days.</p></div>
+          <div class="step"><div class="num">3</div><h3>Meet up</h3><p>Send a request, agree on a time in the chat and meet somewhere public.</p></div>
         </div>
       </div></section>
 
       <section class="section" id="safety"><div class="container">
-        <div class="section-head"><h2>Safe by design</h2><p>Everyone deserves to explore without worrying. Here's how we keep buddyup safe.</p></div>
+        <div class="section-head"><h2>Safety</h2></div>
         <div class="safety-strip" style="margin-top:0">${safetyCards()}</div>
       </div></section>
 
       <section class="section white" id="locals"><div class="container">
-        <div class="section-head"><h2>Love your city? Become a local.</h2><p>Meet people from around the world and show them the places you love. You can switch between traveller and local any time.</p></div>
+        <div class="section-head"><h2>Become a local</h2><p>Show visitors around your city. You can switch back to traveller any time.</p></div>
         <div class="steps">
-          <div class="step coral"><div class="num">🏠</div><h3>Prove your roots</h3><p>Tell us how long you've lived in the city (at least 6 months), your neighbourhood and postcode.</p></div>
-          <div class="step coral"><div class="num">🧭</div><h3>Show your local knowledge</h3><p>Answer a few questions only a real local could: hidden spots, food, getting around.</p></div>
-          <div class="step coral"><div class="num">🪪</div><h3>Verify your identity</h3><p>An ID check against your profile photo. Travellers only ever see verified locals.</p></div>
+          <div class="step coral"><div class="num">🏠</div><h3>Where you live</h3><p>At least 6 months in the city, plus your neighbourhood and postcode.</p></div>
+          <div class="step coral"><div class="num">🧭</div><h3>A few questions</h3><p>Places you like, food, getting around.</p></div>
+          <div class="step coral"><div class="num">🪪</div><h3>ID check</h3><p>We compare your ID with your profile photo.</p></div>
         </div>
         <div class="center" style="margin-top:34px"><button class="btn btn-coral" id="become-local">Sign up as a local</button></div>
       </div></section>
@@ -4331,21 +4400,21 @@ window.BuddyLegal = (function () {
     return `
       <form id="signup" novalidate>
         <h2>Create your account</h2>
-        <p class="sub">First, tell us who you are on buddyup. You can switch any time.</p>
+        <p class="sub">You can switch later.</p>
         <div class="role-picker">
-          <button type="button" class="role traveller ${!local ? "on" : ""}" data-role="traveller"><span class="ico">🎒</span><strong>Traveller</strong><small>Visiting a city, looking for a local or buddy</small></button>
-          <button type="button" class="role local ${local ? "on" : ""}" data-role="local"><span class="ico">🏠</span><strong>Local</strong><small>I live here and love showing people around</small></button>
+          <button type="button" class="role traveller ${!local ? "on" : ""}" data-role="traveller"><span class="ico">🎒</span><strong>Traveller</strong><small>Visiting or new in a city</small></button>
+          <button type="button" class="role local ${local ? "on" : ""}" data-role="local"><span class="ico">🏠</span><strong>Local</strong><small>Showing people my city</small></button>
         </div>
         ${googleButton("Sign up with Google")}
-        <p class="hint center" style="margin-top:12px">Next, you'll add your name, city and date of birth.${local ? " Locals then complete a short verification so travellers know who they're meeting." : ""}</p>
+
       </form>`;
   }
 
   function loginForm() {
     return `
       <form id="login" novalidate>
-        <h2>Welcome back 👋</h2>
-        <p class="sub">Log in to find your local or buddy.</p>
+        <h2>Welcome back</h2>
+        <p class="sub">&nbsp;</p>
         ${googleButton("Log in with Google")}
       </form>`;
   }
@@ -4363,7 +4432,7 @@ window.BuddyLegal = (function () {
     DB.saveProfile({ mode }).catch(fail);
     state.filters = noFilters();
     await settle();
-    toast(mode === "traveller" ? "Switched to traveller mode 🎒" : user.verification.completed ? "Switched to local mode 🏠" : "Let's finish your local verification.");
+    toast(mode === "traveller" ? "Switched to traveller mode" : user.verification.completed ? "Switched to local mode" : "Finish your local verification first.");
     go("#/discover");
   }
 
@@ -4373,7 +4442,7 @@ window.BuddyLegal = (function () {
       <div class="modal-body plain">
         <div class="become-ico">🏠</div>
         <h3>Become a local</h3>
-        <p style="margin:8px 0 20px">Show travellers around the city you live in. We'll ask a few questions to confirm you really live there. It takes about 5 minutes. You can switch back to traveller mode any time.</p>
+        <p style="margin:8px 0 20px">We'll ask a few questions to check you live there. It takes about 5 minutes.</p>
         <form id="become" novalidate>
           <div class="field"><label>Which city do you live in?</label><input class="input" name="city" placeholder="Start typing your city"/></div>
           <div class="error" id="become-err"></div>
@@ -4384,7 +4453,7 @@ window.BuddyLegal = (function () {
     $("#become").addEventListener("submit", async (e) => {
       e.preventDefault();
       const city = listCity(e.target.city.value, true);
-      if (!city) return ($("#become-err").textContent = "Please choose the city you live in from the suggestions.");
+      if (!city) return ($("#become-err").textContent = "Choose your city from the list.");
       DB.saveProfile({ localCity: city, mode: "local" }).catch(fail);
       DB.savePrivate({ verification: { step: 0 } }).catch(fail);
       closeModal();
@@ -4396,17 +4465,17 @@ window.BuddyLegal = (function () {
   // ---------- Local verification ----------
   const RESIDENCY = [
     { v: "lt6m", label: "Less than 6 months", score: 0 },
-    { v: "6to12m", label: "6–12 months", score: 10 },
-    { v: "1to3y", label: "1–3 years", score: 20 },
-    { v: "3to10y", label: "3–10 years", score: 25 },
+    { v: "6to12m", label: "6 to 12 months", score: 10 },
+    { v: "1to3y", label: "1 to 3 years", score: 20 },
+    { v: "3to10y", label: "3 to 10 years", score: 25 },
     { v: "10y", label: "10+ years", score: 30 },
     { v: "born", label: "Born & raised", score: 30 },
   ];
   const VERIFY_STEPS = [
-    { title: "Your roots", sub: "How well do you know {city}? Be honest, as this helps travellers trust you." },
-    { title: "Local knowledge", sub: "A few questions only a real local could answer well. Our team reviews these." },
-    { title: "Identity check", sub: "We verify every local's identity. Your documents are never shown to other users." },
-    { title: "Safety pledge", sub: "buddyup only works if everyone feels safe. Please confirm the following." },
+    { title: "Where you live", sub: "Your time in {city}, and where." },
+    { title: "Local knowledge", sub: "Our team reads these." },
+    { title: "ID check", sub: "Your ID is never shown to other users." },
+    { title: "Safety", sub: "Please confirm each of these." },
   ];
 
   function renderVerify(user) {
@@ -4415,14 +4484,14 @@ window.BuddyLegal = (function () {
     const v = state.verify.v;
     const s = VERIFY_STEPS[v.step];
     const last = v.step === VERIFY_STEPS.length - 1;
-    const canTravel = user.role === "traveller" || !!user.trip;
+    const canTravel = user.role === "traveller" || !!user.trip || !!user.home;
     app.innerHTML = `
       <header class="nav"><div class="container">${logo()}
         ${canTravel ? `<button class="btn btn-soft btn-sm" id="to-traveller">🎒 Back to traveller mode</button>` : `<button class="btn btn-soft btn-sm" id="logout">Save &amp; log out</button>`}
       </div></header>
       <section class="verify-page">
         <div class="verify fade">
-          <div class="verify-top"><span class="badge badge-local">🏠 Local verification · ${esc(user.localCity)}</span><span class="muted" style="font-size:13px">Step ${v.step + 1} of ${VERIFY_STEPS.length}</span></div>
+          <div class="verify-top"><span class="badge badge-local">Local verification · ${esc(user.localCity)}</span><span class="muted" style="font-size:13px">Step ${v.step + 1} of ${VERIFY_STEPS.length}</span></div>
           <div class="progress"><div style="width:${((v.step + 1) / VERIFY_STEPS.length) * 100}%"></div></div>
           <h1>${esc(s.title)}</h1>
           <p class="sub">${esc(s.sub.replace("{city}", user.localCity))}</p>
@@ -4487,10 +4556,10 @@ window.BuddyLegal = (function () {
       <div class="field"><label>Name 3 places in ${city} that locals love but tourists rarely find</label><textarea class="textarea" name="hiddenSpots" placeholder="A café, a viewpoint, a market…">${esc(v.hiddenSpots)}</textarea></div>
       <div class="field"><label>What's a must-try local dish, and where do you get the best one?</label><textarea class="textarea" name="localDish">${esc(v.localDish)}</textarea></div>
       <div class="field"><label>How would you get from the main train station to your neighbourhood using public transport?</label><textarea class="textarea" name="transit">${esc(v.transit)}</textarea></div>
-      <p class="hint">Tip: specific answers (names, lines, streets) get approved faster.</p>`;
+      <p class="hint">Specific answers (names, bus lines, streets) get approved faster.</p>`;
     if (step === 2) return `
       <label class="upload ${v.idFile ? "done" : ""}"><input type="file" name="idDoc" accept="image/*"/><span class="ico">🪪</span><span class="label">${v.idFile ? "✓ ID uploaded. Choose a file to replace it" : "Upload a photo of your passport, ID card or driving licence"}</span></label>
-      <p class="hint">🔒 Your ID is stored privately. Only the buddyup review team sees it, to match it with your profile photo, and it's deleted once you're approved. You can black out everything except your photo, name, date of birth and the expiry date.</p>`;
+      <p class="hint">Only our review team sees it. We compare it with your profile photo and delete it once you're approved. You can black out everything except your photo, name, date of birth and expiry date.</p>`;
     return `
       <label class="check"><input type="checkbox" name="p1"/> I'll meet travellers in public places, especially the first time.</label>
       <label class="check"><input type="checkbox" name="p2"/> I won't ask for payment. Tips are entirely voluntary and up to the traveller.</label>
@@ -4556,9 +4625,9 @@ window.BuddyLegal = (function () {
 
     if (v.step === 0) {
       if (!get("residency")) return (err.textContent = "Tell us how long you've lived here.");
-      if (get("residency") === "lt6m") return (err.textContent = "Locals need to have lived in the city for at least 6 months. You can still use buddyup as a traveller and find a buddy!");
+      if (get("residency") === "lt6m") return (err.textContent = "Locals need to have lived there for at least 6 months. You can still use buddyup as a traveller.");
       const neighbourhood = titleCase(get("neighbourhood")), postcode = get("postcode");
-      if (!neighbourhood || !postcode) return (err.textContent = "Please add your neighbourhood and postal code.");
+      if (!neighbourhood || !postcode) return (err.textContent = "Add your neighbourhood and postcode.");
       const other = fd.get("langOther") ? get("otherLanguages") : "";
       if (fd.get("langOther") && !other) return (err.textContent = "Tell us which other languages you speak.");
       const custom = other.split(",").map(titleCase).filter(Boolean);
@@ -4585,7 +4654,7 @@ window.BuddyLegal = (function () {
       DB.saveProfile({ languages, residency: v.residency }).catch(fail); // shown on the public profile
     } else if (v.step === 1) {
       const fields = ["hiddenSpots", "localDish", "transit"];
-      if (fields.some((k) => get(k).length < 20)) return (err.textContent = "Please give a bit more detail (20+ characters each).");
+      if (fields.some((k) => get(k).length < 20)) return (err.textContent = "Add a bit more detail (at least 20 characters each).");
       fields.forEach((k) => (v[k] = get(k)));
     } else if (v.step === 2) {
       const id = fd.get("idDoc");
@@ -4595,7 +4664,7 @@ window.BuddyLegal = (function () {
       } catch (ex) { busy(); return (err.textContent = ex?.code ? DB.friendlyError(ex) : ex.message); }
       busy();
     } else {
-      if (!["p1", "p2", "p3", "p4"].every((k) => fd.get(k))) return (err.textContent = "Please accept all safety commitments.");
+      if (!["p1", "p2", "p3", "p4"].every((k) => fd.get(k))) return (err.textContent = "Tick all four to continue.");
       v.about = get("about");
       v.completed = true;
       v.submittedAt = Date.now();
@@ -4608,10 +4677,10 @@ window.BuddyLegal = (function () {
       return openModal(`
         <div class="modal-body plain center">
           <div class="ring lg" style="--p:${v.trustScore}"><span>${v.trustScore}</span></div>
-          <h3 style="justify-content:center">You're in review! 🎉</h3>
-          <p style="margin-top:8px">Your trust score is <b>${v.trustScore}/100</b>. Our team reviews new locals within 24 hours.
-          Once approved, travellers in ${esc(user.localCity)} can find you and send you meetup requests.</p>
-          <button class="btn btn-primary btn-block" style="margin-top:22px" data-close>Go to my dashboard</button>
+          <h3 style="justify-content:center">Submitted for review</h3>
+          <p style="margin-top:8px">Trust score: <b>${v.trustScore}/100</b>. We review new locals within 24 hours.
+          Once you're approved, travellers in ${esc(user.localCity)} can find you.</p>
+          <button class="btn btn-primary btn-block" style="margin-top:22px" data-close>OK</button>
         </div>`);
     }
     v.step++;
@@ -4690,161 +4759,81 @@ window.BuddyLegal = (function () {
   }
 
   function safetyCards() {
-    return [["🛡️", "Verified locals", "Every local passes residency, knowledge and ID checks."],
-      ["☕", "Meet in public", "First meetups should always be in busy public places."],
-      ["💬", "Chat in-app first", "Get to know each other on buddyup before you meet."],
-      ["⭐", "Reviews both ways", "Travellers and locals review each other after every meetup."]]
+    return [["🛡️", "Verified locals", "We check every local's residency and ID."],
+      ["☕", "Meet in public", "Busy places, especially the first time."],
+      ["💬", "Chat first", "Get to know each other in the app."],
+      ["⭐", "Reviews", "Both people review each other after a meetup."]]
       .map(([e, t, s]) => `<div><span class="ico">${e}</span><strong>${t}</strong>${s}</div>`).join("");
   }
 
   const fmtDate = (d) => dmy(d);
   const fmtYmd = (s) => dmy(s);
-  const tripDates = (t) => (t?.moved ? "" : t?.start ? `${fmtYmd(t.start)}${t.end ? ` – ${fmtYmd(t.end)}` : ""}` : "");
 
-  // ---------- Dates & times ----------
-  // Availability is stored per day as time ranges: { "YYYY-MM-DD": [["10:00", "14:00"], ...] }.
-  // A bookable slot is "YYYY-MM-DD|HH:MM|HH:MM": an overlap of at least an hour that starts
-  // at least 24 hours from now.
-  const MIN_MEETUP = 60;
-  const toMin = (t) => { const [h, m] = t.split(":").map(Number); return h * 60 + m; };
-  const toTime = (m) => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
-  const TIMES = Array.from({ length: 36 }, (_, i) => toTime(6 * 60 + i * 30)); // 06:00–23:30
-  const slotTime = (slot, edge) => {
-    const [d, from, to] = slot.split("|");
-    const m = toMin(edge === "start" ? from : to);
-    const t = new Date(d + "T00:00");
-    t.setHours(Math.floor(m / 60), m % 60);
-    return t;
-  };
-  const bookable = (slot) => slotTime(slot, "start") - Date.now() >= 864e5;
+  // ---------- Dates ----------
+  // Everything is by day: a trip is a date range, locals tick the days they're free, and a meetup
+  // is a day ("YYYY-MM-DD"). The time is agreed in the chat. Today counts.
+  const todayYmd = () => ymd(new Date());
   const dayLabel = (d) => `${new Date(d + "T00:00").toLocaleDateString([], { weekday: "short" })} ${dmy(d)}`;
-  const slotLabel = (slot) => { const [d, from, to] = slot.split("|"); return `${dayLabel(d)} · ${from}–${to}`; };
+  const niceDay = (d) => (d === todayYmd() ? "Today" : d === ymd(addDays(new Date(), 1)) ? "Tomorrow" : dayLabel(d));
+  // Earlier meetups were "YYYY-MM-DD|HH:MM|HH:MM"; only the day matters now.
+  const slotDay = (slot) => String(slot || "").split("|")[0];
+  const slotLabel = (slot) => dayLabel(slotDay(slot));
+  const dayStart = (d) => new Date(d + "T00:00");
+  const dayEnd = (d) => addDays(dayStart(d), 1); // midnight at the end of that day
+  const bookable = (slot) => dayEnd(slotDay(slot)) > Date.now(); // the day isn't over yet
   const daysFrom = (start, n) => Array.from({ length: n }, (_, i) => addDays(start, i));
-  const tomorrow = () => addDays(new Date(), 1);
   const clone = (o) => JSON.parse(JSON.stringify(o || {}));
-
-  function mergeRanges(list) {
-    const sorted = list.map(([a, b]) => [toMin(a), toMin(b)]).sort((x, y) => x[0] - y[0]);
+  // Every day from `start` to `end`, leaving out days that have already passed.
+  function daysBetween(start, end) {
     const out = [];
-    sorted.forEach(([a, b]) => {
-      const last = out[out.length - 1];
-      if (last && a <= last[1]) last[1] = Math.max(last[1], b);
-      else out.push([a, b]);
-    });
-    return out.map(([a, b]) => [toTime(a), toTime(b)]);
+    if (!start || !end) return out;
+    const first = start < todayYmd() ? todayYmd() : start;
+    for (let d = dayStart(first); ymd(d) <= end; d = addDays(d, 1)) out.push(ymd(d));
+    return out;
   }
 
-  function subtractRanges([lo, hi], cuts) {
-    let parts = [[lo, hi]];
-    cuts.forEach(([c1, c2]) => {
-      parts = parts.flatMap(([a, b]) => (c2 <= a || c1 >= b ? [[a, b]] : [[a, Math.min(b, c1)], [Math.max(a, c2), b]].filter(([x, y]) => y > x)));
-    });
-    return parts;
-  }
-
-  // Times free in both maps (minus anything already booked), from 24h out, at least an hour long.
-  function matchWindows(mine = {}, theirs = {}, booked = []) {
-    const earliest = new Date(Date.now() + 864e5);
-    const earliestDay = ymd(earliest);
-    const out = [];
-    Object.keys(mine).forEach((d) => {
-      if (!theirs[d] || d < earliestDay) return;
-      const floor = d === earliestDay ? Math.ceil((earliest.getHours() * 60 + earliest.getMinutes()) / 30) * 30 : 0;
-      const cuts = booked.filter((s) => s.startsWith(d + "|")).map((s) => s.split("|").slice(1).map(toMin));
-      mine[d].forEach(([a1, a2]) => theirs[d].forEach(([b1, b2]) => {
-        const lo = Math.max(toMin(a1), toMin(b1), floor), hi = Math.min(toMin(a2), toMin(b2));
-        if (hi - lo < MIN_MEETUP) return;
-        subtractRanges([lo, hi], cuts).forEach(([x, y]) => { if (y - x >= MIN_MEETUP) out.push(`${d}|${toTime(x)}|${toTime(y)}`); });
-      }));
-    });
-    return [...new Set(out)].sort();
-  }
-
-  const windowsSummary = (windows, first, last) => {
-    const days = Object.keys(windows).filter((d) => d >= first && d <= last && windows[d].length);
-    const mins = days.reduce((s, d) => s + windows[d].reduce((x, [a, b]) => x + toMin(b) - toMin(a), 0), 0);
-    return `${plural(days.length, "day")} · ${plural(Math.round(mins / 60), "hour")}`;
-  };
-
-  // Month calendar: pick a date, then add the time ranges you're free that day.
-  // `windows` is edited in place; `booked` slots are shown but can't be removed.
-  function mountCalendar(el, { from, to, windows, booked = [], repeat = true, onChange }) {
+  // Month calendar for picking days: tap a day to mark yourself free that day. `days` (a Set of
+  // "YYYY-MM-DD") is edited in place.
+  function mountDayPicker(el, { from, to, days, onChange }) {
     const first = ymd(from), last = ymd(to);
     let month = new Date(from.getFullYear(), from.getMonth(), 1);
-    let sel = first, fromT = "10:00", toT = "14:00";
     const inRange = (d) => d >= first && d <= last;
-    const bookedOn = (d) => booked.filter((s) => s.startsWith(d + "|"));
-    const opts = (val) => TIMES.map((t) => `<option ${t === val ? "selected" : ""}>${t}</option>`).join("");
-
     const draw = () => {
       const y = month.getFullYear(), m = month.getMonth();
       const lead = (new Date(y, m, 1).getDay() + 6) % 7;
       const cells = [...Array(lead).fill(null), ...Array.from({ length: new Date(y, m + 1, 0).getDate() }, (_, i) => ymd(new Date(y, m, i + 1)))];
-      const weekday = new Date(sel + "T00:00").toLocaleDateString([], { weekday: "long" });
-      const w = windows[sel] || [];
       el.innerHTML = `
-        <div class="mcal-wrap">
-          <div class="mcal">
-            <div class="mcal-head">
-              <button type="button" class="icon-btn" data-nav="-1" ${ymd(new Date(y, m, 0)) >= first ? "" : "disabled"} aria-label="Previous month">${I.back}</button>
-              <b>${month.toLocaleDateString([], { month: "long", year: "numeric" })}</b>
-              <button type="button" class="icon-btn" data-nav="1" ${ymd(new Date(y, m + 1, 1)) <= last ? "" : "disabled"} aria-label="Next month">${I.chev}</button>
-            </div>
-            <div class="mcal-week">${["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => `<span>${d}</span>`).join("")}</div>
-            <div class="mcal-grid">${cells.map((d) => {
-              if (!d) return "<span></span>";
-              const dw = windows[d] || [];
-              return `<button type="button" class="mday ${dw.length ? "has" : ""} ${d === sel ? "sel" : ""}" data-day="${d}" ${inRange(d) ? "" : "disabled"}>
-                <span class="num">${+d.slice(8)}</span>
-                ${dw.length ? `<span class="t">${dw[0][0]}–${dw[0][1]}</span>${dw.length > 1 ? `<span class="t">+${dw.length - 1} more</span>` : ""}` : ""}
-                ${bookedOn(d).length ? `<span class="dot" title="Booked"></span>` : ""}
-              </button>`;
-            }).join("")}</div>
+        <div class="mcal day-picker">
+          <div class="mcal-head">
+            <button type="button" class="icon-btn" data-nav="-1" ${ymd(new Date(y, m, 0)) >= first ? "" : "disabled"} aria-label="Previous month">${I.back}</button>
+            <b>${month.toLocaleDateString([], { month: "long", year: "numeric" })}</b>
+            <button type="button" class="icon-btn" data-nav="1" ${ymd(new Date(y, m + 1, 1)) <= last ? "" : "disabled"} aria-label="Next month">${I.chev}</button>
           </div>
-          <div class="mcal-editor">
-            <h4>${dayLabel(sel)}</h4>
-            <div class="ranges">
-              ${w.map(([a, b], i) => `<span class="range">${a} – ${b}<button type="button" data-del="${i}" aria-label="Remove ${a} to ${b}">${I.close}</button></span>`).join("")}
-              ${bookedOn(sel).map((s) => `<span class="range booked">Booked ${s.split("|")[1]} – ${s.split("|")[2]}</span>`).join("")}
-              ${!w.length && !bookedOn(sel).length ? `<p class="hint">No times added for this day.</p>` : ""}
-            </div>
-            <label class="mini-label">Add a time you're free</label>
-            <div class="add-range">
-              <select class="input" id="t-from" aria-label="From">${opts(fromT)}</select>
-              <span>to</span>
-              <select class="input" id="t-to" aria-label="To">${opts(toT)}</select>
-              <button type="button" class="btn btn-primary btn-sm" id="t-add">Add</button>
-            </div>
-            <div class="error" id="t-err"></div>
-            <div class="copy-row">
-              ${repeat ? `<button type="button" class="chip" data-copy="week" ${w.length ? "" : "disabled"}>↻ Repeat every ${weekday}</button>` : ""}
-              <button type="button" class="chip" data-copy="all" ${w.length ? "" : "disabled"}>Apply to all days</button>
-              <button type="button" class="chip" data-copy="clear" ${w.length ? "" : "disabled"}>Clear this day</button>
-            </div>
+          <div class="mcal-week">${["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => `<span>${d}</span>`).join("")}</div>
+          <div class="mcal-grid">${cells.map((d) => (!d ? "<span></span>" : `
+            <button type="button" class="mday ${days.has(d) ? "has" : ""} ${d === first ? "today" : ""}" data-day="${d}" ${inRange(d) ? "" : "disabled"} aria-pressed="${days.has(d)}" aria-label="${dayLabel(d)}">
+              <span class="num">${+d.slice(8)}</span>${days.has(d) ? `<span class="t">Free</span>` : ""}
+            </button>`)).join("")}</div>
+          <div class="copy-row">
+            <button type="button" class="chip" data-copy="all">Every day</button>
+            <button type="button" class="chip" data-copy="weekdays">Weekdays</button>
+            <button type="button" class="chip" data-copy="weekends">Weekends</button>
+            <button type="button" class="chip" data-copy="clear" ${days.size ? "" : "disabled"}>Clear all</button>
           </div>
         </div>`;
-
       $("[data-nav]", el).forEach((b) => b.addEventListener("click", () => { month = new Date(y, m + +b.dataset.nav, 1); draw(); }));
-      $("[data-day]", el).forEach((b) => b.addEventListener("click", () => { sel = b.dataset.day; draw(); }));
-      $("[data-del]", el).forEach((b) => b.addEventListener("click", () => {
-        windows[sel].splice(+b.dataset.del, 1);
-        if (!windows[sel].length) delete windows[sel];
+      $("[data-day]", el).forEach((b) => b.addEventListener("click", () => {
+        const d = b.dataset.day;
+        if (days.has(d)) days.delete(d); else days.add(d);
         changed();
       }));
-      $("#t-from", el).addEventListener("change", (e) => (fromT = e.target.value));
-      $("#t-to", el).addEventListener("change", (e) => (toT = e.target.value));
-      $("#t-add", el).addEventListener("click", () => {
-        if (toMin(toT) - toMin(fromT) < MIN_MEETUP) return ($("#t-err", el).textContent = "Make it at least an hour long.");
-        windows[sel] = mergeRanges([...(windows[sel] || []), [fromT, toT]]);
-        changed();
-      });
       $("[data-copy]", el).forEach((b) => b.addEventListener("click", () => {
         const kind = b.dataset.copy;
-        if (kind === "clear") delete windows[sel];
-        else {
-          const dow = new Date(sel + "T00:00").getDay();
+        days.clear();
+        if (kind !== "clear") {
           for (let d = new Date(from); ymd(d) <= last; d = addDays(d, 1)) {
-            if (kind === "all" || d.getDay() === dow) windows[ymd(d)] = clone(windows[sel]);
+            const weekend = d.getDay() === 0 || d.getDay() === 6;
+            if (kind === "all" || (kind === "weekends") === weekend) days.add(ymd(d));
           }
         }
         changed();
@@ -4860,7 +4849,7 @@ window.BuddyLegal = (function () {
   const ratingSummary = (list) => (list.length ? { avg: (list.reduce((s, r) => s + r.rating, 0) / list.length).toFixed(1), count: list.length } : { avg: null, count: 0 });
   const ratingText = (list) => {
     const s = ratingSummary(list);
-    return `${I.star}<span>${s.count ? `<b>${s.avg}</b> · ${plural(s.count, "review")}` : "New · no reviews yet"}</span>`;
+    return `${I.star}<span>${s.count ? `<b>${s.avg}</b> · ${plural(s.count, "review")}` : "No reviews yet"}</span>`;
   };
   const stars = (n) => `<span class="stars">${[1, 2, 3, 4, 5].map((i) => `<svg viewBox="0 0 24 24" class="${i <= Math.round(n) ? "on" : ""}"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>`).join("")}</span>`;
 
@@ -4898,8 +4887,9 @@ window.BuddyLegal = (function () {
   const myReviewOf = (m) => DB.cache.reviewsByMe.find((r) => r.meetupId === m.id);
   const theirReviewOf = (m) => DB.cache.reviewsToMe.find((r) => r.meetupId === m.id);
 
-  const notStarted = (m) => slotTime(m.slot, "start") > Date.now();
-  const ended = (m) => slotTime(m.slot, "end") <= Date.now();
+  // A meetup's day isn't over yet (it can still be cancelled), or it is.
+  const notStarted = (m) => bookable(m.slot);
+  const ended = (m) => !bookable(m.slot);
 
   function meetupActions(m, { chat = true } = {}) {
     const uid = DB.cache.uid;
@@ -4921,7 +4911,7 @@ window.BuddyLegal = (function () {
         <span data-act="profile" style="cursor:pointer">${face(p, 52)}</span>
         <div class="grow">
           <div class="req-top"><strong>${esc(p.name)}</strong> ${labelBadge(p.label)} <span class="badge ${cls}">${expired ? "Expired" : label}</span></div>
-          <div class="req-dates">📅 ${slotLabel(m.slot)}${p.city ? ` · ${esc(p.city)}` : ""}</div>
+          <div class="req-dates">${slotLabel(m.slot)}${p.city ? ` · ${esc(p.city)}` : ""}</div>
           ${m.status === "requested" && m.to === DB.cache.uid ? `<p class="req-msg">“${esc(m.message)}”</p>` : ""}
           ${m.status === "cancelled" && m.cancelReason ? `<p class="req-msg">${m.cancelledBy === DB.cache.uid ? "You cancelled" : `${esc(p.name)} cancelled`}: “${esc(m.cancelReason)}”</p>` : ""}
           ${mine ? `<div class="mini-review">You rated ${esc(p.name)} ${stars(mine.rating)} <span class="muted">“${esc(mine.text)}”</span></div>` : ""}
@@ -4946,10 +4936,8 @@ window.BuddyLegal = (function () {
     if (act === "profile") return openProfileById(p.uid, p.label);
     if (act === "review") return openReview(m);
     if (act === "accept") {
-      DB.setMeetupStatus(m, "confirmed", `✅ ${u.name} accepted the meetup for ${slotLabel(m.slot)}. Meet somewhere public first.`).catch(fail);
-      // A local's accepted slot is no longer offered to other travellers.
-      if (m.kind === "local" && u.availability) DB.saveProfile({ availability: { ...u.availability, booked: [...new Set([...(u.availability.booked || []), m.slot])] } }).catch(fail);
-      toast(`Meetup with ${p.name} confirmed 🎉`);
+      DB.setMeetupStatus(m, "confirmed", `✅ ${u.name} accepted the meetup for ${slotLabel(m.slot)}. Agree on a time and a public place to meet here in the chat.`).catch(fail);
+      toast(`Meetup with ${p.name} confirmed.`);
     }
     if (act === "decline") { DB.setMeetupStatus(m, "declined", `${u.name} can't make ${slotLabel(m.slot)}.`).catch(fail); toast(`Request from ${p.name} declined.`); }
     if (act === "cancel") return openCancel(m);
@@ -4971,7 +4959,7 @@ window.BuddyLegal = (function () {
     ].filter(([, list]) => list.length);
     root.innerHTML = `
       <div class="page">
-        <div class="greet fade"><h1>Your meetups</h1><p class="muted">Once a meetup's time has passed, you and the other person can rate and review each other. Reviews appear on both profiles.</p></div>
+        <div class="greet fade"><h1>Your meetups</h1><p class="muted">After a meetup, you can both leave a review.</p></div>
         ${groups.length ? groups.map(([title, list]) => `
           <section class="panel fade" style="margin-bottom:22px"><h3>${title}</h3>${list.map(meetupRow).join("")}</section>`).join("")
           : `<div class="empty"><div class="art">📅</div>No meetups yet.<br/>${user.mode === "local" ? "When travellers request a time you're free, it shows up here and on your dashboard." : "Request a meetup with a local or buddy to get started."}<br/><br/><a class="btn btn-primary" href="#/discover">${user.mode === "local" ? "Go to dashboard" : "Find people"}</a></div>`}
@@ -4983,26 +4971,26 @@ window.BuddyLegal = (function () {
   function openCancel(m) {
     const p = otherPerson(m);
     const confirmed = m.status === "confirmed";
-    const hours = Math.round((slotTime(m.slot, "start") - Date.now()) / 36e5);
+    const soon = slotDay(m.slot) === todayYmd() ? "today" : slotDay(m.slot) === ymd(addDays(new Date(), 1)) ? "tomorrow" : "";
     const what = confirmed ? "meetup" : "request";
     openModal(`
       <button class="modal-close" data-close aria-label="Close">${I.close}</button>
       <div class="modal-body plain">
         <h3>Cancel your ${what} with ${esc(p.name)}?</h3>
-        <p class="hint" style="margin-top:4px">📅 ${slotLabel(m.slot)}</p>
+        <p class="hint" style="margin-top:4px">${slotLabel(m.slot)}</p>
         <div class="check-result warn">
           ${confirmed
-            ? `${esc(p.name)} has set this time aside for you and may already be planning around it. buddyup works because people keep their word, so cancelling a confirmed meetup isn't in the spirit of the community unless something has genuinely come up.`
-            : `${esc(p.name)} may already be making room for this. If your plans have changed, cancelling now is kinder than leaving them waiting.`}
-          ${confirmed && hours < 48 ? `<br/><br/><strong>It's only ${plural(Math.max(hours, 0), "hour")} away</strong>, so please also message ${esc(p.name)} in the chat.` : ""}
+            ? `${esc(p.name)} has kept this day free for you. Only cancel if something has come up.`
+            : `If your plans have changed, cancel now rather than leave ${esc(p.name)} waiting.`}
+          ${confirmed && soon ? `<br/><br/>It's ${soon}, so message ${esc(p.name)} in the chat too.` : ""}
         </div>
         ${confirmed ? `
-          <div class="check-result warn">⚠️ <strong>This will affect your future searches.</strong> Cancelled meetups are recorded on your profile, shown to the people you contact, and move you lower in other people's search results.</div>
-          <label class="check"><input type="checkbox" id="cack"/> I understand this cancellation will be recorded on my profile.</label>`
-          : `<p class="hint" style="margin-top:10px">${esc(p.name)} hasn't accepted yet, so cancelling this request isn't recorded on your profile.</p>`}
+          <div class="check-result warn"><strong>This affects your searches.</strong> Cancellations show on your profile and move you lower in other people's results.</div>
+          <label class="check"><input type="checkbox" id="cack"/> I understand this goes on my profile.</label>`
+          : `<p class="hint" style="margin-top:10px">${esc(p.name)} hasn't accepted yet, so this won't go on your profile.</p>`}
         <div class="field" style="margin-top:14px"><label for="creason">Why are you cancelling?</label>
-          <textarea class="textarea" id="creason" maxlength="500" placeholder="e.g. I'm unwell, my flight changed, a family emergency…"></textarea>
-          <p class="hint">${esc(p.name)} will see this reason.</p></div>
+          <textarea class="textarea" id="creason" maxlength="500" placeholder="e.g. I'm ill, or my flight changed"></textarea>
+          <p class="hint">${esc(p.name)} will see this.</p></div>
         <div class="error" id="cerr"></div>
         <div style="display:flex;gap:10px;justify-content:flex-end">
           <button class="btn btn-soft" data-close>Keep the ${what}</button>
@@ -5012,38 +5000,17 @@ window.BuddyLegal = (function () {
     $("#creason").focus();
     $("#csend").addEventListener("click", async () => {
       const reason = $("#creason").value.trim();
-      if (reason.length < 10) return ($("#cerr").textContent = "Please give a short reason (10+ characters).");
-      if (confirmed && !$("#cack").checked) return ($("#cerr").textContent = "Please confirm you understand the cancellation will be recorded.");
+      if (reason.length < 10) return ($("#cerr").textContent = "Give a short reason (at least 10 characters).");
+      if (confirmed && !$("#cack").checked) return ($("#cerr").textContent = "Tick the box to continue.");
       const u = me();
       $("#csend").disabled = true;
       try {
         await DB.cancelMeetup(m, reason, `❌ ${u.name} cancelled the ${what} for ${slotLabel(m.slot)}. Reason: “${reason}”`);
         closeModal();
-        toast(`${confirmed ? "Meetup" : "Request"} cancelled. ${p.name} has been told why.`);
+        toast(`${confirmed ? "Meetup" : "Request"} cancelled.`);
         render();
       } catch (e) { $("#csend").disabled = false; $("#cerr").textContent = DB.friendlyError(e); }
     });
-  }
-
-  // A local's booked slots stay blocked until the local's own app frees them (only they can
-  // edit their profile), so drop slots whose meetup was cancelled by either side.
-  function releaseCancelledSlots(user) {
-    const booked = user.availability?.booked || [];
-    if (!booked.length) return;
-    const mine = DB.cache.meetups.filter((m) => m.kind === "local" && m.to === user.uid);
-    const live = new Set(mine.filter((m) => m.status === "confirmed").map((m) => m.slot));
-    const gone = new Set(mine.filter((m) => m.status === "cancelled").map((m) => m.slot));
-    const keep = booked.filter((s) => live.has(s) || !gone.has(s));
-    if (keep.length !== booked.length) DB.saveProfile({ availability: { ...user.availability, booked: keep } }).catch(fail);
-  }
-
-  // Every traveller is a buddy to other travellers at the times on their trip. Times they already
-  // have a confirmed meetup are kept in trip.booked (only they can edit their own profile), so
-  // nobody else is offered them.
-  function syncBusyTimes(user) {
-    const today = ymd(new Date());
-    const busy = [...new Set(DB.cache.meetups.filter((m) => m.status === "confirmed" && m.slot.slice(0, 10) >= today).map((m) => m.slot))].sort();
-    if (JSON.stringify(busy) !== JSON.stringify([...(user.trip.booked || [])].sort())) DB.saveProfile({ trip: { ...user.trip, booked: busy } }).catch(fail);
   }
 
   function openReview(m) {
@@ -5054,12 +5021,12 @@ window.BuddyLegal = (function () {
       <div class="modal-body plain center">
         <div style="display:flex;justify-content:center;margin-bottom:12px">${face(p, 84)}</div>
         <h3 style="justify-content:center">How was your meetup with ${esc(p.name)}?</h3>
-        <p class="hint" style="margin-top:4px">📅 ${slotLabel(m.slot)}</p>
+        <p class="hint" style="margin-top:4px">${slotLabel(m.slot)}</p>
         <div class="star-pick" id="pick">${[1, 2, 3, 4, 5].map((i) => `<button type="button" data-star="${i}" aria-label="${i} star${i > 1 ? "s" : ""}"><svg viewBox="0 0 24 24"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg></button>`).join("")}</div>
-        <textarea class="textarea" id="rtext" maxlength="1000" placeholder="What was great? Was ${esc(p.name)} on time, friendly, as described?" style="text-align:left"></textarea>
+        <textarea class="textarea" id="rtext" maxlength="1000" placeholder="How did it go?" style="text-align:left"></textarea>
         <div class="error" id="rerr"></div>
         <button class="btn btn-primary btn-block" id="rsend">Post review</button>
-        <p class="hint" style="margin-top:12px">Reviews are public on profiles. Be honest and kind.</p>
+        <p class="hint" style="margin-top:12px">Reviews are public.</p>
       </div>`);
     $("[data-star]", modalRoot).forEach((b) => b.addEventListener("click", () => {
       rating = +b.dataset.star;
@@ -5067,68 +5034,70 @@ window.BuddyLegal = (function () {
     }));
     $("#rsend").addEventListener("click", async () => {
       const text = $("#rtext").value.trim();
-      if (!rating) return ($("#rerr").textContent = "Tap the stars to choose a rating.");
-      if (text.length < 10) return ($("#rerr").textContent = "Add a few words about the meetup (10+ characters).");
+      if (!rating) return ($("#rerr").textContent = "Choose a rating.");
+      if (text.length < 10) return ($("#rerr").textContent = "Write at least a few words.");
       const u = me();
       const role = m.kind === "local" ? (m.to === u.uid ? "Local" : "Traveller") : "Buddy";
       $("#rsend").disabled = true;
       try {
         await DB.addReview(m, { rating, text, fromName: u.name, fromRole: role });
         closeModal();
-        toast(`Thanks! Your review of ${p.name} is live.`);
+        toast("Review posted.");
         render();
       } catch (e) { $("#rsend").disabled = false; $("#rerr").textContent = DB.friendlyError(e); }
     });
   }
 
-  // ---------- Discover (traveller): trip details, then find a local or a buddy ----------
-  const MAX_TRIP_DAYS = 30;
-  // Someone who has just moved to a city has no dates and no fixed free times: they see everyone
-  // in the city, and other people can reach them at any time ("flexible").
-  const moved = (t) => !!t?.moved;
-  const flexible = (t) => moved(t) && !Object.keys(t.windows || {}).length;
-  const tripReady = (u) => !!(u.trip?.city && (moved(u.trip) || (u.trip.start && u.trip.end && Object.keys(u.trip.windows || {}).length)));
+  // ---------- Discover (traveller) ----------
+  // A traveller can have a home city (they've just moved there, so they're always around) and a
+  // trip (a city and dates), both at once. They look for people in one of the two at a time.
+  const homeOf = (u) => (u?.home?.city ? u.home : u?.trip?.moved && u.trip.city ? { city: u.trip.city } : null);
+  const tripOf = (u) => (u?.trip?.city && !u.trip.moved && u.trip.end >= todayYmd() ? u.trip : null);
+  const range = (t) => `${dmy(t.start)} to ${dmy(t.end)}`;
+  function searchPlace(user) {
+    const home = homeOf(user), trip = tripOf(user);
+    const kind = state.place === "home" && home ? "home" : state.place === "trip" && trip ? "trip" : trip ? "trip" : home ? "home" : null;
+    if (kind === "trip") return { kind, city: trip.city, days: daysBetween(trip.start, trip.end), trip };
+    if (kind === "home") return { kind, city: home.city, days: null };
+    return null;
+  }
   const TYPES = [["all", "Everyone"], ["local", "Locals"], ["buddy", "Buddies"]];
 
-  const RES_LABEL = { "6to12m": "under a year", "1to3y": "1–3 years", "3to10y": "3–10 years", "10y": "10+ years", born: "born & raised" };
-  // A Firestore user as a card/profile in the UI. `kind` is the role they're shown in.
-  function toPerson(u, kind) {
+  const RES_LABEL = { "6to12m": "under a year", "1to3y": "1 to 3 years", "3to10y": "3 to 10 years", "10y": "10+ years", born: "born and raised" };
+  // A Firestore user as a card/profile in the UI. `kind` is the role they're shown in, `city` the
+  // city being searched. `days` are the days they're there (null if they live there now).
+  function toPerson(u, kind, city) {
     const isLocal = kind === "local";
-    const t = u.trip || {};
+    const home = homeOf(u), trip = tripOf(u);
+    const here = isLocal || !city ? null : home?.city === city ? "home" : trip?.city === city ? "trip" : null;
     return {
       id: u.uid, uid: u.uid, type: isLocal ? "local" : "buddy", traveller: kind === "traveller",
       name: u.name || "buddyup member", photo: u.photoURL || "", from: u.from || "",
-      city: isLocal ? u.localCity : t.city || "", residency: u.residency, tripStart: t.start, tripEnd: t.end,
+      city: isLocal ? u.localCity : city || trip?.city || home?.city || "", residency: u.residency, tripEnd: here === "trip" ? trip.end : "",
       interests: u.interests || [], languages: u.languages || [], bio: u.bio || "",
       verified: isLocal ? !!u.approved : false, phoneVerified: !!u.phoneVerified,
-      windows: (isLocal ? u.availability?.windows : t.windows) || {}, booked: (isLocal ? u.availability?.booked : t.booked) || [],
-      moved: !isLocal && moved(t), cancellations: u.cancellations || 0, age: u.age || null,
+      days: isLocal ? (u.availability?.days || []).filter((d) => d >= todayYmd()).sort() : here === "trip" ? daysBetween(trip.start, trip.end) : here === "home" ? null : [],
+      moved: here === "home", cancellations: u.cancellations || 0, age: u.age || null,
     };
   }
 
-  // Real people in the trip city — verified locals and other travellers — who are free for at
-  // least an hour when the traveller is. People who've cancelled confirmed meetups come last.
-  async function peopleFor(user) {
-    const today = ymd(new Date());
-    const [locals, travellers] = await Promise.all([DB.findLocals(user.trip.city), DB.findTravellers(user.trip.city)]);
+  // Locals and other travellers in the city who are there on at least one of the same days.
+  // People who live there now are always around; two of them see each other until they've had a
+  // meetup together. People who've cancelled confirmed meetups come last.
+  async function peopleFor(user, place) {
+    const [locals, travellers] = await Promise.all([DB.findLocals(place.city), DB.findTravellers(place.city)]);
     const mine = user.interests || [];
     const seen = new Set([user.uid]);
-    const iAmFlexible = flexible(user.trip);
+    const metBefore = new Set(DB.cache.meetups.filter((m) => m.status === "completed").map(other));
     const people = [
       ...locals.filter((u) => u.available !== false && u.availability).map((u) => toPerson(u, "local")),
-      ...travellers.filter((u) => moved(u.trip) || u.trip?.end >= today).map((u) => toPerson(u, "buddy")),
+      ...travellers.map((u) => toPerson(u, "buddy", place.city)).filter((p) => p.moved || p.days.length),
     ]
       .filter((p) => !seen.has(p.uid) && seen.add(p.uid)) // someone can be both; show them as a local
+      .filter((p) => !(!place.days && p.moved && metBefore.has(p.uid)))
       .map((p) => {
-        // Whoever has set times decides when; if neither has, the time is agreed in the request.
-        const theyFlexible = !Object.keys(p.windows).length;
-        const booked = [...p.booked, ...(user.trip.booked || [])];
-        const free = (w) => matchWindows(w, w, booked);
-        const match = iAmFlexible && theyFlexible ? []
-          : iAmFlexible ? free(p.windows)
-          : theyFlexible ? free(user.trip.windows)
-          : matchWindows(user.trip.windows, p.windows, booked);
-        return { ...p, match, anytime: iAmFlexible && theyFlexible, overlap: p.interests.filter((t) => mine.includes(t)).length };
+        const match = place.days && p.days ? place.days.filter((d) => p.days.includes(d)) : place.days || p.days || [];
+        return { ...p, match, anytime: !place.days && !p.days, overlap: p.interests.filter((t) => mine.includes(t)).length };
       })
       .filter((p) => p.match.length || p.anytime)
       .sort((a, b) => a.cancellations - b.cancellations || b.match.length - a.match.length || b.overlap - a.overlap);
@@ -5137,165 +5106,127 @@ window.BuddyLegal = (function () {
     return people;
   }
 
-  function discoverPage(user, root, mode) {
+  function discoverPage(user, root, id) {
     if (user.mode === "local") return hostDashboard(user, root);
-    if (mode && !tripReady(user)) return go("#/discover");
-    if (mode === "people") return resultsPage(user, root);
-    if (mode === "local" || mode === "buddy") { state.filters = { ...noFilters(), type: mode }; return go("#/discover/people"); } // old links
-    if (mode) return go("#/discover/people");
-
-    const t = user.trip || {};
-    const windows = clone(t.windows);
-    const today = ymd(new Date());
-    let isMoved = moved(t);
-    root.innerHTML = `
-      <div class="page">
-        <div class="greet fade">
-          <h1>Hey ${esc(user.name.split(" ")[0])}, which city?</h1>
-          <p class="muted" id="trip-intro"></p>
-        </div>
-        <section class="panel trip-panel fade">
-          <form id="tripform" novalidate>
-            <div class="role-picker" style="margin-bottom:20px">
-              <button type="button" class="role traveller ${isMoved ? "" : "on"}" data-moved="0"><span class="ico">✈️</span><strong>I'm visiting</strong><small>A trip with dates</small></button>
-              <button type="button" class="role traveller ${isMoved ? "on" : ""}" data-moved="1"><span class="ico">🏡</span><strong>I've just moved here</strong><small>Living here, no fixed dates</small></button>
-            </div>
-            <div class="trip-top" id="trip-top"></div>
-            <div id="times"></div>
-          </form>
-        </section>
-        <div class="trip-next">
-          <div class="error" id="err"></div>
-          <button type="button" class="next-arrow" id="next">Find people ${I.arrow}</button>
-        </div>
-      </div>`;
-
-    const form = $("#tripform");
-    // Meetups need a day's notice, so the calendar starts tomorrow at the earliest.
-    const range = () => {
-      const s = form.start.value, e = form.end.value;
-      if (!s || !e || e < s) return null;
-      let from = new Date(s + "T00:00");
-      if (from < tomorrow()) from = tomorrow();
-      let to = new Date(e + "T00:00");
-      if (to < from) return { empty: true };
-      if ((to - from) / 864e5 >= MAX_TRIP_DAYS) to = addDays(from, MAX_TRIP_DAYS - 1);
-      return { from, to };
-    };
-    const summary = () => {
-      const r = range();
-      if (r && !r.empty) $("#times-count").textContent = windowsSummary(windows, ymd(r.from), ymd(r.to));
-      $("#err").textContent = "";
-    };
-    // The destination field, plus trip dates when they're visiting.
-    const drawTop = () => {
-      const city = form.city?.value ?? t.city ?? "";
-      $("#trip-intro").textContent = isMoved
-        ? "Tell us where you live now and we'll show you the locals and fellow newcomers who are there."
-        : "Tell us where you're going and when you're free, and we'll only show locals and buddies who are free at the same times.";
-      $("#trip-top").innerHTML = `
-        <div class="field"><label>${isMoved ? "Which city do you live in now?" : "Destination"}</label>
-          <div class="city-bar big">${I.pin}<input name="city" value="${esc(city)}" placeholder="Start typing a city" autocomplete="off"/></div></div>
-        ${isMoved ? "" : `
-          <div class="field"><label>Arriving</label>${dateField("start", form.start?.value ?? t.start ?? "", { min: today, label: "Arriving" })}</div>
-          <div class="field"><label>Leaving</label>${dateField("end", form.end?.value ?? t.end ?? "", { min: today, label: "Leaving" })}</div>`}`;
-      $("#trip-top").classList.toggle("moved", isMoved);
-      suggestCities(form.city, true);
-      if (!isMoved) {
-        bindDateFields($("#trip-top"));
-        form.start.addEventListener("change", onStartChange);
-        form.end.addEventListener("change", drawTimes);
-      }
-    };
-
-    const drawTimes = () => {
-      const box = $("#times");
-      if (isMoved) {
-        box.innerHTML = `<p class="hint times-hint">🏡 No dates or times needed. You'll see everyone in the city, and they can ask you to meet whenever suits you both.</p>`;
-        return;
-      }
-      const r = range();
-      if (!r) { box.innerHTML = `<p class="hint times-hint">📅 Add your dates to choose when you're free to meet people.</p>`; return; }
-      if (r.empty) { box.innerHTML = `<div class="check-result warn" style="margin-top:16px">Meetups need at least a day's notice, so choose dates from tomorrow onwards.</div>`; return; }
-      // Forget times that fall outside the new dates.
-      Object.keys(windows).forEach((d) => { if (d < ymd(r.from) || d > ymd(r.to)) delete windows[d]; });
-      box.innerHTML = `
-        <div class="times-head"><h3>When are you free to meet?</h3><span class="muted" id="times-count"></span></div>
-        <p class="hint" style="margin-bottom:14px">Pick a date and add the times you're free, or apply them to every day of your trip. Requests are sent at least a day ahead.</p>
-        <p class="hint" style="margin:-6px 0 14px">🎒 Other travellers heading to the same city will see you as a buddy at these times.</p>
-        <div id="cal"></div>`;
-      mountCalendar($("#cal"), { from: r.from, to: r.to, windows, repeat: false, onChange: summary });
-      summary();
-    };
-    const onStartChange = () => {
-      form.end.min = form.start.value || today;
-      if (form.end.value && form.end.value < form.start.value) setDate(form.end, form.start.value);
-      drawTimes();
-    };
-    drawTop();
-    drawTimes();
-    $("[data-moved]", root).forEach((b) => b.addEventListener("click", () => {
-      isMoved = b.dataset.moved === "1";
-      $("[data-moved]", root).forEach((x) => x.classList.toggle("on", x === b));
-      $("#err").textContent = "";
-      drawTop();
-      drawTimes();
-    }));
-    form.addEventListener("submit", (e) => e.preventDefault());
-
-    $("#next").addEventListener("click", () => {
-      const err = $("#err");
-      const city = listCity(form.city.value, true);
-      const fail = (msg) => { err.textContent = msg; err.scrollIntoView({ behavior: "smooth", block: "center" }); };
-      if (!city) return fail(form.city.value.trim() ? "Please choose your city from the suggestions." : isMoved ? "Which city do you live in now? Choose it above." : "Where are you headed? Choose a destination city above.");
-      let trip = { city, moved: true, start: "", end: "", windows: {}, booked: t.booked || [] };
-      if (!isMoved) {
-        const start = form.start.value, end = form.end.value, r = range();
-        if (!start || !end) return fail("Add the dates you're travelling.");
-        if (!r || r.empty) return fail("Meetups need at least a day's notice, so choose dates from tomorrow onwards.");
-        if (!Object.keys(windows).length) return fail("Add at least one time you're free to meet on the calendar.");
-        trip = { city, moved: false, start, end, windows, booked: t.booked || [] };
-      }
-      DB.saveProfile({ trip }).catch(fail);
-      state.filters = noFilters();
-      window.scrollTo(0, 0);
-      settle().then(() => go("#/discover/people"));
-    });
+    if (id === "local" || id === "buddy") state.filters = { ...noFilters(), type: id }; // old links
+    if (id) return go("#/discover");
+    const place = searchPlace(user);
+    return place ? resultsPage(user, root, place) : startPage(user, root);
   }
 
-  // Step 2 for travellers: everyone free at the same times, locals and buddies together, with filters.
-  async function resultsPage(user, root) {
-    const head = (count) => `
-      <a class="back-link" href="#/discover">${I.back} Edit trip</a>
-      <div class="results-head fade">
-        <div><h1>People in ${esc(user.trip.city)}</h1>
-          <span class="count">${count} · ${moved(user.trip) ? "you live here" : tripDates(user.trip)} · <a href="#/discover">${moved(user.trip) ? "change city" : "change times"}</a></span></div>
+  // First visit: are they visiting somewhere, or have they just moved?
+  function startPage(user, root) {
+    root.innerHTML = `
+      <div class="page">
+        <div class="greet fade"><h1>Where are you?</h1></div>
+        <div class="start-choices fade">
+          <button type="button" class="role traveller" data-edit="trip"><span class="ico">✈️</span><strong>Visiting a city</strong><small>Add your destination and dates</small></button>
+          <button type="button" class="role traveller" data-edit="home"><span class="ico">🏡</span><strong>Just moved to a city</strong><small>No dates needed</small></button>
+        </div>
       </div>`;
-    const key = `${user.trip.city}|${moved(user.trip)}|${JSON.stringify(user.trip.windows)}|${(user.trip.booked || []).join()}`;
+    $("[data-edit]", root).forEach((b) => b.addEventListener("click", () => openPlaceForm(user, b.dataset.edit)));
+  }
+
+  // Add or change the trip ("trip") or the home city ("home").
+  function openPlaceForm(user, kind) {
+    const isTrip = kind === "trip";
+    const current = isTrip ? tripOf(user) : homeOf(user);
+    const today = todayYmd();
+    openModal(`
+      <button class="modal-close" data-close aria-label="Close">${I.close}</button>
+      <div class="modal-body plain">
+        <h3>${isTrip ? (current ? "Your trip" : "Add a trip") : "Where you live now"}</h3>
+        <form id="placeform" novalidate style="margin-top:16px">
+          <div class="field"><label>${isTrip ? "Destination" : "City"}</label>
+            <div class="city-bar">${I.pin}<input name="city" value="${esc(current?.city || "")}" placeholder="Start typing a city" autocomplete="off"/></div></div>
+          ${isTrip ? `
+            <div class="row">
+              <div class="field"><label>Arriving</label>${dateField("start", current?.start || "", { min: today, label: "Arriving" })}</div>
+              <div class="field"><label>Leaving</label>${dateField("end", current?.end || "", { min: today, label: "Leaving" })}</div>
+            </div>` : `<p class="hint" style="margin:-4px 0 12px">Other people in this city can find you on any day.</p>`}
+          <div class="error" id="perr"></div>
+          <button class="btn btn-primary btn-block" type="submit">Save</button>
+          ${current ? `<p class="center" style="margin-top:12px"><button type="button" class="link-btn" id="premove">${isTrip ? "Remove trip" : "I don't live there any more"}</button></p>` : ""}
+        </form>
+      </div>`);
+    const form = $("#placeform");
+    suggestCities(form.city, true);
+    if (isTrip) {
+      bindDateFields(form);
+      form.start.addEventListener("change", () => {
+        form.end.min = form.start.value || today;
+        if (form.end.value && form.end.value < form.start.value) setDate(form.end, form.start.value);
+      });
+    }
+    const done = async (patch, place) => {
+      DB.saveProfile(patch).catch(fail);
+      state.place = place;
+      state.filters = noFilters();
+      closeModal();
+      await settle();
+      go("#/discover");
+    };
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const err = $("#perr");
+      const city = listCity(form.city.value, true);
+      if (!city) return (err.textContent = "Choose a city from the list.");
+      if (!isTrip) return done({ home: { city }, ...(user.trip?.moved ? { trip: null } : {}) }, "home");
+      const start = form.start.value, end = form.end.value;
+      if (!start || !end) return (err.textContent = "Add your dates.");
+      if (end < start) return (err.textContent = "Leaving is before arriving.");
+      if (end < today) return (err.textContent = "Those dates have passed.");
+      done({ trip: { city, start, end } }, "trip");
+    });
+    $("#premove")?.addEventListener("click", () => done(isTrip ? { trip: null } : { home: null, ...(user.trip?.moved ? { trip: null } : {}) }, null));
+  }
+
+  async function resultsPage(user, root, place) {
+    const home = homeOf(user), trip = tripOf(user);
+    const isHome = place.kind === "home";
+    const bar = `
+      <div class="place-bar fade">
+        <div class="seg" role="group" aria-label="Where">
+          ${home ? `<button class="${isHome ? "on" : ""}" data-place="home">🏡 ${esc(home.city)}</button>` : ""}
+          ${trip ? `<button class="${!isHome ? "on" : ""}" data-place="trip">✈️ ${esc(trip.city)} <span>${dmy(trip.start).slice(0, 5)} to ${dmy(trip.end).slice(0, 5)}</span></button>` : ""}
+        </div>
+        <div class="place-links">
+          <button type="button" class="link-btn" data-edit="trip">${trip ? "Edit trip" : "Add a trip"}</button>
+          <button type="button" class="link-btn" data-edit="home">${home ? "Change home city" : "I've moved somewhere"}</button>
+        </div>
+      </div>`;
+    const head = (count) => `${bar}
+      <div class="results-head fade"><div><h1>People in ${esc(place.city)}</h1><span class="count">${count}</span></div></div>`;
+    const bind = () => {
+      $("[data-place]", root).forEach((b) => b.addEventListener("click", () => { state.place = b.dataset.place; state.filters = noFilters(); render(); }));
+      $("[data-edit]", root).forEach((b) => b.addEventListener("click", () => openPlaceForm(me(), b.dataset.edit)));
+    };
+    const key = `${place.kind}|${place.city}|${(place.days || []).join()}|${DB.cache.meetups.filter((m) => m.status === "completed").length}`;
     if (state.results?.key !== key) {
-      root.innerHTML = `<div class="page">${head("Looking for people free when you are…")}<div class="grid">${'<div class="pcard skeleton"></div>'.repeat(4)}</div></div>`;
+      root.innerHTML = `<div class="page">${head("Loading…")}<div class="grid">${'<div class="pcard skeleton"></div>'.repeat(4)}</div></div>`;
+      bind();
       try {
-        state.results = { key, all: await peopleFor(user) };
+        state.results = { key, all: await peopleFor(user, place) };
       } catch (e) {
         root.innerHTML = `<div class="page">${head("")}<div class="empty"><div class="art">⚠️</div>${esc(DB.friendlyError(e))}</div></div>`;
-        return;
+        return bind();
       }
-      if (route().page !== "discover" || route().id !== "people") return; // navigated away while loading
+      if (route().page !== "discover" || searchPlace(me())?.kind !== place.kind) return; // moved on while loading
     }
     const all = state.results.all;
     const f = state.filters;
     const uniq = (list) => [...new Set(list)].sort();
-    const days = uniq(all.flatMap((p) => p.match.map((s) => s.slice(0, 10))));
+    const days = uniq(all.flatMap((p) => p.match));
     const interests = uniq(all.flatMap((p) => p.interests));
     const languages = uniq(all.flatMap((p) => p.languages));
     // Every filter except `type`, so the type tabs can show how many of each there are.
-    const passes = (p) => (!f.day || p.anytime || p.match.some((s) => s.startsWith(f.day + "|")))
+    const passes = (p) => (!f.day || p.anytime || p.match.includes(f.day))
       && (!f.interest || p.interests.includes(f.interest))
       && (!f.language || p.languages.includes(f.language))
       && (!f.rated || +ratingSummary(p.reviews || []).avg >= 4);
     const matching = all.filter(passes);
     const people = matching.filter((p) => f.type === "all" || p.type === f.type)
-      .map((p) => (f.day ? { ...p, match: p.match.filter((s) => s.startsWith(f.day + "|")) } : p));
+      .map((p) => (f.day && !p.anytime ? { ...p, match: [f.day] } : p));
     const filtered = JSON.stringify(f) !== JSON.stringify(noFilters());
     const select = (name, label, list, fmt = esc) => (list.length ? `
       <select class="input" data-f="${name}" aria-label="${label}">
@@ -5305,38 +5236,35 @@ window.BuddyLegal = (function () {
 
     root.innerHTML = `
       <div class="page">
-        ${head(`${plural(people.length, "person").replace("persons", "people")}${moved(user.trip) ? "" : " free when you are"}`)}
+        ${head(`${plural(people.length, "person").replace("persons", "people")}${isHome ? "" : ` · ${range(trip)}`}`)}
         ${all.length ? `
           <div class="filter-bar">
             <div class="seg" role="group" aria-label="Show">${TYPES.map(([k, l]) => `
               <button class="${f.type === k ? "on" : ""}" data-type="${k}">${l} <span>${matching.filter((p) => k === "all" || p.type === k).length}</span></button>`).join("")}
             </div>
-            ${select("day", "Any day", days, (d) => dayLabel(d))}
+            ${select("day", "Any day", days, niceDay)}
             ${select("interest", "Any interest", interests)}
             ${select("language", "Any language", languages)}
-            <label class="chip ${f.rated ? "active" : ""}"><input type="checkbox" data-f="rated" ${f.rated ? "checked" : ""}/>★ 4+ rated</label>
-            ${filtered ? `<button class="link-btn" id="clear">Clear filters</button>` : ""}
+            <label class="chip ${f.rated ? "active" : ""}"><input type="checkbox" data-f="rated" ${f.rated ? "checked" : ""}/>★ 4+</label>
+            ${filtered ? `<button class="link-btn" id="clear">Clear</button>` : ""}
           </div>` : ""}
-        ${people.some((p) => p.type === "local") ? `<div class="note"><span class="e">💛</span><div><b>buddyup is always free.</b> Locals volunteer their time to show you around. If you had a great time, it's a lovely gesture to leave them a <b>generous tip</b>.</div></div>` : ""}
         ${people.length ? `<div class="grid">${people.map((p, i) => personCard(p, i, activeMeetupWith(p.uid))).join("")}</div>`
           : `<div class="empty"><div class="art">🗓️</div>${all.length
-            ? `No one matches these filters.<br/><br/><button class="btn btn-primary" id="clear2">Clear filters</button>`
-            : moved(user.trip)
-              ? `No locals or fellow newcomers in ${esc(user.trip.city)} yet.<br/>buddyup is new, so invite friends who live there.`
-              : `No locals or travellers in ${esc(user.trip.city)} are free at the times you picked yet.<br/>buddyup is new, so try adding more times, or invite friends who live there or are travelling.<br/><br/><a class="btn btn-primary" href="#/discover">Add more times</a>`}</div>`}
-        <div class="safety-strip">${safetyCards()}</div>
+            ? `Nobody matches these filters.<br/><br/><button class="btn btn-primary" id="clear2">Clear filters</button>`
+            : isHome ? `Nobody else in ${esc(place.city)} yet.` : `Nobody in ${esc(place.city)} on your dates yet.`}</div>`}
       </div>`;
 
-    const refilter = (patch) => { Object.assign(state.filters, patch); resultsPage(user, root); };
+    bind();
+    const refilter = (patch) => { Object.assign(state.filters, patch); resultsPage(user, root, place); };
     $("[data-type]", root).forEach((b) => b.addEventListener("click", () => refilter({ type: b.dataset.type })));
     $("select[data-f]", root).forEach((el) => el.addEventListener("change", () => refilter({ [el.dataset.f]: el.value })));
     $('[data-f="rated"]', root)?.addEventListener("change", (e) => refilter({ rated: e.target.checked }));
-    ["#clear", "#clear2"].forEach((id) => $(id, root)?.addEventListener("click", () => { state.filters = noFilters(); resultsPage(user, root); }));
+    ["#clear", "#clear2"].forEach((id) => $(id, root)?.addEventListener("click", () => { state.filters = noFilters(); resultsPage(user, root, place); }));
     $(".pcard", root).forEach((c) => c.addEventListener("click", (e) => {
       const p = people.find((x) => x.id === c.dataset.id);
       const active = activeMeetupWith(p.uid);
       if (e.target.closest("[data-connect]") && active) return go(`#/messages/${encodeURIComponent(active.chatId)}`);
-      openProfile(me(), p, { focus: !!e.target.closest("[data-connect]") });
+      openProfile(me(), p, { focus: !!e.target.closest("[data-connect]"), place });
     }));
   }
 
@@ -5349,7 +5277,7 @@ window.BuddyLegal = (function () {
     ? `Local in ${esc(p.city)}${RES_LABEL[p.residency] ? ` · ${RES_LABEL[p.residency]}` : ""}`
     : p.moved
       ? `New in ${esc(p.city)}${p.from ? ` · from ${esc(p.from)}` : ""}`
-      : `${p.from ? `From ${esc(p.from)}` : "Traveller"}${p.tripEnd ? ` · until ${fmtYmd(p.tripEnd)}` : ""}`);
+      : `${p.from ? `From ${esc(p.from)}` : "Visiting"}${p.tripEnd ? ` · until ${fmtYmd(p.tripEnd)}` : ""}`);
 
   function personCard(p, i, active) {
     return `
@@ -5357,14 +5285,14 @@ window.BuddyLegal = (function () {
         <div class="cover ${p.type === "local" ? "local" : ""}">${typeBadge(p)}</div>
         <div class="face">${face(p, 84)}</div>
         <div class="inner">
-          <h4>${esc(p.name)}${p.age ? `<span class="age">, ${p.age}</span>` : ""} ${p.verified ? I.tick : ""}</h4>
+          <h4><span>${esc(p.name)}${p.age ? `<span class="age">, ${p.age}</span>` : ""}</span> ${p.verified ? I.tick : ""}</h4>
           <div class="sub">${subline(p)}</div>
           <div class="stats"><span>${ratingText(p.reviews || [])}</span></div>
           ${p.bio ? `<p class="bio">${esc(p.bio)}</p>` : ""}
           <div class="chips">${p.interests.map((t) => `<span class="chip tag">${esc(t)}</span>`).join("")}</div>
           <div class="match-line">${p.anytime
-            ? `🗓️ <b>Free to arrange a time</b><br/>You're both here without fixed plans`
-            : `🗓️ <b>${plural(p.match.length, "matching time")}</b><br/>Next: ${slotLabel(p.match[0])}`}</div>
+            ? `<b>Any day</b><br/>You both live here now`
+            : `<b>${p.match.length === 1 ? "1 day" : `${p.match.length} days`} in common</b><br/>Next: ${niceDay(p.match[0])}`}</div>
           <div class="card-actions">
             <button class="btn btn-primary btn-sm" data-connect>${active ? `${I.chat} Open chat` : `${I.plane} Request meetup`}</button>
             <button class="btn btn-outline btn-sm" data-view>${I.user} View profile</button>
@@ -5375,39 +5303,38 @@ window.BuddyLegal = (function () {
 
   // ---------- Local (host) availability ----------
   const AVAIL_DAYS = 35;
-  // Locals review their availability at least 30 days ahead (and add at least one time in the next 4 weeks).
+  // Locals review their availability at least 30 days ahead (and pick at least one day in the next 4 weeks).
   const needsAvailability = (u) => !u.availability?.horizon || u.availability.horizon < ymd(addDays(new Date(), 30));
+  const freeDaysAhead = (av, n) => (av?.days || []).filter((d) => d >= todayYmd() && d <= ymd(addDays(new Date(), n - 1))).length;
 
   function availabilityPage(user, root) {
     if (user.mode !== "local" || !user.approved) return go("#/discover");
-    const from = tomorrow(), to = addDays(from, AVAIL_DAYS - 1);
-    const windows = clone(user.availability?.windows);
-    Object.keys(windows).forEach((d) => { if (d < ymd(from)) delete windows[d]; });
-    const booked = user.availability?.booked || [];
+    const from = dayStart(todayYmd()), to = addDays(from, AVAIL_DAYS - 1);
+    const days = new Set((user.availability?.days || []).filter((d) => d >= ymd(from)));
     root.innerHTML = `
       <div class="page">
         <a class="back-link" href="#/discover">${I.back} Dashboard</a>
         <div class="greet fade">
-          <h1>${user.availability ? "Your availability" : "You're verified! When are you free to host?"}</h1>
-          <p class="muted">Add the dates and times you're free over the next 5 weeks, with at least one time in the next 4 weeks. Travellers can only request you at these times, and always at least a day in advance.</p>
+          <h1>${user.availability ? "Your availability" : "Which days are you free?"}</h1>
+          <p class="muted">Tap the days you can meet people. Pick at least one in the next 4 weeks.</p>
         </div>
         <section class="panel fade"><div id="cal"></div></section>
         <div class="save-bar"><span id="count"></span><div class="error" id="err" style="margin:0;flex:1"></div><button class="btn btn-primary" id="save">Save availability</button></div>
       </div>`;
     const count = () => {
-      $("#count").textContent = `${windowsSummary(windows, ymd(from), ymd(to))} · until ${fmtDate(to)}`;
+      $("#count").textContent = `${plural(days.size, "day")} free · until ${fmtDate(to)}`;
       $("#err").textContent = "";
     };
-    mountCalendar($("#cal"), { from, to, windows, booked, onChange: count });
+    mountDayPicker($("#cal"), { from, to, days, onChange: count });
     count();
     $("#save").addEventListener("click", () => {
       const nextFourWeeks = daysFrom(from, 28).map(ymd);
-      if (!nextFourWeeks.some((d) => windows[d]?.length)) {
-        $("#err").textContent = `Add at least one time you're free before ${fmtDate(addDays(from, 27))}.`;
+      if (!nextFourWeeks.some((d) => days.has(d))) {
+        $("#err").textContent = `Pick at least one day before ${fmtDate(addDays(from, 27))}.`;
         return;
       }
-      DB.saveProfile({ availability: { windows, booked: user.availability?.booked || [], horizon: ymd(to), savedAt: Date.now() } }).catch(fail);
-      toast("Availability saved. Travellers free at the same times can now request you.");
+      DB.saveProfile({ availability: { days: [...days].sort(), horizon: ymd(to), savedAt: Date.now() } }).catch(fail);
+      toast("Availability saved.");
       settle().then(() => go("#/discover"));
     });
   }
@@ -5421,50 +5348,41 @@ window.BuddyLegal = (function () {
     const v = user.verification || {};
     const av = user.availability;
     const uid = user.uid;
-    const freeDays = new Set(matchWindows(av?.windows, av?.windows, av?.booked).filter((s) => s.slice(0, 10) <= ymd(addDays(new Date(), 30))).map((s) => s.slice(0, 10))).size;
+    const freeDays = freeDaysAhead(av, 30);
     const sidebar = `
       <aside class="host-side">
         ${user.approved ? `
           <section class="panel">
             <h3>Availability</h3>
-            <label class="list-item" style="cursor:pointer"><span class="li-ico">🟢</span><span class="grow">Available to host<small>${user.available !== false ? `Travellers in ${city} can find you` : "Paused: you won't get new requests"}</small></span>
+            <label class="list-item" style="cursor:pointer"><span class="li-ico">🟢</span><span class="grow">Available to host<small>${user.available !== false ? `Travellers in ${city} can find you` : "Paused"}</small></span>
               <input type="checkbox" id="avail" ${user.available !== false ? "checked" : ""} class="switch"/></label>
             <div class="list-item"><span class="li-ico">📅</span><span class="grow">${av ? `Free on ${plural(freeDays, "day")} in the next 30 days` : "Not set yet"}<small>${av ? `Set until ${fmtYmd(av.horizon)}` : "Required before you get requests"}</small></span></div>
             <a class="btn ${needsAvailability(user) ? "btn-primary" : "btn-outline"} btn-block" href="#/availability">${av ? "Edit availability" : "Add availability"}</a>
           </section>` : ""}
-        <section class="panel">
-          <h3>Hosting tips</h3>
-          ${[["☕", "Start somewhere public", "A busy café or landmark for the first hour."],
-             ["🗺️", "Share the plan", "Tell the traveller where you're going before you set off."],
-             ["💛", "Tips are optional", "Never ask for money. Travellers tip if they want to."]]
-            .map(([e, t, s]) => `<div class="list-item"><span class="li-ico">${e}</span><span class="grow">${t}<small>${s}</small></span></div>`).join("")}
-        </section>
         <section class="panel switch-card">
-          <h3>Travelling soon?</h3>
-          <p class="hint" style="margin-bottom:14px">Switch to traveller mode to find locals and buddies wherever you're going.</p>
-          <button class="btn btn-outline btn-block" data-switch="traveller">🎒 Switch to traveller mode</button>
+          <h3>Travelling?</h3>
+          <button class="btn btn-outline btn-block" data-switch="traveller">Switch to traveller mode</button>
         </section>
       </aside>`;
 
     if (!user.approved) {
       root.innerHTML = `
         <div class="page">
-          <div class="greet fade"><h1>Hey ${first}, your local profile is in review</h1><p class="muted">Once approved, you'll add your availability and travellers in ${city} can send you meetup requests.</p></div>
+          <div class="greet fade"><h1>Your local profile is in review</h1><p class="muted">We usually check it within 24 hours. Then you can add the days you're free.</p></div>
           <div class="host-grid">
             <div>
               <section class="panel fade">
                 <div class="review-top">
                   <div class="ring" style="--p:${v.trustScore || 0}"><span>${v.trustScore || 0}</span></div>
-                  <div><strong>Trust score ${v.trustScore || 0}/100</strong><p class="hint">Based on your residency, local knowledge and identity checks.</p></div>
+                  <div><strong>Trust score ${v.trustScore || 0}/100</strong><p class="hint">Based on your answers and ID.</p></div>
                 </div>
                 <ol class="timeline">
                   <li class="done"><b>Application submitted</b><small>${v.submittedAt ? fmtDate(v.submittedAt) : ""}</small></li>
-                  <li class="current"><b>Team review</b><small>We check your answers and match your ID with your profile photo, usually within 24 hours.</small></li>
-                  <li><b>Add your availability</b><small>Choose when you're free over the next month.</small></li>
-                  <li><b>Go live</b><small>Travellers free at the same times can request you.</small></li>
+                  <li class="current"><b>Review</b><small>We check your answers and ID.</small></li>
+                  <li><b>Add your availability</b><small>The days you're free.</small></li>
+                  <li><b>Go live</b><small>Travellers can send you requests.</small></li>
                 </ol>
-                ${v.flags?.length ? `<div class="note"><span class="e">⚠️</span><div><b>Flagged for manual review</b><br/>${v.flags.map((f) => esc(f.detail)).join("<br/>")}</div></div>` : ""}
-                <p class="hint review-tip">Reviewers approve a local by setting <code>approved</code> to <code>true</code> on <code>users/${esc(uid)}</code> in Firebase console → Firestore. This page updates automatically.</p>
+                ${v.flags?.length ? `<div class="note"><div><b>Needs a closer look</b><br/>${v.flags.map((f) => esc(f.detail)).join("<br/>")}</div></div>` : ""}
               </section>
             </div>
             ${sidebar}
@@ -5476,7 +5394,7 @@ window.BuddyLegal = (function () {
       const mine = ratingSummary(DB.cache.reviewsToMe);
       root.innerHTML = `
         <div class="page">
-          <div class="greet fade"><h1>Welcome back, ${first} 👋</h1><p class="muted">${I.tick} Verified local in ${city}${v.trustScore ? ` · trust score ${v.trustScore}/100` : ""}</p></div>
+          <div class="greet fade"><h1>Welcome back, ${first}</h1><p class="muted">${I.tick} Verified local in ${city}${v.trustScore ? ` · trust score ${v.trustScore}/100` : ""}</p></div>
           <div class="stat-row fade">
             <div class="stat"><strong>${pending.length}</strong><span>New requests</span></div>
             <div class="stat"><strong>${upcoming.length}</strong><span>Upcoming meetups</span></div>
@@ -5489,7 +5407,7 @@ window.BuddyLegal = (function () {
                 <section class="panel fade cta-panel">
                   <div class="become-ico">📅</div>
                   <div class="grow"><h3>${av ? "Your availability is running out" : "Add your availability for the next month"}</h3>
-                  <p class="hint">Travellers can only request you at times you're free, at least a day in advance.</p></div>
+</div>
                   <a class="btn btn-primary" href="#/availability">${av ? "Extend availability" : "Add availability"}</a>
                 </section>` : ""}
               <section class="panel fade">
@@ -5501,7 +5419,7 @@ window.BuddyLegal = (function () {
                 ${upcoming.length ? upcoming.map((m) => { const p = otherPerson(m); return `
                   <div class="meetup">
                     ${face(p, 44)}
-                    <div class="grow"><strong>${esc(p.name)}</strong> ${p.from ? `<span class="muted">from ${esc(p.from)}</span>` : ""}<small>📅 ${slotLabel(m.slot)}</small></div>
+                    <div class="grow"><strong>${esc(p.name)}</strong> ${p.from ? `<span class="muted">from ${esc(p.from)}</span>` : ""}<small>${slotLabel(m.slot)}</small></div>
                     <a class="btn btn-outline btn-sm" href="#/messages/${encodeURIComponent(m.chatId)}">${I.chat} Open chat</a>
                   </div>`; }).join("") : `<p class="hint">Accepted requests show up here.</p>`}
               </section>
@@ -5511,10 +5429,10 @@ window.BuddyLegal = (function () {
         </div>`;
       DB.findTravellers(user.localCity).then((list) => {
         const today = ymd(new Date()), weekEnd = ymd(addDays(new Date(), 7));
-        const n = list.filter((t) => t.uid !== uid && (moved(t.trip) || (t.trip?.start <= weekEnd && t.trip?.end >= today))).length;
+        const n = list.filter((t) => t.uid !== uid && (homeOf(t)?.city === user.localCity || (tripOf(t)?.city === user.localCity && t.trip.start <= weekEnd))).length;
         const el = $("#in-town");
         if (el) el.textContent = n;
-      }).catch(() => { const el = $("#in-town"); if (el) el.textContent = "–"; });
+      }).catch(() => { const el = $("#in-town"); if (el) el.textContent = "?"; });
       fillRatings(root);
     }
 
@@ -5531,7 +5449,7 @@ window.BuddyLegal = (function () {
         <div class="grow">
           <div class="req-top"><strong>${esc(p.name)}</strong> ${labelBadge(p.label)} ${p.from ? `<span class="muted">from ${esc(p.from)}</span>` : ""}<span class="time">${ago(DB.ms(m.createdAt))}</span></div>
           <div class="stats" style="margin:4px 0" data-rating-for="${esc(p.uid)}">${ratingText([])}</div>
-          <div class="req-dates">📅 <b>${slotLabel(m.slot)}</b> <span class="badge badge-buddy">Matches your availability</span></div>
+          <div class="req-dates"><b>${slotLabel(m.slot)}</b></div>
           <p class="req-msg">“${esc(m.message)}”</p>
           <div class="req-actions">
             <button class="btn btn-soft btn-sm" data-act="profile">${I.user} View profile</button>
@@ -5550,16 +5468,16 @@ window.BuddyLegal = (function () {
   // ---------- Profile modal & request ----------
   // The first message is pre-filled differently for locals (a guide giving their time)
   // and buddies (a fellow traveller), so travellers know what a good opener looks like.
-  function opener(user, p, slot) {
+  function opener(user, p, slot, place) {
     const first = user.name.split(" ")[0];
     const shared = p.interests.find((t) => (user.interests || []).includes(t)) || p.interests[0] || "exploring";
-    const [d, from, to] = (slot || "").split("|");
-    const when = d ? `${dayLabel(d)}, any time between ${from} and ${to}` : "a day that suits you";
-    const iMoved = moved(user.trip);
-    const dates = tripDates(user.trip);
+    const d = slotDay(slot);
+    const when = !d ? "a day that suits you" : d === todayYmd() ? "today" : d === ymd(addDays(new Date(), 1)) ? "tomorrow" : dayLabel(d);
+    const iMoved = place?.kind === "home";
+    const dates = place?.trip ? `from ${dmy(place.trip.start)} to ${dmy(place.trip.end)}` : "";
     return p.type === "local"
-      ? `Hi ${p.name}! I'm ${first}${user.from ? ` from ${user.from}` : ""}, ${iMoved ? `I've just moved to ${p.city}` : `visiting ${p.city} ${dates}`}. I'd love to see the city through a local's eyes, especially ${shared.toLowerCase()}. Would you be up for showing me around on ${when}?`
-      : `Hey ${p.name}! I'm ${first}, ${iMoved ? `also new in ${p.city}` : `also in ${p.city} ${dates}`}. Fancy teaming up for some ${shared.toLowerCase()} on ${when}? Happy to meet at a café first.`;
+      ? `Hi ${p.name}! I'm ${first}${user.from ? ` from ${user.from}` : ""}, ${iMoved ? `I've just moved to ${p.city}` : `visiting ${p.city} ${dates}`}. I'm into ${shared.toLowerCase()}. Would you be up for showing me around ${/^(today|tomorrow|a day)/.test(when) ? when : `on ${when}`}? We can agree on a time here.`
+      : `Hey ${p.name}! I'm ${first}, ${iMoved ? `also new in ${p.city}` : `also in ${p.city} ${dates}`}. Fancy teaming up for some ${shared.toLowerCase()} ${/^(today|tomorrow|a day)/.test(when) ? when : `on ${when}`}? Happy to meet at a café first, and we can sort out a time here.`;
   }
 
   // Open someone's profile from a meetup or chat (only their uid and role label are known).
@@ -5578,26 +5496,12 @@ window.BuddyLegal = (function () {
     let actions = "";
     if (active && !opts.readOnly) actions = `<div class="modal-actions" style="margin-top:22px"><button class="btn btn-primary" id="open">${I.chat} Open chat</button></div>`;
     else if (canRequest) actions = `
-      <h5>${p.anytime ? "Suggest a time" : "Pick a time · you're both free"}</h5>
-      ${p.anytime ? `
-        <div class="slot-pick">
-          ${dateField("slotday", ymd(addDays(new Date(), 2)), { min: ymd(addDays(new Date(), 1)), label: "Day" })}
-          <div class="add-range">
-            <select class="input" id="s-from" aria-label="From">${TIMES.map((t) => `<option ${t === "10:00" ? "selected" : ""}>${t}</option>`).join("")}</select>
-            <span>to</span>
-            <select class="input" id="s-to" aria-label="To">${TIMES.map((t) => `<option ${t === "14:00" ? "selected" : ""}>${t}</option>`).join("")}</select>
-          </div>
-        </div>
-        <p class="hint" style="margin-top:6px">Neither of you has set fixed times, so suggest one: at least an hour long and at least a day from now. ${esc(p.name)} can accept or decline.</p>`
-      : `
-        <div class="chips slot-chips">${p.match.slice(0, 12).map((s, i) => `<button type="button" class="chip ${i === 0 ? "active" : ""}" data-pick="${s}">${slotLabel(s)}</button>`).join("")}</div>
-        <p class="hint" style="margin-top:6px">These are the times you're both free (at least an hour, and at least a day from now) so ${esc(p.name)} has time to plan.</p>`}
+      <h5>${p.anytime ? "Suggest a day" : "Pick a day · you're both around"}</h5>
+      ${p.anytime
+        ? `<div class="slot-pick">${dateField("slotday", todayYmd(), { min: todayYmd(), label: "Day" })}</div>`
+        : `<div class="chips slot-chips">${p.match.slice(0, 14).map((d, i) => `<button type="button" class="chip ${i === 0 ? "active" : ""}" data-pick="${d}">${niceDay(d)}</button>`).join("")}</div>`}
+      <p class="hint" style="margin-top:6px">You'll agree on a time in the chat.</p>
       <h5>Your first message</h5>
-      <div class="prompt-tip ${isLocal ? "local" : ""}">
-        ${isLocal
-          ? `💡 <b>Messaging a local?</b> Say what you'd love to see or do, mention your interests and confirm the time. Locals give their time for free, so be friendly and specific.`
-          : `💡 <b>Messaging a buddy?</b> Share your travel plans and what you'd like to do together (food, sights, a night out) and suggest somewhere public to meet.`}
-      </div>
       <textarea class="textarea" id="hello" maxlength="600"></textarea>
       <div class="chips prompt-chips">${(isLocal
         ? ["What's your favourite spot that tourists miss?", "I'm happy to meet at a café first.", "Any food I absolutely must try?"]
@@ -5615,7 +5519,7 @@ window.BuddyLegal = (function () {
       <div class="modal-body">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
           <div>
-            <h3>${esc(p.name)}${p.age ? `<span class="age">, ${p.age}</span>` : ""} ${p.verified ? I.tick : ""}</h3>
+            <h3><span>${esc(p.name)}${p.age ? `<span class="age">, ${p.age}</span>` : ""}</span> ${p.verified ? I.tick : ""}</h3>
             <div class="muted" style="font-size:13.5px;margin-top:2px">${subline(p)}</div>
           </div>
           ${typeBadge(p)}
@@ -5624,39 +5528,33 @@ window.BuddyLegal = (function () {
         ${p.bio ? `<h5>About</h5><p>${esc(p.bio)}</p>` : ""}
         ${p.interests.length ? `<h5>Interests</h5><div class="chips">${p.interests.map((t) => `<span class="chip tag">${esc(t)}</span>`).join("")}</div>` : ""}
         ${p.languages.length ? `<h5>Speaks</h5><p>${p.languages.map(esc).join(" · ")}</p>` : ""}
-        <h5>Reviews</h5><div id="m-reviews">${p.reviews ? reviewsBlock(p.reviews, `No reviews yet. ${esc(p.name)} is new to buddyup.`) : `<p class="hint">Loading reviews…</p>`}</div>
-        ${isLocal && canRequest ? `<div class="note"><span class="e">💛</span><div>${esc(p.name)} is showing people around for free. A <b>generous tip</b> at the end is a great way to say thanks!</div></div>` : ""}
+        <h5>Reviews</h5><div id="m-reviews">${p.reviews ? reviewsBlock(p.reviews, "No reviews yet.") : `<p class="hint">Loading reviews…</p>`}</div>
         ${actions}
       </div>`);
 
     if (!p.reviews) {
       DB.reviewsFor([p.uid]).then((list) => {
         if (!$("#m-reviews")) return;
-        $("#m-reviews").innerHTML = reviewsBlock(list, `No reviews yet. ${esc(p.name)} is new to buddyup.`);
+        $("#m-reviews").innerHTML = reviewsBlock(list, "No reviews yet.");
         $("#m-rating").innerHTML = ratingText(list);
       }).catch(() => { if ($("#m-reviews")) $("#m-reviews").innerHTML = `<p class="hint">Couldn't load reviews.</p>`; });
     }
     if (canRequest) {
-      // When both sides are flexible the slot comes from the day/time fields above.
-      const proposed = () => {
-        const day = $('[name="slotday"]', modalRoot)?.value;
-        return day ? `${day}|${$("#s-from", modalRoot).value}|${$("#s-to", modalRoot).value}` : "";
-      };
+      // Two people who've just moved there pick any day; otherwise a day they're both around.
+      const proposed = () => $('[name="slotday"]', modalRoot)?.value || "";
       let slot = p.anytime ? proposed() : p.match[0], edited = false;
       const box = $("#hello");
-      box.value = opener(user, p, slot);
+      box.value = opener(user, p, slot, opts.place);
       box.addEventListener("input", () => (edited = true));
       if (p.anytime) {
         bindDateFields(modalRoot);
-        const update = () => { slot = proposed(); if (!edited && slot) box.value = opener(user, p, slot); };
+        const update = () => { slot = proposed(); if (!edited && slot) box.value = opener(user, p, slot, opts.place); };
         $('[name="slotday"]', modalRoot).addEventListener("change", update);
-        $("#s-from", modalRoot).addEventListener("change", update);
-        $("#s-to", modalRoot).addEventListener("change", update);
       }
       $("[data-pick]", modalRoot).forEach((b) => b.addEventListener("click", () => {
         slot = b.dataset.pick;
         $("[data-pick]", modalRoot).forEach((x) => x.classList.toggle("active", x === b));
-        if (!edited) box.value = opener(user, p, slot);
+        if (!edited) box.value = opener(user, p, slot, opts.place);
       }));
       $("[data-add]", modalRoot).forEach((b) => b.addEventListener("click", () => {
         box.value = `${box.value.trim()} ${b.dataset.add}`.trim();
@@ -5666,21 +5564,19 @@ window.BuddyLegal = (function () {
       if (opts.focus) setTimeout(() => box.focus(), 260);
       $("#send").addEventListener("click", async () => {
         const text = box.value.trim();
-        if (text.length < 10) return toast("Write a short message so they know what you'd like to do.");
-        if (!slot) return toast("Choose a day and time for the meetup.");
-        const [, from, to] = slot.split("|");
-        if (toMin(to) - toMin(from) < MIN_MEETUP) return toast("Make the meetup at least an hour long.");
-        if (!bookable(slot)) return toast("That time is less than a day away. Pick a later one.");
+        if (text.length < 10) return toast("Write a short message first.");
+        if (!slot) return toast("Choose a day for the meetup.");
+        if (!bookable(slot)) return toast("That day has passed.");
         $("#send").disabled = true;
         const kind = isLocal ? "local" : "buddy";
         const people = {
-          [user.uid]: { name: user.name, photo: user.photoURL || "", from: user.from || "", city: user.trip.city, label: isLocal ? "Traveller" : "Buddy" },
+          [user.uid]: { name: user.name, photo: user.photoURL || "", from: user.from || "", city: opts.place?.city || p.city, label: isLocal ? "Traveller" : "Buddy" },
           [p.uid]: { name: p.name, photo: p.photo, from: p.from, city: p.city, label: isLocal ? "Local" : "Buddy" },
         };
         try {
-          const { chatId } = await DB.requestMeetup({ to: p.uid, kind, slot, slotStart: slotTime(slot, "start").getTime(), slotEnd: slotTime(slot, "end").getTime(), message: text, people });
+          const { chatId } = await DB.requestMeetup({ to: p.uid, kind, slot, slotStart: dayStart(slot).getTime(), slotEnd: dayEnd(slot).getTime(), message: text, people });
           closeModal();
-          toast(`Request sent to ${p.name}. You'll see their reply in Messages.`);
+          toast(`Request sent to ${p.name}.`);
           go(`#/messages/${encodeURIComponent(chatId)}`);
         } catch (e) { $("#send").disabled = false; fail(e); }
       });
@@ -5694,7 +5590,7 @@ window.BuddyLegal = (function () {
       <button class="modal-close" data-close aria-label="Close">${I.close}</button>
       <div class="modal-body plain">
         <h3>Report ${esc(name)}</h3>
-        <p class="hint" style="margin:6px 0 16px">Our safety team reviews every report. ${esc(name)} won't be told who reported them.</p>
+        <p class="hint" style="margin:6px 0 16px">We read every report. ${esc(name)} won't know it was you.</p>
         <div class="chips" id="reasons">${["Fake profile", "Inappropriate messages", "Asked for money", "Made me feel unsafe", "Other"].map((r) => `<button type="button" class="chip" data-reason="${r}">${r}</button>`).join("")}</div>
         <textarea class="textarea" id="rdetail" maxlength="1000" placeholder="Anything else we should know? (optional)" style="margin-top:14px"></textarea>
         <div class="error" id="rerr"></div>
@@ -5710,7 +5606,7 @@ window.BuddyLegal = (function () {
       try {
         await DB.report({ about: uid, chatId: chatId || null, reason, detail: $("#rdetail").value.trim() });
         closeModal();
-        toast(`Thanks. ${name} has been reported. Our safety team will review it.`);
+        toast("Thanks. We'll look into it.");
       } catch (e) { $("#rerr").textContent = DB.friendlyError(e); }
     });
   }
@@ -5778,10 +5674,10 @@ window.BuddyLegal = (function () {
     const p = otherPerson(chat);
     const blocked = (chat.blockedBy || []).length > 0;
     const quick = p.label === "Local"
-      ? ["Where should we meet?", "What's your favourite spot?", "Any food recommendations?", "See you then!"]
+      ? ["Where should we meet?", "What's your favourite spot?", "Any food recommendations?", "See you then"]
       : p.label === "Traveller"
-        ? ["Let's meet at the main square.", "Any food you want to try?", "What are you most excited to see?", "See you then!"]
-        : ["Where should we meet?", "What are you up to today?", "Want to grab food?", "See you then!"];
+        ? ["Let's meet at the main square.", "Any food you want to try?", "What are you most excited to see?", "See you then"]
+        : ["Where should we meet?", "What are you up to today?", "Want to grab food?", "See you then"];
     pane.innerHTML = `
       <div class="thread-head">
         <a class="icon-btn back" href="#/messages" aria-label="Back">${I.back}</a>
@@ -5889,7 +5785,7 @@ window.BuddyLegal = (function () {
       <button class="modal-close" data-close aria-label="Close">${I.close}</button>
       <div class="modal-body plain">
         <h3>Delete this chat?</h3>
-        <p style="margin-top:10px">The conversation with ${esc(p.name)} will be removed from your Messages. ${esc(p.name)} keeps their copy. If either of you sends a new message, the chat comes back without the old messages.</p>
+        <p style="margin-top:10px">It's removed from your Messages only. ${esc(p.name)} keeps their copy.</p>
         ${upcoming ? `<div class="check-result warn" style="margin-top:12px">Your ${upcoming.status === "confirmed" ? "meetup" : "request"} for ${slotLabel(upcoming.slot)} isn't cancelled. To cancel it, go to Meetups.</div>` : ""}
         <div class="error" id="dcerr"></div>
         <div class="modal-buttons">
@@ -5914,7 +5810,7 @@ window.BuddyLegal = (function () {
     const text = `buddyup safety: I'm meeting ${p.name}${m ? ` on ${slotLabel(m.slot)}` : ""}${p.city ? ` in ${p.city}` : ""}. I'll check in afterwards.`;
     try {
       if (navigator.share) await navigator.share({ title: "My buddyup meetup", text });
-      else { await navigator.clipboard.writeText(text); toast("Meetup details copied. Paste them to a friend."); }
+      else { await navigator.clipboard.writeText(text); toast("Copied."); }
     } catch { /* share sheet dismissed */ }
   }
 
@@ -5924,30 +5820,30 @@ window.BuddyLegal = (function () {
   function safetyPage(user, root) {
     root.innerHTML = `
       <div class="page">
-        <div class="greet fade"><h1>Safety guidelines</h1><p class="muted">buddyup works because everyone looks out for each other. Please read these before your first meetup.</p></div>
+        <div class="greet fade"><h1>Safety</h1></div>
         <section class="panel fade">
           <h3>Before you meet</h3>
-          ${guideList([["💬", "Chat in-app first", "Get to know each other on buddyup and keep the conversation here until you trust each other."],
-            ["👀", "Check the profile", "Look at their photo, reviews and verification. Locals have passed residency and ID checks."],
-            ["📲", "Tell someone", "Share who you're meeting, where and when with a friend (chat menu → Share meetup details)."],
-            ["📍", "Plan a public spot", "Agree on a busy café, square or landmark for the first meetup, never a private home."]])}
+          ${guideList([["💬", "Chat in-app first", "Keep the conversation in the app until you trust each other."],
+            ["👀", "Check the profile", "Look at their photo and reviews. Locals have been verified by us."],
+            ["📲", "Tell someone", "Let a friend know who you're meeting, where and when."],
+            ["📍", "Plan a public spot", "A busy café or square for the first meetup. Not someone's home."]])}
           <h3 style="margin-top:28px">During the meetup</h3>
           ${guideList([["☕", "Stay in public", "Keep first meetups in busy, well-lit places, especially at night."],
             ["🔋", "Stay charged", "Keep your phone charged and know how you'll get back."],
             ["🍹", "Watch your drink", "Keep your drink and belongings with you at all times."],
-            ["🚩", "Trust your gut", "It's always OK to leave. You don't owe anyone an explanation."]])}
+            ["🚩", "Trust your gut", "You can leave whenever you want."]])}
           <h3 style="margin-top:28px">Money &amp; respect</h3>
-          ${guideList([["💸", "No pressure to pay", "buddyup is free. Tips to locals are always optional. Never pay in advance."],
-            ["🤝", "Respect boundaries", "No means no. Don't pressure anyone into plans, places or photos they're not comfortable with."]])}
+          ${guideList([["💸", "No pressure to pay", "buddyup is free. Tips for locals are optional. Never pay in advance."],
+            ["🤝", "Respect boundaries", "Don't push anyone into plans, places or photos."]])}
           <h3 style="margin-top:28px">If something feels wrong</h3>
-          ${guideList([["🛑", "Report it", "Use Report on the profile or in the chat menu. Our team reviews every report and the person isn't told who reported them."],
-            ["⛔", "Block them", "Blocking from the chat menu stops all messages straight away."],
-            ["🚨", "In an emergency", "Contact local emergency services first (112 in Europe, 911 in North America), then tell us."],
-            ["✉️", "Email us", `Write to <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a> about anything else that worries you.`]])}
+          ${guideList([["🛑", "Report it", "Use Report on their profile or in the chat menu. They won't know it was you."],
+            ["⛔", "Block them", "From the chat menu. It stops all messages."],
+            ["🚨", "In an emergency", "Call the local emergency number first (112 in Europe, 911 in North America)."],
+            ["✉️", "Email us", `<a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>`]])}
           <h3 style="margin-top:28px">How we verify locals</h3>
-          ${guideList([["🏠", "Residency", "At least 6 months in the city; postcode checked against their neighbourhood."],
-            ["🧭", "Local knowledge", "Questions about hidden spots, food and getting around."],
-            ["🪪", "ID check", "Matched with their profile photo by our team before approval, and stored privately."]])}
+          ${guideList([["🏠", "Residency", "At least 6 months in the city."],
+            ["🧭", "Local knowledge", "Questions about the city."],
+            ["🪪", "ID check", "Compared with their profile photo."]])}
         </section>
       </div>`;
   }
@@ -5961,7 +5857,6 @@ window.BuddyLegal = (function () {
       <div class="page">
         <section class="contact fade">
           <h1>Get in touch</h1>
-          <p class="muted">We'd love to hear from you.</p>
           <a class="contact-email" href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>
           <button type="button" class="link-btn" id="copy-email">Copy email address</button>
         </section>
@@ -6010,11 +5905,11 @@ window.BuddyLegal = (function () {
         <div class="verify fade">
           <h1>${updated ? "We've updated our Terms" : "Our Terms of Service"}</h1>
           <p class="sub">${updated
-            ? "Please read and accept the new version of our Terms of Service to keep using buddyup. Until you accept, the previous version still applies to you."
-            : "To keep using buddyup, please read and accept our Terms of Service. They explain what buddyup is (and isn't), the rules for meetups and how liability works."}</p>
+            ? "We've changed our Terms of Service. Please accept the new version to continue."
+            : "Please accept our Terms of Service to continue."}</p>
           <form id="tform" novalidate>
             <label class="check"><input type="checkbox" name="agree"/><span>I agree to the <a href="#/terms" target="_blank" rel="noopener">Terms of Service</a>.</span></label>
-            <p class="hint legal-note">Read how we handle your data in our <a href="#/privacy" target="_blank" rel="noopener">Privacy Policy</a>. If you'd rather not continue, email <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a> and we'll delete your account.</p>
+            <p class="hint legal-note">See also our <a href="#/privacy" target="_blank" rel="noopener">Privacy Policy</a>. To delete your account instead, email <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>.</p>
             <div class="error" id="err"></div>
             <button class="btn btn-primary btn-block" type="submit">Continue ${I.arrow}</button>
           </form>
@@ -6023,7 +5918,7 @@ window.BuddyLegal = (function () {
     $("#logout").addEventListener("click", () => DB.signOut());
     $("#tform").addEventListener("submit", async (e) => {
       e.preventDefault();
-      if (!e.target.agree.checked) return ($("#err").textContent = "Please tick the box to accept the Terms of Service.");
+      if (!e.target.agree.checked) return ($("#err").textContent = "Tick the box to continue.");
       try {
         await DB.acceptTerms(LEGAL_VERSION);
         await settle();
@@ -6036,9 +5931,8 @@ window.BuddyLegal = (function () {
   function profilePage(user, root) {
     const v = user.verification;
     const localStatus = !v ? "Not set up yet" : user.approved ? `✓ Verified in ${esc(user.localCity)}` : v.completed ? `In review · ${esc(user.localCity)}` : `Verification in progress · ${esc(user.localCity)}`;
-    const travellerStatus = !user.trip?.city ? "No city chosen yet"
-      : moved(user.trip) ? `New in ${esc(user.trip.city)}`
-      : `Exploring ${esc(user.trip.city)}${tripDates(user.trip) ? ` · ${tripDates(user.trip)}` : ""}`;
+    const home = homeOf(user), trip = tripOf(user);
+    const travellerStatus = trip ? `${esc(trip.city)}, ${range(trip)}` : home ? `Living in ${esc(home.city)}` : "Not set up";
     const modeRow = (key, ico, title, status) => {
       const on = user.mode === key;
       const label = key === "local" && !v ? "Become a local" : "Switch";
@@ -6070,8 +5964,10 @@ window.BuddyLegal = (function () {
             <h3>How you use buddyup</h3>
             ${modeRow("traveller", "🎒", "Traveller", travellerStatus)}
             ${modeRow("local", "🏠", "Local", localStatus)}
-            ${user.mode === "traveller" ? `<a class="list-item" href="#/discover"><span class="li-ico">📍</span><span class="grow">Change city &amp; times<small>${travellerStatus}</small></span><span class="chev">${I.chev}</span></a>` : ""}
-            ${user.cancellations ? `<div class="list-item"><span class="li-ico">↩️</span><span class="grow">${plural(user.cancellations, "cancelled meetup")}<small>Cancelling confirmed meetups moves you lower in search results.</small></span></div>` : ""}
+            ${user.mode === "traveller" ? `
+              <button class="list-item" data-edit="home"><span class="li-ico">🏡</span><span class="grow">Home city<small>${home ? esc(home.city) : "Not set"}</small></span><span class="chev">${I.chev}</span></button>
+              <button class="list-item" data-edit="trip"><span class="li-ico">✈️</span><span class="grow">Trip<small>${trip ? `${esc(trip.city)}, ${range(trip)}` : "None planned"}</small></span><span class="chev">${I.chev}</span></button>` : ""}
+            ${user.cancellations ? `<div class="list-item"><span class="li-ico">↩️</span><span class="grow">${plural(user.cancellations, "cancelled meetup")}<small>These lower you in search results.</small></span></div>` : ""}
             ${user.mode === "local" && user.approved ? `<a class="list-item" href="#/availability"><span class="li-ico">📅</span><span class="grow">Availability<small>${user.availability ? `Set until ${fmtYmd(user.availability.horizon)}` : "Not set yet"}</small></span><span class="chev">${I.chev}</span></a>` : ""}
             <h3 style="margin-top:26px">Settings</h3>
             <button class="list-item" id="edit"><span class="li-ico">✏️</span><span class="grow">Edit profile<small>Photo, name, bio and interests</small></span><span class="chev">${I.chev}</span></button>
@@ -6085,16 +5981,17 @@ window.BuddyLegal = (function () {
         </div>
         <section class="panel fade" style="margin-top:28px">
           <h3>Reviews about you</h3>
-          ${reviewsBlock(DB.cache.reviewsToMe, "No reviews yet. After each meetup, the people you meet can rate and review you here.")}
+          ${reviewsBlock(DB.cache.reviewsToMe, "No reviews yet.")}
         </section>
       </div>`;
     $("[data-switch]", root).forEach((b) => b.addEventListener("click", () => switchMode(me(), b.dataset.switch)));
+    $("[data-edit]", root).forEach((b) => b.addEventListener("click", () => openPlaceForm(me(), b.dataset.edit)));
     $("#photo").addEventListener("change", (e) => uploadPhoto(e.target.files[0]));
     $("#edit").addEventListener("click", () => openEditProfile(me()));
     $("#delete-account").addEventListener("click", () => openDeleteAccount());
     $("#invite").addEventListener("click", async () => {
-      const text = `Join me on buddyup to find a local or a travel buddy wherever you go: ${location.origin}${location.pathname}`;
-      try { if (navigator.share) await navigator.share({ title: "buddyup", text }); else { await navigator.clipboard.writeText(text); toast("Invite link copied!"); } } catch { /* dismissed */ }
+      const text = `I'm on buddyup: ${location.origin}${location.pathname}`;
+      try { if (navigator.share) await navigator.share({ title: "buddyup", text }); else { await navigator.clipboard.writeText(text); toast("Link copied."); } } catch { /* dismissed */ }
     });
     $("#logout").addEventListener("click", () => {
       state.thread?.unsub();
@@ -6111,10 +6008,9 @@ window.BuddyLegal = (function () {
       <button class="modal-close" data-close aria-label="Close">${I.close}</button>
       <div class="modal-body plain">
         <h3>Delete your account?</h3>
-        <div class="check-result warn" style="margin:12px 0">⚠️ <strong>This is permanent and can't be undone.</strong> You'd have to sign up again from scratch.</div>
-        <p>We'll delete your profile and photo, your trip and availability, your private details (email, phone, verification answers, ID and selfie) and your sign-in.</p>
-        <p style="margin-top:8px">Upcoming meetups and requests are cancelled and the other person is told. Messages you've sent stay in their chat, which is closed, and reviews you've written stay, signed “Former member”.</p>
-        <p class="hint" style="margin-top:12px">You'll be asked to sign in with Google again to confirm it's you.</p>
+        <div class="check-result warn" style="margin:12px 0"><strong>This can't be undone.</strong></div>
+        <p>We delete your profile, photo, trips, private details and sign-in, and cancel your upcoming meetups. Messages you've sent stay in other people's chats, and your reviews stay, signed “Former member”.</p>
+        <p class="hint" style="margin-top:12px">You'll sign in with Google again to confirm.</p>
         <div class="field" style="margin-top:12px"><label for="dconfirm">Type DELETE to confirm</label><input class="input" id="dconfirm" autocomplete="off" autocapitalize="characters"/></div>
         <div class="error" id="derr"></div>
         <div class="modal-buttons">
@@ -6124,7 +6020,7 @@ window.BuddyLegal = (function () {
       </div>`);
     $("#dsend").addEventListener("click", async () => {
       const btn = $("#dsend"), err = $("#derr");
-      if ($("#dconfirm").value.trim() !== "DELETE") return (err.textContent = "Type DELETE (in capitals) to confirm.");
+      if ($("#dconfirm").value.trim() !== "DELETE") return (err.textContent = "Type DELETE to confirm.");
       btn.disabled = true;
       btn.textContent = "Deleting…";
       try {
@@ -6134,7 +6030,7 @@ window.BuddyLegal = (function () {
         await DB.deleteAccount();
         closeModal();
         state.authTab = "signup";
-        toast("Your buddyup account has been deleted.");
+        toast("Account deleted.");
         go("#/");
       } catch (e) {
         btn.disabled = false;
@@ -6169,7 +6065,7 @@ window.BuddyLegal = (function () {
           </div>
           <div class="field"><label>Name</label><input class="input" name="name" value="${esc(user.name)}" maxlength="60"/></div>
           ${user.role === "traveller" || user.from ? `<div class="field"><label>Where are you from?</label><input class="input" name="from" value="${esc(user.from || "")}" placeholder="City or country"/></div>` : ""}
-          <div class="field"><label>About you</label><textarea class="textarea" name="bio" maxlength="400" placeholder="A line or two about you: what you love doing, what you'd like to see.">${esc(user.bio || "")}</textarea></div>
+          <div class="field"><label>About you</label><textarea class="textarea" name="bio" maxlength="400" placeholder="A bit about you">${esc(user.bio || "")}</textarea></div>
           <div class="field"><label>Interests</label>
             <div class="chips">${INTERESTS.map((t) => `<button type="button" class="chip ${interests.includes(t) ? "active" : ""}" data-interest="${esc(t)}">${esc(t)}</button>`).join("")}</div></div>
           <div class="error" id="eerr"></div>
@@ -6188,11 +6084,11 @@ window.BuddyLegal = (function () {
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       const name = form.name.value.trim();
-      if (!name) return ($("#eerr").textContent = "Please add your name.");
+      if (!name) return ($("#eerr").textContent = "Add your name.");
       const patch = { name, bio: form.bio.value.trim(), interests };
       if (form.from) {
         const from = form.from.value.trim() ? listCity(form.from.value, false) : "";
-        if (form.from.value.trim() && !from) return ($("#eerr").textContent = "Please choose where you're from (a city or country) from the suggestions.");
+        if (form.from.value.trim() && !from) return ($("#eerr").textContent = "Choose a city or country from the list.");
         patch.from = from;
       }
       DB.saveProfile(patch).catch(fail);
@@ -6211,7 +6107,7 @@ window.BuddyLegal = (function () {
       <section class="verify-page">
         <div class="verify fade">
           <h1>When were you born?</h1>
-          <p class="sub">We now show everyone's age on their profile so people know who they're meeting. buddyup is for people aged ${MIN_AGE} and over.</p>
+          <p class="sub">Your age is shown on your profile. buddyup is for people aged ${MIN_AGE} and over.</p>
           <form id="bform" novalidate>
             ${birthField()}
             <div class="error" id="err"></div>
@@ -6243,7 +6139,7 @@ window.BuddyLegal = (function () {
       <section class="verify-page">
         <div class="verify fade">
           <h1>Add a photo of yourself</h1>
-          <p class="sub">We need a photo of you to establish credibility. People are much more likely to meet someone they can see, and everyone knows who they're meeting.</p>
+          <p class="sub">People are more likely to meet someone they can see.</p>
           <div class="photo-step">
             <div class="photo-preview" id="preview">${I.user}</div>
             <div class="photo-actions">
@@ -6252,9 +6148,9 @@ window.BuddyLegal = (function () {
             </div>
           </div>
           <ul class="photo-rules">
-            <li>Just you, with your face clearly visible. No sunglasses, heavy filters or group shots.</li>
-            <li>JPG, PNG or HEIC up to 10 MB. We shrink it and remove location data before uploading.</li>
-            <li>Only people signed in to buddyup can see your photo.</li>
+            <li>Just you, with your face clearly visible.</li>
+            <li>JPG, PNG or HEIC, up to 10 MB.</li>
+            <li>Only signed-in members can see it.</li>
           </ul>
           <div class="error" id="err"></div>
           <button class="btn btn-primary btn-block" id="save" disabled>Continue ${I.arrow}</button>
@@ -6262,7 +6158,7 @@ window.BuddyLegal = (function () {
       </section>`;
     const pick = (file) => {
       if (!file) return;
-      if (file.size > 10 * 1024 * 1024) return ($("#err").textContent = "That photo is over 10 MB. Please choose a smaller one.");
+      if (file.size > 10 * 1024 * 1024) return ($("#err").textContent = "That photo is over 10 MB.");
       picked = file;
       $("#preview").innerHTML = `<img src="${URL.createObjectURL(file)}" alt="Your photo"/>`;
       $("#err").textContent = "";
@@ -6277,7 +6173,7 @@ window.BuddyLegal = (function () {
       btn.textContent = "Uploading…";
       try {
         await DB.uploadAvatar(picked);
-        toast("Looking good! Your photo is on your profile.");
+        toast("Photo saved.");
         await settle();
         render();
       } catch (e) {
@@ -6309,7 +6205,7 @@ window.BuddyLegal = (function () {
       <button class="modal-close" data-close aria-label="Close">${I.close}</button>
       <div class="modal-body plain center">
         <h3 style="justify-content:center">Take a selfie</h3>
-        <p class="hint" style="margin:4px 0 14px">Face the camera in good light, with your whole face in view.</p>
+        <p class="hint" style="margin:4px 0 14px">Face the camera in good light.</p>
         <div class="camera"><video id="cam" autoplay playsinline muted></video><canvas id="shot" hidden></canvas></div>
         <div class="camera-actions">
           <button class="btn btn-primary" id="snap">📸 Capture</button>

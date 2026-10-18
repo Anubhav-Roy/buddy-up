@@ -681,3 +681,20 @@ code { font-size: 12px; background: var(--field); padding: 1px 5px; border-radiu
 .slot-pick { display: grid; gap: 10px; }
 .slot-pick .add-range { display: flex; align-items: center; gap: 8px; }
 .slot-pick select { flex: 1; min-width: 0; }
+
+/* ---------- Day picker (local availability) ---------- */
+.day-picker { max-width: 560px; margin: 0 auto; }
+.day-picker .mday { align-items: center; justify-content: center; text-align: center; }
+.day-picker .mday.has { border-color: var(--teal); }
+.day-picker .mday.today .num { text-decoration: underline; text-underline-offset: 3px; }
+.day-picker .copy-row { margin-top: 16px; justify-content: center; }
+@media (max-width: 760px) { .day-picker .mday .t { display: none; } }
+
+/* ---------- Discover: where you're looking ---------- */
+.start-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 640px; }
+.start-choices .role { padding: 22px; }
+.start-choices .role strong { font-size: 16px; }
+.place-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+.place-bar .seg button span { font-size: 12px; opacity: 0.75; margin-left: 4px; }
+.place-links { display: flex; gap: 16px; flex-wrap: wrap; }
+@media (max-width: 520px) { .start-choices { grid-template-columns: 1fr; } }

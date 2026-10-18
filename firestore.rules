@@ -68,7 +68,9 @@ service cloud.firestore {
         && request.resource.data.participants == [request.auth.uid, request.resource.data.to]
         && request.resource.data.to != request.auth.uid
         && request.resource.data.status == "requested"
-        && request.resource.data.slotStart > request.time + duration.value(23, "h")
+        // A meetup is a day (the time is agreed in the chat); it can be requested until that day ends.
+        && request.resource.data.slotEnd > request.time
+        && request.resource.data.slotEnd > request.resource.data.slotStart
         && (request.resource.data.kind != "local"
             || get(/databases/$(database)/documents/users/$(request.resource.data.to)).data.approved == true);
       allow update: if inMeetup() && (
@@ -79,7 +81,7 @@ service cloud.firestore {
         // requester cancels a request, or either side cancels a confirmed meetup — before it
         // starts, and always with a reason the other person can see
         || ((request.auth.uid == resource.data.from || resource.data.status == "confirmed")
-          && resource.data.status in ["requested", "confirmed"] && request.time < resource.data.slotStart
+          && resource.data.status in ["requested", "confirmed"] && request.time < resource.data.slotEnd
           && request.resource.data.status == "cancelled"
           && request.resource.data.cancelledBy == request.auth.uid
           && request.resource.data.cancelReason is string

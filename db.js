@@ -131,11 +131,13 @@ window.BuddyDB = (function () {
   // ---------- Profile ----------
   function prepare(patch) {
     const out = { ...patch };
-    if (patch.trip) {
-      out.trip = { ...patch.trip, windows: packWindows(patch.trip.windows) };
-      out.tripCity = patch.trip.city;
-      out.tripEnd = patch.trip.end || ""; // people who've just moved have no end date
+    // tripCity / homeCity are kept next to the maps so other people can query them.
+    if ("trip" in patch) {
+      out.trip = patch.trip ? { ...patch.trip, windows: packWindows(patch.trip.windows) } : null;
+      out.tripCity = patch.trip?.city || "";
+      out.tripEnd = patch.trip?.end || "";
     }
+    if ("home" in patch) out.homeCity = patch.home?.city || "";
     if (patch.availability) out.availability = { ...patch.availability, windows: packWindows(patch.availability.windows), booked: patch.availability.booked || [] };
     return out;
   }
@@ -165,7 +167,13 @@ window.BuddyDB = (function () {
   // ---------- People ----------
   const getProfile = async (uid) => { const s = await db.doc(`users/${uid}`).get(); return s.exists ? toUser(uid, s.data()) : null; };
   const findLocals = async (city) => (await db.collection("users").where("localCity", "==", city).where("approved", "==", true).limit(200).get()).docs.map((d) => toUser(d.id, d.data()));
-  const findTravellers = async (city) => (await db.collection("users").where("tripCity", "==", city).limit(200).get()).docs.map((d) => toUser(d.id, d.data()));
+  // Travellers with a trip to the city, and people who've just moved there.
+  async function findTravellers(city) {
+    const [trips, homes] = await Promise.all(["tripCity", "homeCity"].map((f) => db.collection("users").where(f, "==", city).limit(200).get()));
+    const byId = new Map();
+    [...trips.docs, ...homes.docs].forEach((d) => byId.set(d.id, toUser(d.id, d.data())));
+    return [...byId.values()];
+  }
 
   async function reviewsFor(uids) {
     const list = [...new Set(uids)].filter(Boolean);

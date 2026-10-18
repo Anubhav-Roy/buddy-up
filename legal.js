@@ -59,7 +59,7 @@ window.BuddyLegal = (function () {
     <p>5.1 You alone decide whether you meet someone, and when, where and for how long. You take part in meetups on your own responsibility.</p>
     <p>5.2 Please follow our safety guidelines (Safety page in the app). In particular: meet in busy public places, at least the first time; tell someone you trust who you are meeting, where and when; keep conversations on buddyup until you trust each other; and leave whenever you feel uncomfortable.</p>
     <p>5.3 You are responsible for your own conduct, health and belongings during meetups. We recommend that you have adequate travel, health and personal liability insurance.</p>
-    <p>5.4 Meetup requests and acceptances are commitments between users. You may cancel a meetup before it starts, giving a reason. The other person sees your reason. Cancelling a meetup that has already been confirmed is recorded on your profile and moves you lower in other people's search results (section 9.3).</p>
+    <p>5.4 Meetup requests and acceptances are commitments between users. A meetup is arranged for a day; you agree on the time with the other person in the chat. You may cancel a meetup until the end of that day, giving a reason. The other person sees your reason. Cancelling a meetup that has already been confirmed is recorded on your profile and moves you lower in other people's search results (section 9.3).</p>
     <p>5.5 buddyup is not an emergency service and does not monitor meetups. In an emergency, contact the local emergency services (112 in the EU).</p>
 
     <h2>6. Rules of conduct</h2>
@@ -92,7 +92,7 @@ window.BuddyLegal = (function () {
     <h2>9. Our service</h2>
     <p>9.1 Because buddyup is free, there is no entitlement to any particular feature or to uninterrupted availability. We may change, restrict or discontinue features. We will tell you in good time before changes that significantly affect how you use buddyup, unless an immediate change is necessary for security or legal reasons.</p>
     <p>9.2 We do not guarantee that you will find a match, or that any user will reply to you or meet you.</p>
-    <p>9.3 How search results are ranked: we only show people who are free for at least an hour at the same times as you. Among them, people who have cancelled fewer confirmed meetups are shown first; after that, people with more matching times and more shared interests rank higher.</p>
+    <p>9.3 How search results are ranked: we only show people who are in the city on at least one of the same days as you. People who have just moved to a city are shown to each other until they have had a meetup together. Among them, people who have cancelled fewer confirmed meetups are shown first; after that, people with more matching times and more shared interests rank higher.</p>
 
     <h2>10. Liability</h2>
     <p>10.1 We are liable without limitation (a) for damage caused intentionally or through gross negligence, (b) for injury to life, body or health, (c) under the German Product Liability Act, and (d) where we have given a guarantee.</p>
@@ -137,7 +137,7 @@ window.BuddyLegal = (function () {
     <h3>2.1 Your account</h3>
     <p>Email address, password (stored only in encrypted form by our provider Firebase Authentication) or, if you sign in with Google, your Google account identifier, name, email and profile picture. Purpose: creating your account and letting you sign in. Legal basis: Art. 6(1)(b) GDPR (performing our contract with you). Kept until you delete your account.</p>
     <h3>2.2 Your profile</h3>
-    <p>Name, profile photo, age (calculated from your date of birth), where you are from or the city you live in, interests, the "about you" text, languages, whether you are using buddyup as a traveller or local, your trip (city, dates and the times you are free), a local's availability, ratings and reviews, the number of confirmed meetups you have cancelled, and, for locals, verification status, trust score and how long they have lived in the city. Your profile is visible to other signed-in users; it is what lets people find and decide to meet each other. Legal basis: Art. 6(1)(b) GDPR. Kept until you delete your account.</p>
+    <p>Name, profile photo, age (calculated from your date of birth), where you are from or the city you live in, interests, the "about you" text, languages, whether you are using buddyup as a traveller or local, your trip (city and dates, or that you have just moved there), the days a local is free, ratings and reviews, the number of confirmed meetups you have cancelled, and, for locals, verification status, trust score and how long they have lived in the city. Your profile is visible to other signed-in users; it is what lets people find and decide to meet each other. Legal basis: Art. 6(1)(b) GDPR. Kept until you delete your account.</p>
     <h3>2.3 Your date of birth</h3>
     <p>We use your date of birth to confirm that you are at least 18 and to show your age on your profile. The date itself is visible only to you; others see only your age. Legal basis: Art. 6(1)(b) GDPR. Kept until you delete your account.</p>
     <h3>2.4 Local verification</h3>
