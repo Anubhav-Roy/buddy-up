@@ -131,6 +131,7 @@
   function render() {
     const { page, id } = route();
     if (state.thread && (page !== "messages" || id !== state.thread.id)) { state.thread.unsub(); state.thread = null; }
+    if (LEGAL[page]) return renderLegal(page); // static: shown even before sign-in has loaded
     if (!DB.ready) return renderSetupNeeded();
     const c = DB.cache;
     if (!c.authKnown || (c.uid && !c.loaded) || state.signingUp) return renderLoading();
@@ -138,6 +139,7 @@
     if (!c.uid) return renderLanding();
     if (!c.profile) return renderCompleteProfile();
     const user = me();
+    if (!user.termsAccepted[LEGAL_VERSION]) return renderAcceptTerms(user);
     if (!user.birthdate) return renderAddBirthdate();
     if (user.age !== ageFrom(user.birthdate)) DB.saveProfile({ age: ageFrom(user.birthdate) }).catch(fail); // birthdays
     // Everyone adds a profile photo first; for locals it's also what reviewers match their ID against.
@@ -145,6 +147,10 @@
     if (user.mode === "local" && !user.verification?.completed) return renderVerify(user);
     if (page === "trip") return go("#/discover");
     if (user.availability) releaseCancelledSlots(user); // locals only have availability
+    if (user.approved && user.verification?.idFile && !user.verification.idDeletedAt && !state.idDeleting) {
+      state.idDeleting = true;
+      DB.deleteIdPhoto().catch(() => {}).finally(() => (state.idDeleting = false));
+    }
     if (user.trip) syncBusyTimes(user);
     renderApp(user);
   }
@@ -172,7 +178,7 @@
     // Outside the app shell, only the loading / finish-profile screens react to data (the profile
     // appearing); forms like local verification must not re-render while someone fills them in.
     if (state.screen !== "app") {
-      if (kind === "profile" && !state.signingUp && (["loading", "complete"].includes(state.screen) || (state.screen === "birthdate" && me()?.birthdate))) render();
+      if (kind === "profile" && !state.signingUp && (["loading", "complete"].includes(state.screen) || (state.screen === "birthdate" && me()?.birthdate) || (state.screen === "terms" && me()?.termsAccepted[LEGAL_VERSION]))) render();
       return;
     }
     if (kind === "meetups") autoComplete();
@@ -308,7 +314,8 @@
             ${birthField()}
             <div class="field"><label>What are you into?</label>
               <div class="chips">${INTERESTS.slice(0, 10).map((t) => `<button type="button" class="chip ${state.interests.includes(t) ? "active" : ""}" data-interest="${esc(t)}">${esc(t)}</button>`).join("")}</div></div>
-            <label class="check"><input type="checkbox" name="adult"/> I'm 18 or older and agree to the buddyup community guidelines.</label>
+            <label class="check"><input type="checkbox" name="adult"/><span>I'm 18 or older and I agree to the <a href="#/terms" target="_blank" rel="noopener">Terms of Service</a>.</span></label>
+            <p class="hint legal-note">Read how we handle your data in our <a href="#/privacy" target="_blank" rel="noopener">Privacy Policy</a>.</p>
             <div class="error" id="err"></div>
             <button class="btn ${local ? "btn-coral" : "btn-primary"} btn-block" type="submit">${local ? "Continue to verification" : "Create my profile"} ${I.arrow}</button>
           </form>
@@ -325,7 +332,7 @@
       const err = $("#err");
       if (!f.name?.trim() || !f.city?.trim()) return (err.textContent = local ? "Please add your name and the city you live in." : "Please add your name and where you're from.");
       if (birthError(f.birthdate)) return (err.textContent = birthError(f.birthdate));
-      if (!f.adult) return (err.textContent = "You need to be 18+ and accept the guidelines.");
+      if (!f.adult) return (err.textContent = "Please confirm you're 18 or older and agree to the Terms of Service.");
       // Hold the loading screen until the profile and private details are both saved: they
       // arrive separately, and rendering in between looks like the date of birth is missing.
       state.signingUp = true;
@@ -348,7 +355,7 @@
     const local = state.role === "local";
     return DB.createProfile(au.uid,
       { name, role: state.role, mode: state.role, interests: state.interests, from: local ? "" : titleCase(city), localCity: local ? titleCase(city) : "", photoURL: au.photoURL || "", available: true, trip: null, age: ageFrom(birthdate) },
-      { email: au.email || "", verification: local ? { step: 0 } : null, birthdate },
+      { email: au.email || "", verification: local ? { step: 0 } : null, birthdate, termsVersion: LEGAL_VERSION },
     );
   }
 
@@ -474,7 +481,8 @@
         ${birthField()}
         <div class="field"><label>What are you into?</label>
           <div class="chips">${INTERESTS.slice(0, 10).map((t) => `<button type="button" class="chip ${state.interests.includes(t) ? "active" : ""}" data-interest="${esc(t)}">${esc(t)}</button>`).join("")}</div></div>
-        <label class="check"><input type="checkbox" name="adult"/> I'm 18 or older and agree to the buddyup community guidelines.</label>
+        <label class="check"><input type="checkbox" name="adult"/><span>I'm 18 or older and I agree to the <a href="#/terms" target="_blank" rel="noopener">Terms of Service</a>.</span></label>
+            <p class="hint legal-note">Read how we handle your data in our <a href="#/privacy" target="_blank" rel="noopener">Privacy Policy</a>.</p>
         <div class="error" id="err"></div>
         <button class="btn ${local ? "btn-coral" : "btn-primary"} btn-block" type="submit">${local ? "Continue to verification" : "Create account"} ${I.arrow}</button>
         ${local ? `<p class="hint center" style="margin-top:12px">🛡️ Locals complete a short verification so travellers know who they're meeting.</p>` : ""}
@@ -518,7 +526,7 @@
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return (err.textContent = "That email doesn't look right.");
         if ((f.password || "").length < 8) return (err.textContent = "Password needs at least 8 characters.");
         if (birthError(f.birthdate)) return (err.textContent = birthError(f.birthdate));
-        if (!f.adult) return (err.textContent = "You need to be 18+ and accept the guidelines.");
+        if (!f.adult) return (err.textContent = "Please confirm you're 18 or older and agree to the Terms of Service.");
         state.signingUp = true; // hold the loading screen until the profile exists
         render();
         try {
@@ -693,12 +701,12 @@
       <p class="hint">Tip: specific answers (names, lines, streets) get approved faster.</p>`;
     if (step === 2) return `
       <label class="upload ${v.idFile ? "done" : ""}"><input type="file" name="idDoc" accept="image/*"/><span class="ico">🪪</span><span class="label">${v.idFile ? "✓ ID uploaded. Choose a file to replace it" : "Upload a photo of your passport, ID card or driving licence"}</span></label>
-      <p class="hint">🔒 Your ID is stored privately. Only the buddyup review team sees it, to match it with your profile photo.</p>`;
+      <p class="hint">🔒 Your ID is stored privately. Only the buddyup review team sees it, to match it with your profile photo, and it's deleted once you're approved. You can black out everything except your photo, name, date of birth and the expiry date.</p>`;
     return `
       <label class="check"><input type="checkbox" name="p1"/> I'll meet travellers in public places, especially the first time.</label>
       <label class="check"><input type="checkbox" name="p2"/> I won't ask for payment. Tips are entirely voluntary and up to the traveller.</label>
       <label class="check"><input type="checkbox" name="p3"/> I'll respect boundaries and never pressure anyone into plans they're uncomfortable with.</label>
-      <label class="check"><input type="checkbox" name="p4"/> I understand buddyup may run a background check and remove me for breaking the guidelines.</label>
+      <label class="check"><input type="checkbox" name="p4"/> I understand buddyup may withdraw my verification or remove me if I break the Terms of Service.</label>
       <div class="field" style="margin-top:8px"><label>Anything else travellers should know about you? (optional)</label>
         <textarea class="textarea" name="about" placeholder="I'm a teacher, I love jazz bars and I've hosted 20+ friends from abroad…">${esc(v.about)}</textarea></div>`;
   }
@@ -2073,7 +2081,7 @@
 
   // ---------- Contact ----------
   const CONTACT_EMAIL = "contact@buddyup.fyi";
-  const footer = () => `<footer class="footer"><div class="container">${logo()}<span><a href="#/contact">Contact us</a> · © ${new Date().getFullYear()} buddyup</span></div></footer>`;
+  const footer = () => `<footer class="footer"><div class="container">${logo()}<span class="footer-links"><a href="#/terms">Terms</a> · <a href="#/privacy">Privacy</a> · <a href="#/imprint">Imprint</a> · <a href="#/contact">Contact</a> · © ${new Date().getFullYear()} buddyup</span></div></footer>`;
 
   function contactBody() {
     return `
@@ -2103,6 +2111,52 @@
       <main class="container" id="page">${contactBody()}</main>
       ${footer()}`;
     bindContact(app);
+  }
+
+  // ---------- Legal (texts in legal.js) ----------
+  const LEGAL = window.BuddyLegal.pages;
+  const LEGAL_VERSION = window.BuddyLegal.VERSION;
+
+  function renderLegal(page) {
+    state.screen = "legal";
+    app.innerHTML = `
+      <header class="nav"><div class="container">${logo()}<a class="btn btn-soft btn-sm" href="#/">Back to buddyup</a></div></header>
+      <main class="container"><article class="legal fade">${LEGAL[page]}</article></main>
+      ${footer()}`;
+    window.scrollTo(0, 0);
+  }
+
+  // Everyone must accept the current Terms (new accounts at sign-up; existing accounts and
+  // every new version here). Acceptances are stored per version with a server timestamp.
+  function renderAcceptTerms(user) {
+    state.screen = "terms";
+    const updated = Object.keys(user.termsAccepted).length > 0;
+    app.innerHTML = `
+      <header class="nav"><div class="container">${logo()}<button class="btn btn-soft btn-sm" id="logout">Log out</button></div></header>
+      <section class="verify-page">
+        <div class="verify fade">
+          <h1>${updated ? "We've updated our Terms" : "Our Terms of Service"}</h1>
+          <p class="sub">${updated
+            ? "Please read and accept the new version of our Terms of Service to keep using buddyup. Until you accept, the previous version still applies to you."
+            : "To keep using buddyup, please read and accept our Terms of Service. They explain what buddyup is (and isn't), the rules for meetups and how liability works."}</p>
+          <form id="tform" novalidate>
+            <label class="check"><input type="checkbox" name="agree"/><span>I agree to the <a href="#/terms" target="_blank" rel="noopener">Terms of Service</a>.</span></label>
+            <p class="hint legal-note">Read how we handle your data in our <a href="#/privacy" target="_blank" rel="noopener">Privacy Policy</a>. If you'd rather not continue, email <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a> and we'll delete your account.</p>
+            <div class="error" id="err"></div>
+            <button class="btn btn-primary btn-block" type="submit">Continue ${I.arrow}</button>
+          </form>
+        </div>
+      </section>`;
+    $("#logout").addEventListener("click", () => DB.signOut());
+    $("#tform").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!e.target.agree.checked) return ($("#err").textContent = "Please tick the box to accept the Terms of Service.");
+      try {
+        await DB.acceptTerms(LEGAL_VERSION);
+        await settle();
+        render();
+      } catch (ex) { $("#err").textContent = DB.friendlyError(ex); }
+    });
   }
 
   // ---------- Profile ----------
@@ -2149,6 +2203,7 @@
             <div class="list-item"><span class="li-ico">🔐</span><span class="grow">Account<small>${esc(user.email || "")}${DB.currentAuthUser()?.providerData?.some((x) => x.providerId === "google.com") ? " · Google sign-in" : ""}</small></span></div>
             <button class="list-item" id="invite"><span class="li-ico">🔗</span><span class="grow">Invite friends</span><span class="chev">${I.chev}</span></button>
             <a class="list-item" href="#/contact"><span class="li-ico">✉️</span><span class="grow">Contact us<small>${CONTACT_EMAIL}</small></span><span class="chev">${I.chev}</span></a>
+            <div class="list-item"><span class="li-ico">📄</span><span class="grow">Legal<small><a href="#/terms">Terms of Service</a> · <a href="#/privacy">Privacy Policy</a> · <a href="#/imprint">Imprint</a></small></span></div>
             <button class="list-item danger" id="logout"><span class="li-ico">↩️</span><span class="grow">Log out</span></button>
             <button class="list-item danger" id="delete-account"><span class="li-ico">🗑️</span><span class="grow">Delete account<small>Permanently delete your profile and data</small></span></button>
           </div>

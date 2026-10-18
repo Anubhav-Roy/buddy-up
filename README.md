@@ -17,6 +17,17 @@ buddyup stores its data in Firebase on the free **Spark** plan: **Authentication
 4. Restrict the browser API key to your domains: Google Cloud console → APIs & Services → Credentials.
 5. Run `node server.js` and open http://localhost:5173. buddyup doesn't work when `index.html` is opened directly as a file.
 
+## Legal (Terms, Privacy, Imprint)
+
+The texts are in `legal.js` (German law, EU consumer and data protection rules). Before going live:
+
+1. Fill in `OPERATOR` at the top of `legal.js`: your full name, an address where you can receive legal post (no P.O. box; a c/o business address service is fine), a phone number or other fast second contact besides email (required by § 5 DDG), your federal state's data protection authority, and the Firestore location (Firebase → Project settings → General).
+2. Have a lawyer review the texts.
+
+Sign-up has an unticked "I agree to the Terms of Service" box. Each acceptance is stored in `users/{uid}/private/info.termsAccepted` as `{ "<version>": <server time> }`. When you change the Terms, bump `VERSION` in `legal.js`: everyone is asked to accept the new version before continuing (silence doesn't count as acceptance under German law). Keep old versions in git history as evidence of what people agreed to.
+
+Fonts (`fonts/`) and the Firebase SDK (`vendor/`) are served from buddyup.fyi, so no visitor data goes to Google's CDNs on page load.
+
 ## Profile photos (Cloudflare R2)
 
 Travellers must add a photo (picked or taken with the camera) before they can use buddyup. The browser shrinks it to ≤ 1024 px / ≤ 500 KB JPEG (and strips location data); originals over 10 MB are refused. The Worker in `worker/` accepts up to 600 KB (500 KB + 20% headroom), stores one photo per user in a **private** R2 bucket and serves it only to signed-in users — every request must carry a valid Firebase ID token.
@@ -27,7 +38,7 @@ Travellers must add a photo (picked or taken with the camera) before they can us
 4. `BUDDY_PHOTO_API` in `firebase-config.js` must be `https://buddyup.fyi` — it has to match the photo URL pattern in `firestore.rules`.
 5. Add `buddyup.fyi` (and `www.buddyup.fyi` if used) under Firebase → Authentication → Settings → Authorized domains.
 
-**Approving locals:** locals can't approve themselves (the rules block it). A reviewer opens Firestore → `users` → the local's document, checks their answers in `private/info` and their photo ID in `users/<uid>/verification/id` (the `image` field is a photo you can paste into a browser tab), compares it with their profile photo (Cloudflare → R2 → `buddyup-photos` → `profiles/<uid>/`), then sets `approved` to `true`. The local's dashboard updates live.
+**Approving locals:** locals can't approve themselves (the rules block it). A reviewer opens Firestore → `users` → the local's document, checks their answers in `private/info` and their photo ID in `users/<uid>/verification/id` (the `image` field is a photo you can paste into a browser tab), compares it with their profile photo (Cloudflare → R2 → `buddyup-photos` → `profiles/<uid>/`), then sets `approved` to `true`. The local's dashboard updates live. Their ID photo is deleted automatically the next time they open buddyup. If you reject someone, delete `users/<uid>/verification/id` yourself within 30 days (the Privacy Policy promises this).
 
 **Where data lives**
 

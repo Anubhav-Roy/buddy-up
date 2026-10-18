@@ -85,7 +85,7 @@ window.BuddyDB = (function () {
   function me() {
     if (!cache.uid || !cache.profile) return null;
     const p = cache.private || {};
-    return { ...toUser(cache.uid, cache.profile), email: p.email || cache.authUser?.email || "", phone: p.phone || "", verification: p.verification || null, trustedContact: p.trustedContact || "", birthdate: p.birthdate || "" };
+    return { ...toUser(cache.uid, cache.profile), email: p.email || cache.authUser?.email || "", phone: p.phone || "", verification: p.verification || null, trustedContact: p.trustedContact || "", birthdate: p.birthdate || "", termsAccepted: p.termsAccepted || {} };
   }
 
   // ---------- Errors ----------
@@ -147,11 +147,22 @@ window.BuddyDB = (function () {
   function createProfile(uid, publicData, privateData) {
     const batch = db.batch();
     batch.set(db.doc(`users/${uid}`), { ...prepare(publicData), approved: false, createdAt: now(), updatedAt: now() });
-    batch.set(db.doc(`users/${uid}/private/info`), { ...privateData, createdAt: now() });
+    const { termsVersion, ...rest } = privateData;
+    batch.set(db.doc(`users/${uid}/private/info`), { ...rest, termsAccepted: termsVersion ? { [termsVersion]: now() } : {}, createdAt: now() });
     return batch.commit();
   }
   // update() replaces each top-level field wholesale (so removed dates/times really disappear).
   const saveProfile = (patch) => db.doc(`users/${cache.uid}`).update({ ...prepare(patch), updatedAt: now() });
+  // Records acceptance of a Terms version with the server's time (evidence of the contract).
+  const acceptTerms = (version) => db.doc(`users/${cache.uid}/private/info`).set({ termsAccepted: { [version]: now() } }, { merge: true });
+  // An approved local's ID photo is no longer needed (GDPR data minimisation): delete it.
+  async function deleteIdPhoto() {
+    const batch = db.batch();
+    batch.delete(db.doc(`users/${cache.uid}/verification/id`));
+    batch.delete(db.doc(`users/${cache.uid}/verification/selfie`));
+    batch.set(db.doc(`users/${cache.uid}/private/info`), { verification: { idDeletedAt: now() } }, { merge: true });
+    return batch.commit();
+  }
   const savePrivate = (patch) => db.doc(`users/${cache.uid}/private/info`).set(patch, { merge: true });
 
   // ---------- People ----------
@@ -365,7 +376,7 @@ window.BuddyDB = (function () {
   return {
     ready, cache, me, onChange: (fn) => subs.add(fn), friendlyError, ms,
     signUpEmail, signInEmail, resetPassword, signInGoogle, signOut, finishRedirect, currentAuthUser: () => cache.authUser,
-    createProfile, saveProfile, savePrivate, getProfile, findLocals, findTravellers, reviewsFor,
+    createProfile, saveProfile, savePrivate, acceptTerms, deleteIdPhoto, getProfile, findLocals, findTravellers, reviewsFor,
     pairId, requestMeetup, setMeetupStatus, cancelMeetup, watchMessages, sendMessage, markRead, setBlocked, deleteChat,
     addReview, report, uploadAvatar, uploadVerificationFile, isR2Photo, loadPhoto, deleteAccount,
   };
