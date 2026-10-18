@@ -134,7 +134,7 @@ window.BuddyDB = (function () {
     if (patch.trip) {
       out.trip = { ...patch.trip, windows: packWindows(patch.trip.windows) };
       out.tripCity = patch.trip.city;
-      out.tripEnd = patch.trip.end;
+      out.tripEnd = patch.trip.end || ""; // people who've just moved have no end date
     }
     if (patch.availability) out.availability = { ...patch.availability, windows: packWindows(patch.availability.windows), booked: patch.availability.booked || [] };
     return out;

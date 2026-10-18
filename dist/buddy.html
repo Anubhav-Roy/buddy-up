@@ -280,8 +280,8 @@ svg { flex-shrink: 0; }
 .modal h5 { font-size: 12px; font-weight: 500; color: var(--muted); margin: 20px 0 8px; text-transform: uppercase; letter-spacing: 0.6px; }
 .modal p { font-size: 14.5px; line-height: 1.6; color: var(--body); }
 .modal .note { margin: 18px 0 0; }
-.modal-actions { display: flex; gap: 10px; margin-top: 14px; }
-.modal-actions .btn:first-child { flex: 1; }
+.modal-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+.modal-actions .btn:first-child { flex: 1; min-width: 180px; }
 .ring { --p: 0; width: 70px; height: 70px; border-radius: 50%; flex-shrink: 0; display: grid; place-items: center; background: conic-gradient(var(--teal) calc(var(--p) * 1%), #cdebe2 0); }
 .ring span { width: 56px; height: 56px; border-radius: 50%; background: #fff; display: grid; place-items: center; font-size: 16px; font-weight: 600; color: var(--teal-dark); }
 .ring.lg { width: 124px; height: 124px; margin: 0 auto 18px; }
@@ -687,6 +687,10 @@ code { font-size: 12px; background: var(--field); padding: 1px 5px; border-radiu
 .footer-links { line-height: 1.9; }
 .social-btn.google-only { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; height: 50px; border-radius: 12px; background: #fff; border: 1.5px solid var(--line); font-size: 15px; font-weight: 500; color: var(--ink); transition: border-color 0.15s, box-shadow 0.15s; }
 .social-btn.google-only:hover { border-color: #cfd6e0; box-shadow: var(--shadow-sm); }
+#trip-top.moved { grid-template-columns: minmax(0, 1fr); }
+.slot-pick { display: grid; gap: 10px; }
+.slot-pick .add-range { display: flex; align-items: center; gap: 8px; }
+.slot-pick select { flex: 1; min-width: 0; }
 
 </style>
   <style>
@@ -1011,8 +1015,8 @@ svg { flex-shrink: 0; }
 .modal h5 { font-size: 12px; font-weight: 500; color: var(--muted); margin: 20px 0 8px; text-transform: uppercase; letter-spacing: 0.6px; }
 .modal p { font-size: 14.5px; line-height: 1.6; color: var(--body); }
 .modal .note { margin: 18px 0 0; }
-.modal-actions { display: flex; gap: 10px; margin-top: 14px; }
-.modal-actions .btn:first-child { flex: 1; }
+.modal-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+.modal-actions .btn:first-child { flex: 1; min-width: 180px; }
 .ring { --p: 0; width: 70px; height: 70px; border-radius: 50%; flex-shrink: 0; display: grid; place-items: center; background: conic-gradient(var(--teal) calc(var(--p) * 1%), #cdebe2 0); }
 .ring span { width: 56px; height: 56px; border-radius: 50%; background: #fff; display: grid; place-items: center; font-size: 16px; font-weight: 600; color: var(--teal-dark); }
 .ring.lg { width: 124px; height: 124px; margin: 0 auto 18px; }
@@ -1418,6 +1422,10 @@ code { font-size: 12px; background: var(--field); padding: 1px 5px; border-radiu
 .footer-links { line-height: 1.9; }
 .social-btn.google-only { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; height: 50px; border-radius: 12px; background: #fff; border: 1.5px solid var(--line); font-size: 15px; font-weight: 500; color: var(--ink); transition: border-color 0.15s, box-shadow 0.15s; }
 .social-btn.google-only:hover { border-color: #cfd6e0; box-shadow: var(--shadow-sm); }
+#trip-top.moved { grid-template-columns: minmax(0, 1fr); }
+.slot-pick { display: grid; gap: 10px; }
+.slot-pick .add-range { display: flex; align-items: center; gap: 8px; }
+.slot-pick select { flex: 1; min-width: 0; }
 
 </style>
   <style>
@@ -1741,8 +1749,8 @@ svg { flex-shrink: 0; }
 .modal h5 { font-size: 12px; font-weight: 500; color: var(--muted); margin: 20px 0 8px; text-transform: uppercase; letter-spacing: 0.6px; }
 .modal p { font-size: 14.5px; line-height: 1.6; color: var(--body); }
 .modal .note { margin: 18px 0 0; }
-.modal-actions { display: flex; gap: 10px; margin-top: 14px; }
-.modal-actions .btn:first-child { flex: 1; }
+.modal-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+.modal-actions .btn:first-child { flex: 1; min-width: 180px; }
 .ring { --p: 0; width: 70px; height: 70px; border-radius: 50%; flex-shrink: 0; display: grid; place-items: center; background: conic-gradient(var(--teal) calc(var(--p) * 1%), #cdebe2 0); }
 .ring span { width: 56px; height: 56px; border-radius: 50%; background: #fff; display: grid; place-items: center; font-size: 16px; font-weight: 600; color: var(--teal-dark); }
 .ring.lg { width: 124px; height: 124px; margin: 0 auto 18px; }
@@ -2148,6 +2156,10 @@ code { font-size: 12px; background: var(--field); padding: 1px 5px; border-radiu
 .footer-links { line-height: 1.9; }
 .social-btn.google-only { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; height: 50px; border-radius: 12px; background: #fff; border: 1.5px solid var(--line); font-size: 15px; font-weight: 500; color: var(--ink); transition: border-color 0.15s, box-shadow 0.15s; }
 .social-btn.google-only:hover { border-color: #cfd6e0; box-shadow: var(--shadow-sm); }
+#trip-top.moved { grid-template-columns: minmax(0, 1fr); }
+.slot-pick { display: grid; gap: 10px; }
+.slot-pick .add-range { display: flex; align-items: center; gap: 8px; }
+.slot-pick select { flex: 1; min-width: 0; }
 
 </style>
   <style>
@@ -2471,8 +2483,8 @@ svg { flex-shrink: 0; }
 .modal h5 { font-size: 12px; font-weight: 500; color: var(--muted); margin: 20px 0 8px; text-transform: uppercase; letter-spacing: 0.6px; }
 .modal p { font-size: 14.5px; line-height: 1.6; color: var(--body); }
 .modal .note { margin: 18px 0 0; }
-.modal-actions { display: flex; gap: 10px; margin-top: 14px; }
-.modal-actions .btn:first-child { flex: 1; }
+.modal-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+.modal-actions .btn:first-child { flex: 1; min-width: 180px; }
 .ring { --p: 0; width: 70px; height: 70px; border-radius: 50%; flex-shrink: 0; display: grid; place-items: center; background: conic-gradient(var(--teal) calc(var(--p) * 1%), #cdebe2 0); }
 .ring span { width: 56px; height: 56px; border-radius: 50%; background: #fff; display: grid; place-items: center; font-size: 16px; font-weight: 600; color: var(--teal-dark); }
 .ring.lg { width: 124px; height: 124px; margin: 0 auto 18px; }
@@ -2878,6 +2890,10 @@ code { font-size: 12px; background: var(--field); padding: 1px 5px; border-radiu
 .footer-links { line-height: 1.9; }
 .social-btn.google-only { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; height: 50px; border-radius: 12px; background: #fff; border: 1.5px solid var(--line); font-size: 15px; font-weight: 500; color: var(--ink); transition: border-color 0.15s, box-shadow 0.15s; }
 .social-btn.google-only:hover { border-color: #cfd6e0; box-shadow: var(--shadow-sm); }
+#trip-top.moved { grid-template-columns: minmax(0, 1fr); }
+.slot-pick { display: grid; gap: 10px; }
+.slot-pick .add-range { display: flex; align-items: center; gap: 8px; }
+.slot-pick select { flex: 1; min-width: 0; }
 
 </style>
   <style>
@@ -3076,7 +3092,7 @@ window.BuddyDB = (function () {
     if (patch.trip) {
       out.trip = { ...patch.trip, windows: packWindows(patch.trip.windows) };
       out.tripCity = patch.trip.city;
-      out.tripEnd = patch.trip.end;
+      out.tripEnd = patch.trip.end || ""; // people who've just moved have no end date
     }
     if (patch.availability) out.availability = { ...patch.availability, windows: packWindows(patch.availability.windows), booked: patch.availability.booked || [] };
     return out;
@@ -4683,7 +4699,7 @@ window.BuddyLegal = (function () {
 
   const fmtDate = (d) => dmy(d);
   const fmtYmd = (s) => dmy(s);
-  const tripDates = (t) => (t?.start ? `${fmtYmd(t.start)}${t.end ? ` – ${fmtYmd(t.end)}` : ""}` : "");
+  const tripDates = (t) => (t?.moved ? "" : t?.start ? `${fmtYmd(t.start)}${t.end ? ` – ${fmtYmd(t.end)}` : ""}` : "");
 
   // ---------- Dates & times ----------
   // Availability is stored per day as time ranges: { "YYYY-MM-DD": [["10:00", "14:00"], ...] }.
@@ -5067,7 +5083,11 @@ window.BuddyLegal = (function () {
 
   // ---------- Discover (traveller): trip details, then find a local or a buddy ----------
   const MAX_TRIP_DAYS = 30;
-  const tripReady = (u) => !!(u.trip?.city && u.trip.start && u.trip.end && Object.keys(u.trip.windows || {}).length);
+  // Someone who has just moved to a city has no dates and no fixed free times: they see everyone
+  // in the city, and other people can reach them at any time ("flexible").
+  const moved = (t) => !!t?.moved;
+  const flexible = (t) => moved(t) && !Object.keys(t.windows || {}).length;
+  const tripReady = (u) => !!(u.trip?.city && (moved(u.trip) || (u.trip.start && u.trip.end && Object.keys(u.trip.windows || {}).length)));
   const TYPES = [["all", "Everyone"], ["local", "Locals"], ["buddy", "Buddies"]];
 
   const RES_LABEL = { "6to12m": "under a year", "1to3y": "1–3 years", "3to10y": "3–10 years", "10y": "10+ years", born: "born & raised" };
@@ -5082,7 +5102,7 @@ window.BuddyLegal = (function () {
       interests: u.interests || [], languages: u.languages || [], bio: u.bio || "",
       verified: isLocal ? !!u.approved : false, phoneVerified: !!u.phoneVerified,
       windows: (isLocal ? u.availability?.windows : t.windows) || {}, booked: (isLocal ? u.availability?.booked : t.booked) || [],
-      cancellations: u.cancellations || 0, age: u.age || null,
+      moved: !isLocal && moved(t), cancellations: u.cancellations || 0, age: u.age || null,
     };
   }
 
@@ -5093,13 +5113,24 @@ window.BuddyLegal = (function () {
     const [locals, travellers] = await Promise.all([DB.findLocals(user.trip.city), DB.findTravellers(user.trip.city)]);
     const mine = user.interests || [];
     const seen = new Set([user.uid]);
+    const iAmFlexible = flexible(user.trip);
     const people = [
       ...locals.filter((u) => u.available !== false && u.availability).map((u) => toPerson(u, "local")),
-      ...travellers.filter((u) => u.trip?.end >= today).map((u) => toPerson(u, "buddy")),
+      ...travellers.filter((u) => moved(u.trip) || u.trip?.end >= today).map((u) => toPerson(u, "buddy")),
     ]
       .filter((p) => !seen.has(p.uid) && seen.add(p.uid)) // someone can be both; show them as a local
-      .map((p) => ({ ...p, match: matchWindows(user.trip.windows, p.windows, [...p.booked, ...(user.trip.booked || [])]), overlap: p.interests.filter((t) => mine.includes(t)).length }))
-      .filter((p) => p.match.length)
+      .map((p) => {
+        // Whoever has set times decides when; if neither has, the time is agreed in the request.
+        const theyFlexible = !Object.keys(p.windows).length;
+        const booked = [...p.booked, ...(user.trip.booked || [])];
+        const free = (w) => matchWindows(w, w, booked);
+        const match = iAmFlexible && theyFlexible ? []
+          : iAmFlexible ? free(p.windows)
+          : theyFlexible ? free(user.trip.windows)
+          : matchWindows(user.trip.windows, p.windows, booked);
+        return { ...p, match, anytime: iAmFlexible && theyFlexible, overlap: p.interests.filter((t) => mine.includes(t)).length };
+      })
+      .filter((p) => p.match.length || p.anytime)
       .sort((a, b) => a.cancellations - b.cancellations || b.match.length - a.match.length || b.overlap - a.overlap);
     const reviews = await DB.reviewsFor(people.map((p) => p.uid)).catch(() => []);
     people.forEach((p) => (p.reviews = reviews.filter((r) => r.to === p.uid)));
@@ -5116,20 +5147,20 @@ window.BuddyLegal = (function () {
     const t = user.trip || {};
     const windows = clone(t.windows);
     const today = ymd(new Date());
+    let isMoved = moved(t);
     root.innerHTML = `
       <div class="page">
         <div class="greet fade">
-          <h1>Hey ${esc(user.name.split(" ")[0])}, where are you travelling to?</h1>
-          <p class="muted">Tell us where you're going and when you're free, and we'll only show locals and buddies who are free at the same times.</p>
+          <h1>Hey ${esc(user.name.split(" ")[0])}, which city?</h1>
+          <p class="muted" id="trip-intro"></p>
         </div>
         <section class="panel trip-panel fade">
           <form id="tripform" novalidate>
-            <div class="trip-top">
-              <div class="field"><label>Destination</label>
-                <div class="city-bar big">${I.pin}<input name="city" value="${esc(t.city || "")}" placeholder="Start typing a city" autocomplete="off"/></div></div>
-              <div class="field"><label>Arriving</label>${dateField("start", t.start || "", { min: today, label: "Arriving" })}</div>
-              <div class="field"><label>Leaving</label>${dateField("end", t.end || "", { min: t.start || today, label: "Leaving" })}</div>
+            <div class="role-picker" style="margin-bottom:20px">
+              <button type="button" class="role traveller ${isMoved ? "" : "on"}" data-moved="0"><span class="ico">✈️</span><strong>I'm visiting</strong><small>A trip with dates</small></button>
+              <button type="button" class="role traveller ${isMoved ? "on" : ""}" data-moved="1"><span class="ico">🏡</span><strong>I've just moved here</strong><small>Living here, no fixed dates</small></button>
             </div>
+            <div class="trip-top" id="trip-top"></div>
             <div id="times"></div>
           </form>
         </section>
@@ -5140,8 +5171,6 @@ window.BuddyLegal = (function () {
       </div>`;
 
     const form = $("#tripform");
-    suggestCities(form.city, true);
-    bindDateFields(form);
     // Meetups need a day's notice, so the calendar starts tomorrow at the earliest.
     const range = () => {
       const s = form.start.value, e = form.end.value;
@@ -5158,8 +5187,33 @@ window.BuddyLegal = (function () {
       if (r && !r.empty) $("#times-count").textContent = windowsSummary(windows, ymd(r.from), ymd(r.to));
       $("#err").textContent = "";
     };
+    // The destination field, plus trip dates when they're visiting.
+    const drawTop = () => {
+      const city = form.city?.value ?? t.city ?? "";
+      $("#trip-intro").textContent = isMoved
+        ? "Tell us where you live now and we'll show you the locals and fellow newcomers who are there."
+        : "Tell us where you're going and when you're free, and we'll only show locals and buddies who are free at the same times.";
+      $("#trip-top").innerHTML = `
+        <div class="field"><label>${isMoved ? "Which city do you live in now?" : "Destination"}</label>
+          <div class="city-bar big">${I.pin}<input name="city" value="${esc(city)}" placeholder="Start typing a city" autocomplete="off"/></div></div>
+        ${isMoved ? "" : `
+          <div class="field"><label>Arriving</label>${dateField("start", form.start?.value ?? t.start ?? "", { min: today, label: "Arriving" })}</div>
+          <div class="field"><label>Leaving</label>${dateField("end", form.end?.value ?? t.end ?? "", { min: today, label: "Leaving" })}</div>`}`;
+      $("#trip-top").classList.toggle("moved", isMoved);
+      suggestCities(form.city, true);
+      if (!isMoved) {
+        bindDateFields($("#trip-top"));
+        form.start.addEventListener("change", onStartChange);
+        form.end.addEventListener("change", drawTimes);
+      }
+    };
+
     const drawTimes = () => {
       const box = $("#times");
+      if (isMoved) {
+        box.innerHTML = `<p class="hint times-hint">🏡 No dates or times needed. You'll see everyone in the city, and they can ask you to meet whenever suits you both.</p>`;
+        return;
+      }
       const r = range();
       if (!r) { box.innerHTML = `<p class="hint times-hint">📅 Add your dates to choose when you're free to meet people.</p>`; return; }
       if (r.empty) { box.innerHTML = `<div class="check-result warn" style="margin-top:16px">Meetups need at least a day's notice, so choose dates from tomorrow onwards.</div>`; return; }
@@ -5173,24 +5227,36 @@ window.BuddyLegal = (function () {
       mountCalendar($("#cal"), { from: r.from, to: r.to, windows, repeat: false, onChange: summary });
       summary();
     };
-    drawTimes();
-    form.start.addEventListener("change", () => {
+    const onStartChange = () => {
       form.end.min = form.start.value || today;
       if (form.end.value && form.end.value < form.start.value) setDate(form.end, form.start.value);
       drawTimes();
-    });
-    form.end.addEventListener("change", drawTimes);
+    };
+    drawTop();
+    drawTimes();
+    $("[data-moved]", root).forEach((b) => b.addEventListener("click", () => {
+      isMoved = b.dataset.moved === "1";
+      $("[data-moved]", root).forEach((x) => x.classList.toggle("on", x === b));
+      $("#err").textContent = "";
+      drawTop();
+      drawTimes();
+    }));
     form.addEventListener("submit", (e) => e.preventDefault());
 
     $("#next").addEventListener("click", () => {
       const err = $("#err");
-      const city = listCity(form.city.value, true), start = form.start.value, end = form.end.value, r = range();
+      const city = listCity(form.city.value, true);
       const fail = (msg) => { err.textContent = msg; err.scrollIntoView({ behavior: "smooth", block: "center" }); };
-      if (!city) return fail(form.city.value.trim() ? "Please choose your destination city from the suggestions." : "Where are you headed? Choose a destination city above.");
-      if (!start || !end) return fail("Add the dates you're travelling.");
-      if (!r || r.empty) return fail("Meetups need at least a day's notice, so choose dates from tomorrow onwards.");
-      if (!Object.keys(windows).length) return fail("Add at least one time you're free to meet on the calendar.");
-      DB.saveProfile({ trip: { city, start, end, windows, booked: t.booked || [] } }).catch(fail);
+      if (!city) return fail(form.city.value.trim() ? "Please choose your city from the suggestions." : isMoved ? "Which city do you live in now? Choose it above." : "Where are you headed? Choose a destination city above.");
+      let trip = { city, moved: true, start: "", end: "", windows: {}, booked: t.booked || [] };
+      if (!isMoved) {
+        const start = form.start.value, end = form.end.value, r = range();
+        if (!start || !end) return fail("Add the dates you're travelling.");
+        if (!r || r.empty) return fail("Meetups need at least a day's notice, so choose dates from tomorrow onwards.");
+        if (!Object.keys(windows).length) return fail("Add at least one time you're free to meet on the calendar.");
+        trip = { city, moved: false, start, end, windows, booked: t.booked || [] };
+      }
+      DB.saveProfile({ trip }).catch(fail);
       state.filters = noFilters();
       window.scrollTo(0, 0);
       settle().then(() => go("#/discover/people"));
@@ -5203,9 +5269,9 @@ window.BuddyLegal = (function () {
       <a class="back-link" href="#/discover">${I.back} Edit trip</a>
       <div class="results-head fade">
         <div><h1>People in ${esc(user.trip.city)}</h1>
-          <span class="count">${count} · ${tripDates(user.trip)} · <a href="#/discover">change times</a></span></div>
+          <span class="count">${count} · ${moved(user.trip) ? "you live here" : tripDates(user.trip)} · <a href="#/discover">${moved(user.trip) ? "change city" : "change times"}</a></span></div>
       </div>`;
-    const key = `${user.trip.city}|${JSON.stringify(user.trip.windows)}|${(user.trip.booked || []).join()}`;
+    const key = `${user.trip.city}|${moved(user.trip)}|${JSON.stringify(user.trip.windows)}|${(user.trip.booked || []).join()}`;
     if (state.results?.key !== key) {
       root.innerHTML = `<div class="page">${head("Looking for people free when you are…")}<div class="grid">${'<div class="pcard skeleton"></div>'.repeat(4)}</div></div>`;
       try {
@@ -5223,7 +5289,7 @@ window.BuddyLegal = (function () {
     const interests = uniq(all.flatMap((p) => p.interests));
     const languages = uniq(all.flatMap((p) => p.languages));
     // Every filter except `type`, so the type tabs can show how many of each there are.
-    const passes = (p) => (!f.day || p.match.some((s) => s.startsWith(f.day + "|")))
+    const passes = (p) => (!f.day || p.anytime || p.match.some((s) => s.startsWith(f.day + "|")))
       && (!f.interest || p.interests.includes(f.interest))
       && (!f.language || p.languages.includes(f.language))
       && (!f.rated || +ratingSummary(p.reviews || []).avg >= 4);
@@ -5239,7 +5305,7 @@ window.BuddyLegal = (function () {
 
     root.innerHTML = `
       <div class="page">
-        ${head(`${plural(people.length, "person").replace("persons", "people")} free when you are`)}
+        ${head(`${plural(people.length, "person").replace("persons", "people")}${moved(user.trip) ? "" : " free when you are"}`)}
         ${all.length ? `
           <div class="filter-bar">
             <div class="seg" role="group" aria-label="Show">${TYPES.map(([k, l]) => `
@@ -5255,7 +5321,9 @@ window.BuddyLegal = (function () {
         ${people.length ? `<div class="grid">${people.map((p, i) => personCard(p, i, activeMeetupWith(p.uid))).join("")}</div>`
           : `<div class="empty"><div class="art">🗓️</div>${all.length
             ? `No one matches these filters.<br/><br/><button class="btn btn-primary" id="clear2">Clear filters</button>`
-            : `No locals or travellers in ${esc(user.trip.city)} are free at the times you picked yet.<br/>buddyup is new, so try adding more times, or invite friends who live there or are travelling.<br/><br/><a class="btn btn-primary" href="#/discover">Add more times</a>`}</div>`}
+            : moved(user.trip)
+              ? `No locals or fellow newcomers in ${esc(user.trip.city)} yet.<br/>buddyup is new, so invite friends who live there.`
+              : `No locals or travellers in ${esc(user.trip.city)} are free at the times you picked yet.<br/>buddyup is new, so try adding more times, or invite friends who live there or are travelling.<br/><br/><a class="btn btn-primary" href="#/discover">Add more times</a>`}</div>`}
         <div class="safety-strip">${safetyCards()}</div>
       </div>`;
 
@@ -5279,7 +5347,9 @@ window.BuddyLegal = (function () {
     : p.traveller ? '<span class="badge badge-buddy">Traveller</span>' : '<span class="badge badge-buddy">Buddy</span>');
   const subline = (p) => (p.type === "local"
     ? `Local in ${esc(p.city)}${RES_LABEL[p.residency] ? ` · ${RES_LABEL[p.residency]}` : ""}`
-    : `${p.from ? `From ${esc(p.from)}` : "Traveller"}${p.tripEnd ? ` · until ${fmtYmd(p.tripEnd)}` : ""}`);
+    : p.moved
+      ? `New in ${esc(p.city)}${p.from ? ` · from ${esc(p.from)}` : ""}`
+      : `${p.from ? `From ${esc(p.from)}` : "Traveller"}${p.tripEnd ? ` · until ${fmtYmd(p.tripEnd)}` : ""}`);
 
   function personCard(p, i, active) {
     return `
@@ -5292,7 +5362,9 @@ window.BuddyLegal = (function () {
           <div class="stats"><span>${ratingText(p.reviews || [])}</span></div>
           ${p.bio ? `<p class="bio">${esc(p.bio)}</p>` : ""}
           <div class="chips">${p.interests.map((t) => `<span class="chip tag">${esc(t)}</span>`).join("")}</div>
-          <div class="match-line">🗓️ <b>${plural(p.match.length, "matching time")}</b><br/>Next: ${slotLabel(p.match[0])}</div>
+          <div class="match-line">${p.anytime
+            ? `🗓️ <b>Free to arrange a time</b><br/>You're both here without fixed plans`
+            : `🗓️ <b>${plural(p.match.length, "matching time")}</b><br/>Next: ${slotLabel(p.match[0])}`}</div>
           <div class="card-actions">
             <button class="btn btn-primary btn-sm" data-connect>${active ? `${I.chat} Open chat` : `${I.plane} Request meetup`}</button>
             <button class="btn btn-outline btn-sm" data-view>${I.user} View profile</button>
@@ -5439,7 +5511,7 @@ window.BuddyLegal = (function () {
         </div>`;
       DB.findTravellers(user.localCity).then((list) => {
         const today = ymd(new Date()), weekEnd = ymd(addDays(new Date(), 7));
-        const n = list.filter((t) => t.uid !== uid && t.trip?.start <= weekEnd && t.trip?.end >= today).length;
+        const n = list.filter((t) => t.uid !== uid && (moved(t.trip) || (t.trip?.start <= weekEnd && t.trip?.end >= today))).length;
         const el = $("#in-town");
         if (el) el.textContent = n;
       }).catch(() => { const el = $("#in-town"); if (el) el.textContent = "–"; });
@@ -5481,11 +5553,13 @@ window.BuddyLegal = (function () {
   function opener(user, p, slot) {
     const first = user.name.split(" ")[0];
     const shared = p.interests.find((t) => (user.interests || []).includes(t)) || p.interests[0] || "exploring";
-    const [d, from, to] = slot.split("|");
-    const when = `${dayLabel(d)}, any time between ${from} and ${to}`;
+    const [d, from, to] = (slot || "").split("|");
+    const when = d ? `${dayLabel(d)}, any time between ${from} and ${to}` : "a day that suits you";
+    const iMoved = moved(user.trip);
+    const dates = tripDates(user.trip);
     return p.type === "local"
-      ? `Hi ${p.name}! I'm ${first}${user.from ? ` from ${user.from}` : ""}, visiting ${p.city} ${tripDates(user.trip)}. I'd love to see the city through a local's eyes, especially ${shared.toLowerCase()}. Would you be up for showing me around on ${when}?`
-      : `Hey ${p.name}! I'm ${first}, also in ${p.city} ${tripDates(user.trip)}. Fancy teaming up for some ${shared.toLowerCase()} on ${when}? Happy to meet at a café first.`;
+      ? `Hi ${p.name}! I'm ${first}${user.from ? ` from ${user.from}` : ""}, ${iMoved ? `I've just moved to ${p.city}` : `visiting ${p.city} ${dates}`}. I'd love to see the city through a local's eyes, especially ${shared.toLowerCase()}. Would you be up for showing me around on ${when}?`
+      : `Hey ${p.name}! I'm ${first}, ${iMoved ? `also new in ${p.city}` : `also in ${p.city} ${dates}`}. Fancy teaming up for some ${shared.toLowerCase()} on ${when}? Happy to meet at a café first.`;
   }
 
   // Open someone's profile from a meetup or chat (only their uid and role label are known).
@@ -5500,13 +5574,24 @@ window.BuddyLegal = (function () {
   function openProfile(user, p, opts = {}) {
     const isLocal = p.type === "local";
     const active = activeMeetupWith(p.uid);
-    const canRequest = !opts.readOnly && !active && user.mode === "traveller" && p.match?.length;
+    const canRequest = !opts.readOnly && !active && user.mode === "traveller" && (p.match?.length || p.anytime);
     let actions = "";
     if (active && !opts.readOnly) actions = `<div class="modal-actions" style="margin-top:22px"><button class="btn btn-primary" id="open">${I.chat} Open chat</button></div>`;
     else if (canRequest) actions = `
-      <h5>Pick a time · you're both free</h5>
-      <div class="chips slot-chips">${p.match.slice(0, 12).map((s, i) => `<button type="button" class="chip ${i === 0 ? "active" : ""}" data-pick="${s}">${slotLabel(s)}</button>`).join("")}</div>
-      <p class="hint" style="margin-top:6px">These are the times you're both free (at least an hour, and at least a day from now) so ${esc(p.name)} has time to plan.</p>
+      <h5>${p.anytime ? "Suggest a time" : "Pick a time · you're both free"}</h5>
+      ${p.anytime ? `
+        <div class="slot-pick">
+          ${dateField("slotday", ymd(addDays(new Date(), 2)), { min: ymd(addDays(new Date(), 1)), label: "Day" })}
+          <div class="add-range">
+            <select class="input" id="s-from" aria-label="From">${TIMES.map((t) => `<option ${t === "10:00" ? "selected" : ""}>${t}</option>`).join("")}</select>
+            <span>to</span>
+            <select class="input" id="s-to" aria-label="To">${TIMES.map((t) => `<option ${t === "14:00" ? "selected" : ""}>${t}</option>`).join("")}</select>
+          </div>
+        </div>
+        <p class="hint" style="margin-top:6px">Neither of you has set fixed times, so suggest one: at least an hour long and at least a day from now. ${esc(p.name)} can accept or decline.</p>`
+      : `
+        <div class="chips slot-chips">${p.match.slice(0, 12).map((s, i) => `<button type="button" class="chip ${i === 0 ? "active" : ""}" data-pick="${s}">${slotLabel(s)}</button>`).join("")}</div>
+        <p class="hint" style="margin-top:6px">These are the times you're both free (at least an hour, and at least a day from now) so ${esc(p.name)} has time to plan.</p>`}
       <h5>Your first message</h5>
       <div class="prompt-tip ${isLocal ? "local" : ""}">
         ${isLocal
@@ -5552,10 +5637,22 @@ window.BuddyLegal = (function () {
       }).catch(() => { if ($("#m-reviews")) $("#m-reviews").innerHTML = `<p class="hint">Couldn't load reviews.</p>`; });
     }
     if (canRequest) {
-      let slot = p.match[0], edited = false;
+      // When both sides are flexible the slot comes from the day/time fields above.
+      const proposed = () => {
+        const day = $('[name="slotday"]', modalRoot)?.value;
+        return day ? `${day}|${$("#s-from", modalRoot).value}|${$("#s-to", modalRoot).value}` : "";
+      };
+      let slot = p.anytime ? proposed() : p.match[0], edited = false;
       const box = $("#hello");
       box.value = opener(user, p, slot);
       box.addEventListener("input", () => (edited = true));
+      if (p.anytime) {
+        bindDateFields(modalRoot);
+        const update = () => { slot = proposed(); if (!edited && slot) box.value = opener(user, p, slot); };
+        $('[name="slotday"]', modalRoot).addEventListener("change", update);
+        $("#s-from", modalRoot).addEventListener("change", update);
+        $("#s-to", modalRoot).addEventListener("change", update);
+      }
       $("[data-pick]", modalRoot).forEach((b) => b.addEventListener("click", () => {
         slot = b.dataset.pick;
         $("[data-pick]", modalRoot).forEach((x) => x.classList.toggle("active", x === b));
@@ -5570,6 +5667,9 @@ window.BuddyLegal = (function () {
       $("#send").addEventListener("click", async () => {
         const text = box.value.trim();
         if (text.length < 10) return toast("Write a short message so they know what you'd like to do.");
+        if (!slot) return toast("Choose a day and time for the meetup.");
+        const [, from, to] = slot.split("|");
+        if (toMin(to) - toMin(from) < MIN_MEETUP) return toast("Make the meetup at least an hour long.");
         if (!bookable(slot)) return toast("That time is less than a day away. Pick a later one.");
         $("#send").disabled = true;
         const kind = isLocal ? "local" : "buddy";
@@ -5936,7 +6036,9 @@ window.BuddyLegal = (function () {
   function profilePage(user, root) {
     const v = user.verification;
     const localStatus = !v ? "Not set up yet" : user.approved ? `✓ Verified in ${esc(user.localCity)}` : v.completed ? `In review · ${esc(user.localCity)}` : `Verification in progress · ${esc(user.localCity)}`;
-    const travellerStatus = user.trip?.city ? `Exploring ${esc(user.trip.city)}${tripDates(user.trip) ? ` · ${tripDates(user.trip)}` : ""}` : "No trip planned";
+    const travellerStatus = !user.trip?.city ? "No city chosen yet"
+      : moved(user.trip) ? `New in ${esc(user.trip.city)}`
+      : `Exploring ${esc(user.trip.city)}${tripDates(user.trip) ? ` · ${tripDates(user.trip)}` : ""}`;
     const modeRow = (key, ico, title, status) => {
       const on = user.mode === key;
       const label = key === "local" && !v ? "Become a local" : "Switch";
@@ -5968,7 +6070,7 @@ window.BuddyLegal = (function () {
             <h3>How you use buddyup</h3>
             ${modeRow("traveller", "🎒", "Traveller", travellerStatus)}
             ${modeRow("local", "🏠", "Local", localStatus)}
-            ${user.mode === "traveller" ? `<a class="list-item" href="#/discover"><span class="li-ico">📍</span><span class="grow">Change destination &amp; times<small>${travellerStatus}</small></span><span class="chev">${I.chev}</span></a>` : ""}
+            ${user.mode === "traveller" ? `<a class="list-item" href="#/discover"><span class="li-ico">📍</span><span class="grow">Change city &amp; times<small>${travellerStatus}</small></span><span class="chev">${I.chev}</span></a>` : ""}
             ${user.cancellations ? `<div class="list-item"><span class="li-ico">↩️</span><span class="grow">${plural(user.cancellations, "cancelled meetup")}<small>Cancelling confirmed meetups moves you lower in search results.</small></span></div>` : ""}
             ${user.mode === "local" && user.approved ? `<a class="list-item" href="#/availability"><span class="li-ico">📅</span><span class="grow">Availability<small>${user.availability ? `Set until ${fmtYmd(user.availability.horizon)}` : "Not set yet"}</small></span><span class="chev">${I.chev}</span></a>` : ""}
             <h3 style="margin-top:26px">Settings</h3>
