@@ -548,7 +548,9 @@ input.switch { accent-color: var(--teal); width: 20px; height: 20px; }
 /* ---------- Notifications ---------- */
 .notif-list { display: grid; gap: 10px; }
 .notif { background: var(--page); border-radius: 14px; padding: 12px 14px; border-left: 3px solid var(--teal); }
-.notif.read { border-left-color: var(--line); opacity: 0.8; }
+.notif.is-read { border-left-color: var(--line); opacity: 0.75; }
+.notif { text-align: left; }
+.notif-top strong { color: var(--ink); }
 .notif-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13.5px; }
 .notif-top .muted { margin-left: auto; font-size: 12px; }
 .notif p { font-size: 13.5px; margin-top: 6px; color: var(--body); line-height: 1.55; }
@@ -731,3 +733,5 @@ code { font-size: 12px; background: var(--field); padding: 1px 5px; border-radiu
   .nav-right { gap: 6px; }
   .user-pill .avatar { width: 30px !important; height: 30px !important; }
 }
+@media (max-width: 1560px) { .mode-switch button span { display: none; } .mode-switch button { padding: 0 10px; } }
+@media (min-width: 761px) and (max-width: 1180px) { .nav-links a span { display: none; } .nav-links a { padding: 9px 12px; } }

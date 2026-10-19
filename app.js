@@ -48,7 +48,7 @@
     shield: svg('<path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6l8-3z"/><path d="M9 12l2 2 4-4"/>'),
     user: svg('<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>'),
     pin: svg('<path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>'),
-    bell: svg('<path d="M4 4l16 2c0 4 2.5 6.5 0 9l11.5-8.5c0-5 4-7 8-7s8 2 8 6l-6 14h6v-14M4 11.5l6 3.5 3 2.5M19 5l-2-1 1-1 2-1"/>'),
+    bell: svg('<path d="M6 9a6 6 0 0 1 12 0c0 6 2.5 8 2.5 8h-17S6 15 6 9z"/><path d="M10.2 20.5a2 2 0 0 0 3.6 0"/>'),
     star: `<svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>`,
     plane: svg('<path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/>'),
     eye: svg('<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>'),
@@ -847,14 +847,14 @@
     root.innerHTML = `
       <div class="page">
         <div class="greet fade"><h1>Alerts</h1>
-          <p class="muted">${list.length ? `${plural(unread.length, "unread")} of ${plural(list.length, "total")}` : "No alerts yet."}</p>
+          ${unread.length ? `<p class="muted">${unread.length} unread</p>` : ""}
         </div>
         ${list.length ? `
           <div style="display:flex;gap:8px;margin-bottom:16px">
             ${unread.length ? `<button class="btn btn-soft btn-sm" id="read-all">Mark all read</button>` : ""}
           </div>
           <div class="notif-list">${list.map((n) => `
-            <div class="notif ${n.read ? "read" : "unread"}" data-nid="${esc(n.id)}">
+            <div class="notif ${n.read ? "is-read" : "is-unread"}" data-nid="${esc(n.id)}">
               <div class="notif-top">
                 <strong>${esc(notifTitle(n.type))}</strong>
                 <span class="muted">${n.createdAt ? shortTime(DB.ms(n.createdAt)) : "now"}</span>
@@ -862,7 +862,7 @@
               <p>${esc(n.message)}</p>
               ${!n.read ? `<button class="btn btn-soft btn-sm notif-dismiss" data-nid="${esc(n.id)}">Mark read</button>` : ""}
             </div>`).join("")}
-          </div>` : `<div class="empty"><div class="art">🔔</div>No alerts yet.<br/>You'll be notified when a local gets approved, you get a message, or someone requests a meetup.</div>`}
+          </div>` : `<div class="empty"><div class="art">🔔</div>No alerts yet.</div>`}
       </div>`;
     $$(".notif-dismiss", root).forEach((b) => b.addEventListener("click", (e) => {
       DB.markNotificationRead(b.dataset.nid).catch(fail);
@@ -875,7 +875,7 @@
     });
   }
   function notifTitle(type) {
-    const titles = { approval: "✓ Approved", message: "💬 New message", meetup_request: "📅 Meetup request", meetup_accepted: "✅ Meetup accepted", meetup_declined: "❌ Meetup declined", meetup_cancelled: "↩️ Meetup cancelled", review: "⭐ New review" };
+    const titles = { approval: "Approved", message: "New message", meetup_request: "Meetup request", meetup_accepted: "Meetup accepted", meetup_declined: "Request declined", meetup_cancelled: "Meetup cancelled", review: "New review" };
     return titles[type] || type;
   }
   // Notification triggers for approval, meetups, messages and reviews.
@@ -901,7 +901,7 @@
     if (kind === "profile") {
       const u = DB.me();
       if (u && u.approved && !prevApproved && u.verification?.completed) {
-        DB.addNotification("approval", "Your local profile has been approved! Travellers can now find you.", "").catch(() => {});
+        DB.addNotification("approval", `Your local profile is approved. People in ${me()?.localCity || "your city"} can now find you.`, "").catch(() => {});
       }
       prevApproved = u?.approved || false;
     }
@@ -915,16 +915,16 @@
           const prev = prevMap[m.id];
           if (!prev && m.status === "requested" && m.to === uid) {
             const from = (m.people || []).find((p) => p.uid === m.from);
-            DB.addNotification("meetup_request", `${from?.name || "Someone"} wants to meet up with you${m.kind === "local" ? "" : " (buddy)"}!`, m.id).catch(() => {});
+            DB.addNotification("meetup_request", `${from?.name || "Someone"} sent you a meetup request.`, m.id).catch(() => {});
           } else if (prev === "requested" && m.status === "confirmed" && m.from === uid) {
             const to = (m.people || []).find((p) => p.uid === m.to);
-            DB.addNotification("meetup_accepted", `${to?.name || "Someone"} accepted your meetup request!`, m.id).catch(() => {});
+            DB.addNotification("meetup_accepted", `${to?.name || "Someone"} accepted your meetup request.`, m.id).catch(() => {});
           } else if (prev === "requested" && m.status === "cancelled" && m.from === uid) {
             DB.addNotification("meetup_declined", `Your meetup request was declined.`, m.id).catch(() => {});
           } else if (prev && m.status === "cancelled" && prev !== "cancelled") {
             const other = m.to === uid ? m.from : m.to;
             const p = (m.people || []).find((p) => p.uid === other);
-            DB.addNotification("meetup_cancelled", `${p?.name || "Someone"} cancelled the meetup. "${esc(m.cancelReason || "")}"`, m.id).catch(() => {});
+            DB.addNotification("meetup_cancelled", `${p?.name || "Someone"} cancelled the meetup${m.cancelReason ? `: “${m.cancelReason}”` : "."}`, m.id).catch(() => {});
           }
         });
       }
