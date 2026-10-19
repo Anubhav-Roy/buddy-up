@@ -300,7 +300,7 @@
   function renderCompleteProfile() {
     state.screen = "complete";
     const au = DB.currentAuthUser();
-    const local = state.role === "local";
+    const role = state.role, local = role === "local", newcomer = role === "newcomer";
     const name = au.displayName || "";
     app.innerHTML = `
       <header class="nav"><div class="container">${logo()}<button class="btn btn-soft btn-sm" id="cancel">Cancel</button></div></header>
@@ -312,14 +312,16 @@
             <p class="muted">A few details to finish your profile.</p></div>
           </div>
           <form id="complete" novalidate>
-            <div class="role-picker">
-              <button type="button" class="role traveller ${!local ? "on" : ""}" data-role="traveller"><span class="ico">🎒</span><strong>Traveller</strong><small>Visiting or new in a city</small></button>
-              <button type="button" class="role local ${local ? "on" : ""}" data-role="local"><span class="ico">🏠</span><strong>Local</strong><small>Showing people my city</small></button>
+<div class="role-picker three">
+              <button type="button" class="role traveller ${role === "traveller" ? "on" : ""}" data-role="traveller"><span class="ico">🎒</span><strong>Traveller</strong><small>Visiting a city</small></button>
+              <button type="button" class="role newcomer ${role === "newcomer" ? "on" : ""}" data-role="newcomer"><span class="ico">🏡</span><strong>Newcomer</strong><small>Recently moved to a city</small></button>
+              <button type="button" class="role local ${role === "local" ? "on" : ""}" data-role="local"><span class="ico">🏠</span><strong>Local</strong><small>Lived there 6+ months</small></button>
             </div>
             <div class="row">
               <div class="field"><label>Full name</label><input class="input" name="name" value="${esc(name)}" autocomplete="name" placeholder="Jane Cooper"/></div>
-              <div class="field"><label>${local ? "City you live in" : "Where are you from?"}</label><input class="input" name="city" placeholder="${local ? "Start typing your city" : "City or country"}"/></div>
+              <div class="field"><label>${local ? "City you live in" : newcomer ? "City you've moved to" : "Where are you from?"}</label><input class="input" name="city" placeholder="${local || newcomer ? "Start typing your city" : "City or country"}"/></div>
             </div>
+            ${newcomer ? `<div class="field"><label>Where are you from? <span class="muted">(optional)</span></label><input class="input" name="from" placeholder="City or country"/></div>` : ""}
             ${birthField()}
             <div class="field"><label>What are you into?</label>
               <div class="chips">${INTERESTS.slice(0, 10).map((t) => `<button type="button" class="chip ${state.interests.includes(t) ? "active" : ""}" data-interest="${esc(t)}">${esc(t)}</button>`).join("")}</div></div>
@@ -331,7 +333,8 @@
         </div>
       </section>`;
     const form = $("#complete");
-    suggestCities($('[name="city"]', form), local);
+    suggestCities($('[name="city"]', form), local || newcomer);
+    if (form.from) suggestCities(form.from, false);
     bindDateFields(form);
     $("#cancel").addEventListener("click", () => DB.signOut());
     bindRoleAndInterests(form, renderCompleteProfile, "#complete");
@@ -340,8 +343,10 @@
       const f = Object.fromEntries(new FormData(form));
       const err = $("#err");
       if (!f.name?.trim()) return (err.textContent = "Add your name.");
-      const city = listCity(f.city, local);
-      if (!city) return (err.textContent = local ? "Choose your city from the list." : "Choose a city or country from the list.");
+      const city = listCity(f.city, local || newcomer);
+      if (!city) return (err.textContent = local || newcomer ? "Choose your city from the list." : "Choose a city or country from the list.");
+      const from = f.from?.trim() ? listCity(f.from, false) : "";
+      if (f.from?.trim() && !from) return (err.textContent = "Choose where you're from from the list.");
       if (birthError(f.birthdate)) return (err.textContent = birthError(f.birthdate));
       if (!f.adult) return (err.textContent = "Tick the box to confirm you're 18+ and agree to the Terms.");
       // Hold the loading screen until the profile and private details are both saved: they
@@ -349,7 +354,7 @@
       state.signingUp = true;
       render();
       try {
-        await createProfileFor(au, { name: f.name.trim(), city, birthdate: f.birthdate });
+        await createProfileFor(au, { name: f.name.trim(), city, from, birthdate: f.birthdate });
         state.signingUp = false;
         toast(local ? "Profile created. Next: local verification." : "Profile created.");
         go("#/discover");
@@ -362,10 +367,11 @@
     });
   }
 
-  function createProfileFor(au, { name, city, birthdate }) {
-    const local = state.role === "local";
+  function createProfileFor(au, { name, city, from = "", birthdate }) {
+    const role = state.role, local = role === "local", newcomer = role === "newcomer";
     return DB.createProfile(au.uid,
-      { name, role: state.role, mode: state.role, interests: state.interests, from: local ? "" : city, localCity: local ? city : "", photoURL: au.photoURL || "", trip: null, age: ageFrom(birthdate) },
+      { name, role, mode: role, interests: state.interests, from: local ? "" : newcomer ? from : city, localCity: local ? city : "",
+        home: newcomer ? { city } : null, photoURL: au.photoURL || "", trip: null, age: ageFrom(birthdate) },
       { email: au.email || "", verification: local ? { step: 0 } : null, birthdate, termsVersion: LEGAL_VERSION },
     );
   }
@@ -404,7 +410,7 @@
       <section class="hero"><div class="container">
         <div class="fade">
           <h1>See a city with <em>someone who knows it.</em></h1>
-          <p class="lead">Meet a verified local, or another traveller who's in town on the same days. Free.</p>
+          <p class="lead">Travelling, new in town or a local: meet people in your city. Free.</p>
           <div class="hero-art">
             ${ART.city}
             <div class="float-card" style="left:20px;top:22px">🏠<div><b>Verified local</b><small>Residency and ID checked</small></div></div>
@@ -423,8 +429,8 @@
       <section class="section white" id="how"><div class="container">
         <div class="section-head"><h2>How it works</h2></div>
         <div class="steps">
-          <div class="step"><div class="num">1</div><h3>Add your trip</h3><p>A city and your dates, or the city you've just moved to.</p></div>
-          <div class="step"><div class="num">2</div><h3>Find people</h3><p>Locals and other travellers who are around on the same days.</p></div>
+          <div class="step"><div class="num">1</div><h3>Say where you are</h3><p>Your trip and dates, the city you've moved to, or the city you live in.</p></div>
+          <div class="step"><div class="num">2</div><h3>Find people</h3><p>Verified locals, newcomers and other travellers who are around.</p></div>
           <div class="step"><div class="num">3</div><h3>Meet up</h3><p>Send a request, agree on a time in the chat and meet somewhere public.</p></div>
         </div>
       </div></section>
@@ -467,15 +473,16 @@
   const googleButton = (label) => `<button type="button" class="social-btn google-only" data-social="google">${I.google} ${label}</button>`;
 
   function signupForm() {
-    const local = state.role === "local";
+    const role = state.role;
     return `
       <form id="signup" novalidate>
         <h2>Create your account</h2>
-        <p class="sub">You can switch later.</p>
-        <div class="role-picker">
-          <button type="button" class="role traveller ${!local ? "on" : ""}" data-role="traveller"><span class="ico">🎒</span><strong>Traveller</strong><small>Visiting or new in a city</small></button>
-          <button type="button" class="role local ${local ? "on" : ""}" data-role="local"><span class="ico">🏠</span><strong>Local</strong><small>Showing people my city</small></button>
-        </div>
+        <p class="sub">Which one are you? You can switch later.</p>
+<div class="role-picker three">
+              <button type="button" class="role traveller ${role === "traveller" ? "on" : ""}" data-role="traveller"><span class="ico">🎒</span><strong>Traveller</strong><small>Visiting a city</small></button>
+              <button type="button" class="role newcomer ${role === "newcomer" ? "on" : ""}" data-role="newcomer"><span class="ico">🏡</span><strong>Newcomer</strong><small>Recently moved to a city</small></button>
+              <button type="button" class="role local ${role === "local" ? "on" : ""}" data-role="local"><span class="ico">🏠</span><strong>Local</strong><small>Lived there 6+ months</small></button>
+            </div>
         ${googleButton("Sign up with Google")}
 
       </form>`;
@@ -496,15 +503,15 @@
     if (signup) bindRoleAndInterests(signup, () => switchAuth("signup"), "#signup");
   }
 
-  // ---------- Switching between traveller and local ----------
+  // ---------- Switching between traveller, newcomer and local ----------
   async function switchMode(user, mode) {
     if (user.mode === mode) return;
     if (mode === "local" && !user.verification) return openBecomeLocal(user);
     DB.saveProfile({ mode }).catch(fail);
     state.filters = noFilters();
-    state.browsing = false;
+    state.results = null;
     await settle();
-    toast(mode === "traveller" ? "Switched to traveller mode" : user.verification.completed ? "Switched to local mode" : "Finish your local verification first.");
+    toast(mode === "local" && !user.verification.completed ? "Finish your local verification first." : `Switched to ${TYPE_LABEL[mode].toLowerCase()} mode`);
     go("#/discover");
   }
 
@@ -813,8 +820,9 @@
         </nav>
         <div class="nav-right">
           <div class="mode-switch" role="group" aria-label="Switch mode">
-            <button class="${!isLocal ? "on" : ""}" data-switch="traveller" title="Traveller mode">🎒<span> Traveller</span></button>
-            <button class="${isLocal ? "on local" : ""}" data-switch="local" title="Local mode">🏠<span> Local</span></button>
+            <button class="${user.mode === "traveller" ? "on" : ""}" data-switch="traveller" title="Traveller">🎒<span> Traveller</span></button>
+            <button class="${user.mode === "newcomer" ? "on newcomer" : ""}" data-switch="newcomer" title="Newcomer">🏡<span> Newcomer</span></button>
+            <button class="${isLocal ? "on local" : ""}" data-switch="local" title="Local">🏠<span> Local</span></button>
           </div>
           <a class="user-pill" href="#/profile" title="${esc(user.name)}">${userAvatar(user, 36)}</a>
         </div>
@@ -1055,7 +1063,7 @@
       <div class="reviews-summary"><strong>${s.avg}</strong><div>${stars(s.avg)}<span class="muted">${plural(s.count, "review")}</span></div></div>
       <div class="review-list">${reviews.map((r) => `
         <div class="review">
-          <div class="review-top"><b>${esc(r.name)}</b><span class="badge ${r.role === "Local" ? "badge-local" : "badge-buddy"}">${esc(r.role)}</span>${stars(r.rating)}<span class="muted">${fmtDate(r.ts)}</span></div>
+          <div class="review-top"><b>${esc(r.name)}</b>${labelBadge(r.role)}${stars(r.rating)}<span class="muted">${fmtDate(r.ts)}</span></div>
           <p>${esc(r.text)}</p>
         </div>`).join("")}</div>`;
   }
@@ -1074,9 +1082,9 @@
   const otherPerson = (doc) => {
     const uid = other(doc);
     const p = doc.people?.[uid] || {};
-    return { uid, id: uid, name: p.name || "buddyup member", photo: p.photo || "", from: p.from || "", city: p.city || "", label: p.label || "Buddy" };
+    return { uid, id: uid, name: p.name || "buddyup member", photo: p.photo || "", from: p.from || "", city: p.city || "", label: p.label || "Traveller" };
   };
-  const labelBadge = (label) => `<span class="badge ${label === "Local" ? "badge-local" : "badge-buddy"}">${esc(label)}</span>`;
+  const labelBadge = (label) => { const t = typeFromLabel(label); return `<span class="badge ${BADGE[t]}">${TYPE_LABEL[t]}</span>`; };
   const STATUS = { requested: ["Waiting for reply", "badge-wait"], confirmed: ["Confirmed", "badge-buddy"], completed: ["Completed", "badge-buddy"], reviewDue: ["Needs your review", "badge-local"], declined: ["Declined", "badge-wait"], cancelled: ["Cancelled", "badge-wait"] };
   const myReviewOf = (m) => DB.cache.reviewsByMe.find((r) => r.meetupId === m.id);
   const theirReviewOf = (m) => DB.cache.reviewsToMe.find((r) => r.meetupId === m.id);
@@ -1246,7 +1254,7 @@
       if (!rating) return ($("#rerr").textContent = "Choose a rating.");
       if (text.length < 10) return ($("#rerr").textContent = "Write at least a few words.");
       const u = me();
-      const role = m.kind === "local" ? (m.to === u.uid ? "Local" : "Traveller") : "Buddy";
+      const role = TYPE_LABEL[typeFromLabel(m.people?.[u.uid]?.label || (m.kind === "local" && m.to === u.uid ? "Local" : "Traveller"))];
       $("#rsend").disabled = true;
       try {
         await DB.addReview(m, { rating, text, fromName: u.name, fromRole: role });
@@ -1257,55 +1265,63 @@
     });
   }
 
-  // ---------- Discover (traveller) ----------
-  // A traveller can have a home city (they've just moved there, so they're always around) and a
-  // trip (a city and dates), both at once. They look for people in one of the two at a time.
+  // ---------- Discover ----------
+  // Three kinds of people. Travellers have a trip (a city and dates), newcomers have recently
+  // moved to a city (no dates), locals are verified residents (always around). Who sees whom:
+  const SEES = { traveller: ["local", "newcomer", "traveller"], newcomer: ["local"], local: ["local", "newcomer"] };
+  const TYPE_LABEL = { local: "Local", newcomer: "Newcomer", traveller: "Traveller" };
+  const TYPE_PLURAL = { local: "Locals", newcomer: "Newcomers", traveller: "Travellers" };
+  const BADGE = { local: "badge-local", newcomer: "badge-new", traveller: "badge-buddy" };
+  // Older meetups and chats call travellers "Buddy".
+  const typeFromLabel = (label) => (label === "Local" ? "local" : label === "Newcomer" ? "newcomer" : "traveller");
   const homeOf = (u) => (u?.home?.city ? u.home : u?.trip?.moved && u.trip.city ? { city: u.trip.city } : null);
   const tripOf = (u) => (u?.trip?.city && !u.trip.moved && u.trip.end >= todayYmd() ? u.trip : null);
   const range = (t) => `${dmy(t.start)} to ${dmy(t.end)}`;
+  // Where the signed-in person is looking, based on their mode.
   function searchPlace(user) {
-    const home = homeOf(user), trip = tripOf(user);
-    const kind = state.place === "home" && home ? "home" : state.place === "trip" && trip ? "trip" : trip ? "trip" : home ? "home" : null;
-    if (kind === "trip") return { kind, city: trip.city, days: daysBetween(trip.start, trip.end), trip };
-    if (kind === "home") return { kind, city: home.city, days: null };
-    // When a local browses, use their local city as a "home" place
-    if (user.mode === "local" && user.localCity) return { kind: "home", city: user.localCity, days: null };
-    return null;
+    if (user.mode === "local") return user.approved && user.localCity ? { kind: "local", city: user.localCity, days: null } : null;
+    if (user.mode === "newcomer") { const home = homeOf(user); return home ? { kind: "newcomer", city: home.city, days: null } : null; }
+    const trip = tripOf(user);
+    return trip ? { kind: "traveller", city: trip.city, days: daysBetween(trip.start, trip.end), trip } : null;
   }
-  const TYPES = [["all", "Everyone"], ["local", "Locals"], ["buddy", "Buddies"]];
 
   const RES_LABEL = { "6to12m": "under a year", "1to3y": "1 to 3 years", "3to10y": "3 to 10 years", "10y": "10+ years", born: "born and raised" };
-  // A Firestore user as a card/profile in the UI. `kind` is the role they're shown in, `city` the
-  // city being searched. `days` are the days they're there (null if they live there now).
-  function toPerson(u, kind, city) {
-    const isLocal = kind === "local";
-    const home = homeOf(u), trip = tripOf(u);
-    const here = isLocal || !city ? null : home?.city === city ? "home" : trip?.city === city ? "trip" : null;
+  // A Firestore user as a card/profile. `type` is how they appear in `city`; `days` are the days
+  // they're there (null for locals and newcomers, who live there).
+  function toPerson(u, type, city) {
+    const trip = tripOf(u), home = homeOf(u);
     return {
-      id: u.uid, uid: u.uid, type: isLocal ? "local" : "buddy", traveller: kind === "traveller",
+      id: u.uid, uid: u.uid, type,
       name: u.name || "buddyup member", photo: u.photoURL || "", from: u.from || "",
-      city: isLocal ? u.localCity : city || trip?.city || home?.city || "", residency: u.residency, tripEnd: here === "trip" ? trip.end : "",
+      city: type === "local" ? u.localCity : type === "newcomer" ? home?.city || city || "" : trip?.city || city || "",
+      residency: u.residency, tripEnd: type === "traveller" ? trip?.end || "" : "",
       interests: u.interests || [], languages: u.languages || [], bio: u.bio || "",
-      verified: isLocal ? !!u.approved : false, phoneVerified: !!u.phoneVerified,
-      days: isLocal ? null : here === "trip" ? daysBetween(trip.start, trip.end) : here === "home" ? null : [],
-      moved: here === "home", cancellations: u.cancellations || 0, age: u.age || null,
+      verified: type === "local" ? !!u.approved : false, phoneVerified: !!u.phoneVerified,
+      days: type === "traveller" ? (trip && trip.city === city ? daysBetween(trip.start, trip.end) : []) : null,
+      cancellations: u.cancellations || 0, age: u.age || null,
     };
   }
 
-  // Locals and other travellers in the city who are there on at least one of the same days.
-  // People who live there now are always around; two of them see each other until they've had a
-  // meetup together. People who've cancelled confirmed meetups come last.
+  // The people the searcher may see in the city, who are there on at least one of the same days.
+  // People who've cancelled confirmed meetups come last.
   async function peopleFor(user, place) {
-    const [locals, travellers] = await Promise.all([DB.findLocals(place.city), DB.findTravellers(place.city)]);
+    const sees = SEES[place.kind];
+    const wantOthers = sees.includes("newcomer") || sees.includes("traveller");
+    const [locals, others] = await Promise.all([
+      sees.includes("local") ? DB.findLocals(place.city) : [],
+      wantOthers ? DB.findTravellers(place.city) : [],
+    ]);
     const mine = user.interests || [];
     const seen = new Set([user.uid]);
-    const metBefore = new Set(DB.cache.meetups.filter((m) => m.status === "completed").map(other));
     const people = [
-      ...locals.filter((u) => !u.undiscoverable).map((u) => toPerson(u, "local")),
-      ...travellers.map((u) => toPerson(u, "buddy", place.city)).filter((p) => p.moved || p.days.length),
+      ...locals.filter((u) => !u.undiscoverable).map((u) => toPerson(u, "local", place.city)),
+      ...others.map((u) => {
+        const type = homeOf(u)?.city === place.city ? "newcomer" : tripOf(u)?.city === place.city ? "traveller" : null;
+        return type && toPerson(u, type, place.city);
+      }).filter(Boolean),
     ]
-      .filter((p) => !seen.has(p.uid) && seen.add(p.uid)) // someone can be both; show them as a local
-      .filter((p) => !(!place.days && p.moved && metBefore.has(p.uid)))
+      .filter((p) => sees.includes(p.type) && (p.type !== "traveller" || p.days.length))
+      .filter((p) => !seen.has(p.uid) && seen.add(p.uid)) // someone can be two kinds; show the first (local)
       .map((p) => {
         const match = place.days && p.days ? place.days.filter((d) => p.days.includes(d)) : place.days || p.days || [];
         return { ...p, match, anytime: !place.days && !p.days, overlap: p.interests.filter((t) => mine.includes(t)).length };
@@ -1318,63 +1334,47 @@
   }
 
   function discoverPage(user, root, id) {
-    if (user.mode === "local") {
-      // Browse mode: when the URL specifies /people or browsing state is active
-      if (id === "people") {
-        state.browsing = true;
-        const place = searchPlace(user);
-        return place ? resultsPage(user, root, place) : startPage(user, root);
-      }
-      // If browsing state was set from a previous session, reset it when visiting dashboard
-      if (state.browsing) state.browsing = false;
-      return hostDashboard(user, root);
-    }
-    if (id === "local" || id === "buddy") state.filters = { ...noFilters(), type: id }; // old links
+    if (user.mode === "local") return id === "people" && searchPlace(user) ? resultsPage(user, root, searchPlace(user)) : hostDashboard(user, root);
     if (id) return go("#/discover");
     const place = searchPlace(user);
-    return place ? resultsPage(user, root, place) : startPage(user, root);
+    return place ? resultsPage(user, root, place) : setupPage(user, root);
   }
 
-  // First visit: are they visiting somewhere, or have they just moved?
-  function startPage(user, root) {
+  // Travellers without a trip, or newcomers without a city: ask for it right on the page.
+  function setupPage(user, root) {
+    const isTrip = user.mode === "traveller";
     root.innerHTML = `
       <div class="page">
-        <div class="greet fade"><h1>Where are you?</h1></div>
-        <div class="start-choices fade">
-          <button type="button" class="role traveller" data-edit="trip"><span class="ico">✈️</span><strong>Visiting a city</strong><small>Add your destination and dates</small></button>
-          <button type="button" class="role traveller" data-edit="home"><span class="ico">🏡</span><strong>Just moved to a city</strong><small>No dates needed</small></button>
-        </div>
-        <div class="greet" style="margin-top:40px"><h1>Or join as a local</h1><p class="muted">Show visitors around your city.</p>
-          <button class="btn btn-coral btn-block" data-switch="local" style="margin-top:12px">Become a local</button>
-        </div>
+        <div class="greet fade"><h1>${isTrip ? "Where are you travelling to?" : "Which city have you moved to?"}</h1></div>
+        <section class="panel fade setup-panel" id="setup"></section>
       </div>`;
-    $$("[data-edit]", root).forEach((b) => b.addEventListener("click", () => openPlaceForm(user, b.dataset.edit)));
-    $("[data-switch]", root)?.addEventListener("click", () => switchMode(user, "local"));
+    mountPlaceForm($("#setup"), user, isTrip ? "trip" : "home");
   }
 
-  // Add or change the trip ("trip") or the home city ("home").
+  // The trip ("trip") or newcomer city ("home") form, in a page section or a popup.
   function openPlaceForm(user, kind) {
+    openModal(`<button class="modal-close" data-close aria-label="Close">${I.close}</button><div class="modal-body plain" id="placebox"></div>`);
+    mountPlaceForm($("#placebox"), user, kind, true);
+  }
+  function mountPlaceForm(box, user, kind, inModal) {
     const isTrip = kind === "trip";
     const current = isTrip ? tripOf(user) : homeOf(user);
     const today = todayYmd();
-    openModal(`
-      <button class="modal-close" data-close aria-label="Close">${I.close}</button>
-      <div class="modal-body plain">
-        <h3>${isTrip ? (current ? "Your trip" : "Add a trip") : "Where you live now"}</h3>
-        <form id="placeform" novalidate style="margin-top:16px">
-          <div class="field"><label>${isTrip ? "Destination" : "City"}</label>
-            <div class="city-bar">${I.pin}<input name="city" value="${esc(current?.city || "")}" placeholder="Start typing a city" autocomplete="off"/></div></div>
-          ${isTrip ? `
-            <div class="row">
-              <div class="field"><label>Arriving</label>${dateField("start", current?.start || "", { min: today, label: "Arriving" })}</div>
-              <div class="field"><label>Leaving</label>${dateField("end", current?.end || "", { min: today, label: "Leaving" })}</div>
-            </div>` : `<p class="hint" style="margin:-4px 0 12px">Other people in this city can find you on any day.</p>`}
-          <div class="error" id="perr"></div>
-          <button class="btn btn-primary btn-block" type="submit">Save</button>
-          ${current ? `<p class="center" style="margin-top:12px"><button type="button" class="link-btn" id="premove">${isTrip ? "Remove trip" : "I don't live there any more"}</button></p>` : ""}
-        </form>
-      </div>`);
-    const form = $("#placeform");
+    box.innerHTML = `
+      ${inModal ? `<h3>${isTrip ? (current ? "Your trip" : "Add a trip") : "Your city"}</h3>` : ""}
+      <form id="placeform" novalidate style="margin-top:${inModal ? 16 : 0}px">
+        <div class="field"><label>${isTrip ? "Destination" : "City"}</label>
+          <div class="city-bar">${I.pin}<input name="city" value="${esc(current?.city || "")}" placeholder="Start typing a city" autocomplete="off"/></div></div>
+        ${isTrip ? `
+          <div class="row">
+            <div class="field"><label>Arriving</label>${dateField("start", current?.start || "", { min: today, label: "Arriving" })}</div>
+            <div class="field"><label>Leaving</label>${dateField("end", current?.end || "", { min: today, label: "Leaving" })}</div>
+          </div>` : ""}
+        <div class="error" id="perr"></div>
+        <button class="btn btn-primary btn-block" type="submit">${inModal ? "Save" : "Find people"}</button>
+        ${inModal && current && isTrip ? `<p class="center" style="margin-top:12px"><button type="button" class="link-btn" id="premove">Remove trip</button></p>` : ""}
+      </form>`;
+    const form = $("#placeform", box);
     suggestCities(form.city, true);
     if (isTrip) {
       bindDateFields(form);
@@ -1383,50 +1383,40 @@
         if (form.end.value && form.end.value < form.start.value) setDate(form.end, form.start.value);
       });
     }
-    const done = async (patch, place) => {
+    const done = async (patch) => {
       DB.saveProfile(patch).catch(fail);
-      state.place = place;
       state.filters = noFilters();
+      state.results = null;
       closeModal();
       await settle();
       go("#/discover");
     };
     form.addEventListener("submit", (e) => {
       e.preventDefault();
-      const err = $("#perr");
+      const err = $("#perr", box);
       const city = listCity(form.city.value, true);
       if (!city) return (err.textContent = "Choose a city from the list.");
-      if (!isTrip) return done({ home: { city }, ...(user.trip?.moved ? { trip: null } : {}) }, "home");
+      if (!isTrip) return done({ home: { city }, ...(user.trip?.moved ? { trip: null } : {}) });
       const start = form.start.value, end = form.end.value;
       if (!start || !end) return (err.textContent = "Add your dates.");
       if (end < start) return (err.textContent = "Leaving is before arriving.");
       if (end < today) return (err.textContent = "Those dates have passed.");
-      done({ trip: { city, start, end } }, "trip");
+      done({ trip: { city, start, end } });
     });
-    $("#premove")?.addEventListener("click", () => done(isTrip ? { trip: null } : { home: null, ...(user.trip?.moved ? { trip: null } : {}) }, null));
+    $("#premove", box)?.addEventListener("click", () => done({ trip: null }));
   }
 
   async function resultsPage(user, root, place) {
-    const home = homeOf(user), trip = tripOf(user);
-    const isHome = place.kind === "home";
-    const bar = `
-      <div class="place-bar fade">
-        <div class="seg" role="group" aria-label="Where">
-          ${home ? `<button class="${isHome ? "on" : ""}" data-place="home">🏡 ${esc(home.city)}</button>` : ""}
-          ${trip ? `<button class="${!isHome ? "on" : ""}" data-place="trip">✈️ ${esc(trip.city)} <span>${dmy(trip.start).slice(0, 5)} to ${dmy(trip.end).slice(0, 5)}</span></button>` : ""}
-        </div>
-        <div class="place-links">
-          <button type="button" class="link-btn" data-edit="trip">${trip ? "Edit trip" : "Add a trip"}</button>
-          <button type="button" class="link-btn" data-edit="home">${home ? "Change home city" : "I've moved somewhere"}</button>
-        </div>
-      </div>`;
-    const head = (count) => `${bar}
-      <div class="results-head fade"><div><h1>People in ${esc(place.city)}</h1><span class="count">${count}</span></div></div>`;
-    const bind = () => {
-      $$("[data-place]", root).forEach((b) => b.addEventListener("click", () => { state.place = b.dataset.place; state.filters = noFilters(); render(); }));
-      $$("[data-edit]", root).forEach((b) => b.addEventListener("click", () => openPlaceForm(me(), b.dataset.edit)));
-    };
-    const key = `${place.kind}|${place.city}|${(place.days || []).join()}|${DB.cache.meetups.filter((m) => m.status === "completed").length}`;
+    const kind = place.kind;
+    const types = SEES[kind];
+    if (state.filters.type !== "all" && !types.includes(state.filters.type)) state.filters.type = "all";
+    const sub = kind === "traveller" ? `${range(place.trip)} · <button type="button" class="link-btn" data-edit="trip">Edit trip</button>`
+      : kind === "newcomer" ? `<button type="button" class="link-btn" data-edit="home">Change city</button>` : "";
+    const head = (count) => `
+      ${kind === "local" ? `<a class="back-link" href="#/discover">${I.back} Dashboard</a>` : ""}
+      <div class="results-head fade"><div><h1>People in ${esc(place.city)}</h1><span class="count">${[count, sub].filter(Boolean).join(" · ")}</span></div></div>`;
+    const bind = () => $$("[data-edit]", root).forEach((b) => b.addEventListener("click", () => openPlaceForm(me(), b.dataset.edit)));
+    const key = `${kind}|${place.city}|${(place.days || []).join()}`;
     if (state.results?.key !== key) {
       root.innerHTML = `<div class="page">${head("Loading…")}<div class="grid">${'<div class="pcard skeleton"></div>'.repeat(4)}</div></div>`;
       bind();
@@ -1436,7 +1426,7 @@
         root.innerHTML = `<div class="page">${head("")}<div class="empty"><div class="art">⚠️</div>${esc(DB.friendlyError(e))}</div></div>`;
         return bind();
       }
-      if (route().page !== "discover" || searchPlace(me())?.kind !== place.kind) return; // moved on while loading
+      if (route().page !== "discover" || searchPlace(me())?.kind !== kind) return; // moved on while loading
     }
     const all = state.results.all;
     const f = state.filters;
@@ -1453,21 +1443,23 @@
     const people = matching.filter((p) => f.type === "all" || p.type === f.type)
       .map((p) => (f.day && !p.anytime ? { ...p, match: [f.day] } : p));
     const filtered = JSON.stringify(f) !== JSON.stringify(noFilters());
+    const tabs = [["all", "Everyone"], ...types.map((t) => [t, TYPE_PLURAL[t]])];
     const select = (name, label, list, fmt = esc) => (list.length ? `
       <select class="input" data-f="${name}" aria-label="${label}">
         <option value="">${label}</option>
         ${list.map((v) => `<option value="${esc(v)}" ${f[name] === v ? "selected" : ""}>${fmt(v)}</option>`).join("")}
       </select>` : "");
+    const nobody = `Nobody here yet. You'll see ${types.map((t) => TYPE_PLURAL[t].toLowerCase()).join(", ").replace(/, ([^,]*)$/, " and $1")} in ${esc(place.city)}${kind === "traveller" ? " on your dates" : ""} as they join.`;
 
     root.innerHTML = `
       <div class="page">
-        ${head(`${plural(people.length, "person").replace("persons", "people")}${isHome ? "" : ` · ${range(trip)}`}`)}
+        ${head(plural(people.length, "person").replace("persons", "people"))}
         ${all.length ? `
           <div class="filter-bar">
-            <div class="seg" role="group" aria-label="Show">${TYPES.map(([k, l]) => `
+            ${types.length > 1 ? `<div class="seg" role="group" aria-label="Show">${tabs.map(([k, l]) => `
               <button class="${f.type === k ? "on" : ""}" data-type="${k}">${l} <span>${matching.filter((p) => k === "all" || p.type === k).length}</span></button>`).join("")}
-            </div>
-            ${select("day", "Any day", days, niceDay)}
+            </div>` : ""}
+            ${days.length ? select("day", "Any day", days, niceDay) : ""}
             ${select("interest", "Any interest", interests)}
             ${select("language", "Any language", languages)}
             <label class="chip ${f.rated ? "active" : ""}"><input type="checkbox" data-f="rated" ${f.rated ? "checked" : ""}/>★ 4+</label>
@@ -1476,7 +1468,7 @@
         ${people.length ? `<div class="grid">${people.map((p, i) => personCard(p, i, activeMeetupWith(p.uid))).join("")}</div>`
           : `<div class="empty"><div class="art">🗓️</div>${all.length
             ? `Nobody matches these filters.<br/><br/><button class="btn btn-primary" id="clear2">Clear filters</button>`
-            : isHome ? `Nobody else in ${esc(place.city)} yet.` : `Nobody in ${esc(place.city)} on your dates yet.`}</div>`}
+            : nobody}</div>`}
       </div>`;
 
     bind();
@@ -1496,18 +1488,17 @@
   // A pending or confirmed meetup with this person, if any.
   const activeMeetupWith = (uid) => DB.cache.meetups.find((m) => m.participants.includes(uid) && ["requested", "confirmed"].includes(m.status));
 
-  const typeBadge = (p) => (p.type === "local" ? '<span class="badge badge-local">Local</span>'
-    : p.traveller ? '<span class="badge badge-buddy">Traveller</span>' : '<span class="badge badge-buddy">Buddy</span>');
+  const typeBadge = (p) => `<span class="badge ${BADGE[p.type]}">${TYPE_LABEL[p.type]}</span>`;
   const subline = (p) => (p.type === "local"
     ? `Local in ${esc(p.city)}${RES_LABEL[p.residency] ? ` · ${RES_LABEL[p.residency]}` : ""}`
-    : p.moved
+    : p.type === "newcomer"
       ? `New in ${esc(p.city)}${p.from ? ` · from ${esc(p.from)}` : ""}`
       : `${p.from ? `From ${esc(p.from)}` : "Visiting"}${p.tripEnd ? ` · until ${fmtYmd(p.tripEnd)}` : ""}`);
 
   function personCard(p, i, active) {
     return `
       <article class="pcard" data-id="${esc(p.id)}" style="animation-delay:${i * 0.03}s">
-        <div class="cover ${p.type === "local" ? "local" : ""}">${typeBadge(p)}</div>
+        <div class="cover ${p.type === "traveller" ? "" : p.type}">${typeBadge(p)}</div>
         <div class="face">${face(p, 84)}</div>
         <div class="inner">
           <h4><span>${esc(p.name)}${p.age ? `<span class="age">, ${p.age}</span>` : ""}</span> ${p.verified ? I.tick : ""}</h4>
@@ -1516,7 +1507,7 @@
           ${p.bio ? `<p class="bio">${esc(p.bio)}</p>` : ""}
           <div class="chips">${p.interests.map((t) => `<span class="chip tag">${esc(t)}</span>`).join("")}</div>
           <div class="match-line">${p.anytime
-            ? `<b>Any day</b><br/>You both live here now`
+            ? `<b>Any day</b><br/>You both live here`
             : `<b>${p.match.length === 1 ? "1 day" : `${p.match.length} days`} in common</b><br/>Next: ${niceDay(p.match[0])}`}</div>
           <div class="card-actions">
             <button class="btn btn-primary btn-sm" data-connect>${active ? `${I.chat} Open chat` : `${I.plane} Request meetup`}</button>
@@ -1530,8 +1521,8 @@
   
 
   // ---------- Local (host) dashboard ----------
-  // Locals don't browse travellers: travellers request a time the local is free, and the
-  // local chooses who to meet. That keeps tourists from being cold-messaged.
+  // Locals get requests from travellers, newcomers and other locals, and can look for other locals
+  // and newcomers themselves. They don't see short-stay travellers.
   function hostDashboard(user, root) {
     const first = esc(user.name.split(" ")[0]);
     const city = esc(user.localCity);
@@ -1542,15 +1533,15 @@
         ${user.approved ? `
           <section class="panel">
             <h3>Discoverability</h3>
-            <label class="list-item" style="cursor:pointer"><span class="li-ico">👁️</span><span class="grow">${user.undiscoverable ? "Undiscoverable" : "Discoverable"}<small>${user.undiscoverable ? "Travellers cannot find you" : `Travellers in ${city} can find you`}</small></span>
+            <label class="list-item" style="cursor:pointer"><span class="li-ico">👁️</span><span class="grow">${user.undiscoverable ? "Hidden" : "Visible"}<small>${user.undiscoverable ? "Nobody can find you in search" : `People in ${city} can find you`}</small></span>
               <input type="checkbox" id="undisc" ${!user.undiscoverable ? "checked" : ""} class="switch"/></label>
           </section>
           <section class="panel">
-            <h3>Browse</h3>
-            <a class="btn btn-outline btn-block" id="browse-people" href="#/discover/people">🔍 Browse people in ${city}</a>
+            <h3>Find people</h3>
+            <a class="btn btn-primary btn-block" href="#/discover/people">Locals and newcomers in ${city}</a>
           </section>` : ""}
         <section class="panel switch-card">
-          <h3>Travelling?</h3>
+          <h3>Travelling, or new somewhere?</h3>
           <button class="btn btn-outline btn-block" data-switch="traveller">Switch to traveller mode</button>
         </section>
       </aside>`;
@@ -1569,7 +1560,7 @@
                 <ol class="timeline">
                   <li class="done"><b>Application submitted</b><small>${v.submittedAt ? fmtDate(v.submittedAt) : ""}</small></li>
                   <li class="current"><b>Review</b><small>We check your answers and ID.</small></li>
-                  <li><b>Approved</b><small>Travellers can find you.</small></li>
+                  <li><b>Approved</b><small>People in your city can find you.</small></li>
                 </ol>
                 ${v.flags?.length ? `<div class="note"><div><b>Needs a closer look</b><br/>${v.flags.map((f) => esc(f.detail)).join("<br/>")}</div></div>` : ""}
               </section>
@@ -1588,7 +1579,7 @@
             <div class="stat"><strong>${pending.length}</strong><span>New requests</span></div>
             <div class="stat"><strong>${upcoming.length}</strong><span>Upcoming meetups</span></div>
             <div class="stat"><strong>${mine.count ? `★ ${mine.avg}` : "New"}</strong><span>${mine.count ? plural(mine.count, "review") : "Your rating"}</span></div>
-            <div class="stat"><strong id="in-town">…</strong><span>Travellers in ${city} this week</span></div>
+            <div class="stat"><strong id="in-town">…</strong><span>Newcomers in ${city}</span></div>
           </div>
           <div class="host-grid">
             <div>
@@ -1612,7 +1603,7 @@
         </div>`;
       DB.findTravellers(user.localCity).then((list) => {
         const today = ymd(new Date()), weekEnd = ymd(addDays(new Date(), 7));
-        const n = list.filter((t) => t.uid !== uid && (homeOf(t)?.city === user.localCity || (tripOf(t)?.city === user.localCity && t.trip.start <= weekEnd))).length;
+        const n = list.filter((t) => t.uid !== uid && homeOf(t)?.city === user.localCity).length;
         const el = $("#in-town");
         if (el) el.textContent = n;
       }).catch(() => { const el = $("#in-town"); if (el) el.textContent = "?"; });
@@ -1621,7 +1612,6 @@
 
     $$("[data-switch]", root).forEach((b) => b.addEventListener("click", () => switchMode(me(), b.dataset.switch)));
     $("#undisc")?.addEventListener("change", async (e) => { DB.toggleUndiscoverable(!e.target.checked).catch(fail); await settle(); render(); });
-    $("#browse-people")?.addEventListener("click", (e) => { e.preventDefault(); state.browsing = true; go("#/discover"); });
     bindMeetupActions(root);
   }
 
@@ -1660,13 +1650,16 @@
     const interest = both ? ` We both like ${both.toLowerCase()}.` : mine[0] ? ` I'm into ${mine[0].toLowerCase()}.` : "";
     const d = slotDay(slot);
     const day = !d ? "on a day that suits you" : d === todayYmd() ? "today" : d === ymd(addDays(new Date(), 1)) ? "tomorrow" : `on ${dayLabel(d)}`;
-    const iMoved = place?.kind === "home";
-    const dates = place?.trip ? `from ${dmy(place.trip.start)} to ${dmy(place.trip.end)}` : "";
-    const me = `Hi ${theirs}, I'm ${first}${user.from ? ` from ${user.from}` : ""}.`;
-    return p.type === "local"
-      ? `${me} ${iMoved ? `I've just moved to ${p.city}` : `I'm visiting ${p.city} ${dates}`}.${interest} Would you be up for showing me around ${day}? We can agree on a time here.`
-      : `${me} ${iMoved ? `I've also just moved to ${p.city}` : `I'm in ${p.city} ${dates} too`}.${interest} Want to meet up ${day}? We can sort out a time here.`;
+    const kind = place?.kind;
+    const intro = kind === "traveller" ? `I'm visiting ${place.city} from ${dmy(place.trip.start)} to ${dmy(place.trip.end)}.`
+      : kind === "newcomer" ? `I've just moved to ${place.city}.`
+      : `I'm a local in ${place?.city || p.city}${p.type === "local" ? " too" : ""}.`;
+    const ask = p.type === "local" && kind !== "local" ? `Would you be up for showing me around ${day}?`
+      : kind === "local" && p.type === "newcomer" ? `Happy to show you around ${day} if you like.`
+      : `Want to meet up ${day}?`;
+    return `Hi ${theirs}, I'm ${first}${user.from ? ` from ${user.from}` : ""}. ${intro}${interest} ${ask} We can agree on a time here.`;
   }
+
 
 
   // Open someone's profile from a meetup or chat (only their uid and role label are known).
@@ -1674,14 +1667,14 @@
     try {
       const u = await DB.getProfile(uid);
       if (!u) return toast("This profile is no longer available.");
-      openProfile(me(), toPerson(u, label === "Local" ? "local" : label === "Traveller" ? "traveller" : "buddy"), { readOnly: true });
+      openProfile(me(), toPerson(u, typeFromLabel(label)), { readOnly: true });
     } catch (e) { fail(e); }
   }
 
   function openProfile(user, p, opts = {}) {
     const isLocal = p.type === "local";
     const active = activeMeetupWith(p.uid);
-    const canRequest = !opts.readOnly && !active && user.mode === "traveller" && (p.match?.length || p.anytime);
+    const canRequest = !opts.readOnly && !active && !!opts.place && (p.match?.length || p.anytime);
     let actions = "";
     if (active && !opts.readOnly) actions = `<div class="modal-actions" style="margin-top:22px"><button class="btn btn-primary" id="open">${I.chat} Open chat</button></div>`;
     else if (canRequest) actions = `
@@ -1703,7 +1696,7 @@
     else if (!opts.readOnly || p.uid !== user.uid) actions = `<div class="modal-actions" style="margin-top:22px"><button class="btn btn-soft" id="report">🚩 Report</button></div>`;
     openModal(`
       <button class="modal-close" data-close aria-label="Close">${I.close}</button>
-      <div class="modal-cover ${isLocal ? "local" : ""}"></div>
+      <div class="modal-cover ${p.type === "traveller" ? "" : p.type}"></div>
       <div class="modal-face">${face(p, 112)}</div>
       <div class="modal-body">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
@@ -1759,8 +1752,8 @@
         $("#send").disabled = true;
         const kind = isLocal ? "local" : "buddy";
         const people = {
-          [user.uid]: { name: user.name, photo: user.photoURL || "", from: user.from || "", city: opts.place?.city || p.city, label: isLocal ? "Traveller" : "Buddy" },
-          [p.uid]: { name: p.name, photo: p.photo, from: p.from, city: p.city, label: isLocal ? "Local" : "Buddy" },
+          [user.uid]: { name: user.name, photo: user.photoURL || "", from: user.from || "", city: opts.place.city, label: TYPE_LABEL[opts.place.kind] },
+          [p.uid]: { name: p.name, photo: p.photo, from: p.from, city: p.city, label: TYPE_LABEL[p.type] },
         };
         try {
           const { chatId } = await DB.requestMeetup({ to: p.uid, kind, slot, slotStart: dayStart(slot).getTime(), slotEnd: dayEnd(slot).getTime(), message: text, people });
@@ -1864,9 +1857,7 @@
     const blocked = (chat.blockedBy || []).length > 0;
     const quick = p.label === "Local"
       ? ["Where should we meet?", "What's your favourite spot?", "Any food recommendations?", "See you then"]
-      : p.label === "Traveller"
-        ? ["Let's meet at the main square.", "Any food you want to try?", "What are you most excited to see?", "See you then"]
-        : ["Where should we meet?", "What are you up to today?", "Want to grab food?", "See you then"];
+      : ["Where should we meet?", "What time works for you?", "Want to grab food?", "See you then"];
     pane.innerHTML = `
       <div class="thread-head">
         <a class="icon-btn back" href="#/messages" aria-label="Back">${I.back}</a>
@@ -2121,12 +2112,13 @@
     const v = user.verification;
     const localStatus = !v ? "Not set up yet" : user.approved ? `✓ Verified in ${esc(user.localCity)}` : v.completed ? `In review · ${esc(user.localCity)}` : `Verification in progress · ${esc(user.localCity)}`;
     const home = homeOf(user), trip = tripOf(user);
-    const travellerStatus = trip ? `${esc(trip.city)}, ${range(trip)}` : home ? `Living in ${esc(home.city)}` : "Not set up";
+    const travellerStatus = trip ? `${esc(trip.city)}, ${range(trip)}` : "No trip planned";
+    const newcomerStatus = home ? `New in ${esc(home.city)}` : "No city set";
     const modeRow = (key, ico, title, status) => {
       const on = user.mode === key;
       const label = key === "local" && !v ? "Become a local" : "Switch";
       return `<div class="list-item"><span class="li-ico">${ico}</span><span class="grow">${title}<small>${status}</small></span>
-        ${on ? `<span class="badge ${key === "local" ? "badge-local" : "badge-buddy"}">Active</span>` : `<button class="btn ${key === "local" && !v ? "btn-coral" : "btn-outline"} btn-sm" data-switch="${key}">${label}</button>`}</div>`;
+        ${on ? `<span class="badge ${BADGE[key]}">Active</span>` : `<button class="btn ${key === "local" && !v ? "btn-coral" : "btn-outline"} btn-sm" data-switch="${key}">${label}</button>`}</div>`;
     };
     root.innerHTML = `
       <div class="page" style="padding-top:0">
@@ -2146,16 +2138,16 @@
               <div class="trust">
                 <div class="ring" style="--p:${v.trustScore || 0}"><span>${v.trustScore || 0}</span></div>
                 <div><strong>${user.approved ? "Verified local ✓" : "Local verification in review"}</strong>
-                <p>${user.approved ? "Travellers can see your verified tick." : "Our team reviews new locals within 24 hours."}</p></div>
+                <p>${user.approved ? "People see your verified tick." : "Our team reviews new locals within 24 hours."}</p></div>
               </div>` : ""}
           </div>
           <div class="panel fade" style="animation-delay:.05s">
             <h3>How you use buddyup</h3>
             ${modeRow("traveller", "🎒", "Traveller", travellerStatus)}
+            ${modeRow("newcomer", "🏡", "Newcomer", newcomerStatus)}
             ${modeRow("local", "🏠", "Local", localStatus)}
-            ${user.mode === "traveller" ? `
-              <button class="list-item" data-edit="home"><span class="li-ico">🏡</span><span class="grow">Home city<small>${home ? esc(home.city) : "Not set"}</small></span><span class="chev">${I.chev}</span></button>
-              <button class="list-item" data-edit="trip"><span class="li-ico">✈️</span><span class="grow">Trip<small>${trip ? `${esc(trip.city)}, ${range(trip)}` : "None planned"}</small></span><span class="chev">${I.chev}</span></button>` : ""}
+            <button class="list-item" data-edit="trip"><span class="li-ico">✈️</span><span class="grow">Trip<small>${trip ? `${esc(trip.city)}, ${range(trip)}` : "None planned"}</small></span><span class="chev">${I.chev}</span></button>
+            <button class="list-item" data-edit="home"><span class="li-ico">📍</span><span class="grow">City you've moved to<small>${home ? esc(home.city) : "Not set"}</small></span><span class="chev">${I.chev}</span></button>
             ${user.cancellations ? `<div class="list-item"><span class="li-ico">↩️</span><span class="grow">${plural(user.cancellations, "cancelled meetup")}<small>These lower you in search results.</small></span></div>` : ""}
             
             <h3 style="margin-top:26px">Settings</h3>
@@ -2253,7 +2245,7 @@
             <button type="button" class="btn btn-soft btn-sm" id="eselfie">🤳 Take a selfie</button>
           </div>
           <div class="field"><label>Name</label><input class="input" name="name" value="${esc(user.name)}" maxlength="60"/></div>
-          ${user.role === "traveller" || user.from ? `<div class="field"><label>Where are you from?</label><input class="input" name="from" value="${esc(user.from || "")}" placeholder="City or country"/></div>` : ""}
+          ${user.role !== "local" || user.from ? `<div class="field"><label>Where are you from?</label><input class="input" name="from" value="${esc(user.from || "")}" placeholder="City or country"/></div>` : ""}
           <div class="field"><label>About you</label><textarea class="textarea" name="bio" maxlength="400" placeholder="A bit about you">${esc(user.bio || "")}</textarea></div>
           <div class="field"><label>Interests</label>
             <div class="chips">${INTERESTS.map((t) => `<button type="button" class="chip ${interests.includes(t) ? "active" : ""}" data-interest="${esc(t)}">${esc(t)}</button>`).join("")}</div></div>

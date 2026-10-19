@@ -707,3 +707,27 @@ code { font-size: 12px; background: var(--field); padding: 1px 5px; border-radiu
 .place-bar .seg button span { font-size: 12px; opacity: 0.75; margin-left: 4px; }
 .place-links { display: flex; gap: 16px; flex-wrap: wrap; }
 @media (max-width: 520px) { .start-choices { grid-template-columns: 1fr; } }
+
+/* ---------- Newcomers (third kind, blue) ---------- */
+:root { --blue: #4f7fe0; --blue-dark: #2f5fbf; --blue-soft: #e7eefc; }
+.badge-new { background: var(--blue-soft); color: var(--blue-dark); }
+.role.newcomer .ico { background: var(--blue-soft); }
+.role.on.newcomer { border-color: var(--blue); box-shadow: 0 0 0 4px var(--blue-soft); }
+.role.on.newcomer::after { background: var(--blue); }
+.mode-switch button.on.newcomer { color: var(--blue-dark); }
+.pcard .cover.newcomer, .modal-cover.newcomer { background: linear-gradient(135deg, var(--blue), #9db8f0); }
+.role-picker.three { grid-template-columns: repeat(3, 1fr); }
+.role-picker.three .role { padding: 14px 12px; }
+@media (max-width: 760px) { .role-picker.three { grid-template-columns: 1fr; } }
+.setup-panel { max-width: 640px; }
+.filter-bar .seg { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+.filter-bar .seg::-webkit-scrollbar { display: none; }
+.filter-bar .seg button { flex-shrink: 0; }
+@media (max-width: 380px) {
+  .nav .container { gap: 6px; }
+  .logo { font-size: 18px; gap: 6px; }
+  .logo-mark { width: 30px; height: 30px; }
+  .mode-switch button { padding: 0 8px; }
+  .nav-right { gap: 6px; }
+  .user-pill .avatar { width: 30px !important; height: 30px !important; }
+}
