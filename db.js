@@ -211,9 +211,14 @@ window.BuddyDB = (function () {
     const batch = db.batch();
     batch.update(db.doc(`meetups/${meetup.id}`), { status, [`${status}At`]: now() });
     if (note) {
-      const chatRef = db.doc(`chats/${meetup.chatId}`);
-      batch.set(chatRef.collection("messages").doc(), { from: cache.uid, type: "sys", text: note, ts: now() });
-      batch.set(chatRef, { lastMessage: { from: cache.uid, text: note, ts: now(), type: "sys" }, updatedAt: now() }, { merge: true });
+      const chat = cache.chats.find((c) => c.id === meetup.chatId);
+      // Only write the system message if the chat isn't blocked (e.g. the other user
+      // deleted their account, which locks the chat after processing all meetups).
+      if (!(chat?.blockedBy || []).length) {
+        const chatRef = db.doc(`chats/${meetup.chatId}`);
+        batch.set(chatRef.collection("messages").doc(), { from: cache.uid, type: "sys", text: note, ts: now() });
+        batch.set(chatRef, { lastMessage: { from: cache.uid, text: note, ts: now(), type: "sys" }, updatedAt: now() }, { merge: true });
+      }
     }
     return batch.commit();
   }

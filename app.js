@@ -1004,11 +1004,26 @@
     const u = me(), p = otherPerson(m);
     if (act === "profile") return openProfileById(p.uid, p.label);
     if (act === "review") return openReview(m);
-    if (act === "accept") {
-      DB.setMeetupStatus(m, "confirmed", `✅ ${u.name} accepted the meetup for ${slotLabel(m.slot)}. Agree on a time and a public place to meet here in the chat.`).catch(fail);
-      toast(`Meetup with ${p.name} confirmed.`);
+    if (act === "accept" || act === "decline") {
+      const status = act === "accept" ? "confirmed" : "declined";
+      const note = act === "accept"
+        ? `✅ ${u.name} accepted the meetup for ${slotLabel(m.slot)}. Agree on a time and a public place to meet here in the chat.`
+        : `${u.name} can't make ${slotLabel(m.slot)}.`;
+      try {
+        await DB.setMeetupStatus(m, status, note);
+        toast(act === "accept" ? `Meetup with ${p.name} confirmed.` : `Request from ${p.name} declined.`);
+        closeModal();
+        await settle();
+        render();
+      } catch (e) {
+        // The meetup status may have already been changed (e.g. the other user deleted
+        // their account while this page was open). Refresh the cache to show the current state.
+        toast(DB.friendlyError(e));
+        await settle();
+        render();
+      }
+      return;
     }
-    if (act === "decline") { DB.setMeetupStatus(m, "declined", `${u.name} can't make ${slotLabel(m.slot)}.`).catch(fail); toast(`Request from ${p.name} declined.`); }
     if (act === "cancel") return openCancel(m);
     closeModal();
     await settle();

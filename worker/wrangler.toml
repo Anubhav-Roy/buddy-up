@@ -7,6 +7,8 @@ compatibility_date = "2026-10-01"
 routes = [
   { pattern = "buddyup.fyi/api/photo", zone_name = "buddyup.fyi" },
   { pattern = "buddyup.fyi/photos/*", zone_name = "buddyup.fyi" },
+  { pattern = "www.buddyup.fyi/api/photo", zone_name = "buddyup.fyi" },
+  { pattern = "www.buddyup.fyi/photos/*", zone_name = "buddyup.fyi" },
 ]
 
 # Private bucket — leave "Public access" off in the R2 dashboard; the Worker checks sign-in.

@@ -5,7 +5,10 @@
 name = "buddy-up"
 compatibility_date = "2026-10-12"
 workers_dev = true
-routes = [{ pattern = "buddyup.fyi", custom_domain = true }]
+routes = [
+  { pattern = "buddyup.fyi", custom_domain = true },
+  { pattern = "www.buddyup.fyi", custom_domain = true },
+]
 
 [build]
 command = "node build.js"
