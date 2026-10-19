@@ -3,17 +3,25 @@
 //   PUT /api/photo        upload the caller's profile photo (JPEG body) → { url }
 //   DELETE /api/photo     delete the caller's profile photo (account deletion)
 //   GET /photos/<key>     read a profile photo
+//   (scheduled)           email locals once they're approved (mailer.js)
 //
 // Both routes require a Firebase ID token (`Authorization: Bearer <token>`), verified
 // against Google's public keys, so photos are only visible to signed-in buddyup users —
 // the same audience that can read profiles in Firestore. The bucket itself stays private.
 // Deploy with `npx wrangler deploy` from this folder (see wrangler.toml and the README).
 
+import { sendApprovalEmails } from "./mailer.js";
+
 const MAX_BYTES = 600 * 1024; // the app sends ≤ 500 KB; 20% headroom for encoder variance
 const KEY_RE = /^profiles\/[A-Za-z0-9]{1,128}\/[0-9a-f-]{36}\.jpg$/;
 const JWKS_URL = "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com";
 
 export default {
+  // Every 10 minutes: email locals whose profile has just been approved (see mailer.js).
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(sendApprovalEmails(env).then((r) => console.log("approval emails", JSON.stringify(r))));
+  },
+
   async fetch(req, env) {
     const url = new URL(req.url);
     const cors = corsHeaders(req, env);

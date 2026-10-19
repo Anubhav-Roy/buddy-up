@@ -16,7 +16,13 @@ routes = [
 binding = "PHOTOS"
 bucket_name = "buddyup-photos"
 
+# Approval emails (mailer.js) run on this schedule.
+[triggers]
+crons = ["*/10 * * * *"]
+
 [vars]
 FIREBASE_PROJECT_ID = "buddyup-32479"
 # Sites allowed to call the API from the browser (localhost is for `node server.js`).
 ALLOWED_ORIGINS = "https://buddyup.fyi,https://www.buddyup.fyi,http://localhost:5173"
+SITE_URL = "https://buddyup.fyi"
+MAIL_FROM = "buddyup <contact@buddyup.fyi>"
