@@ -1529,16 +1529,21 @@
   // The first message is pre-filled differently for locals (a guide giving their time)
   // and buddies (a fellow traveller), so travellers know what a good opener looks like.
   function opener(user, p, slot, place) {
-    const first = user.name.split(" ")[0];
-    const shared = p.interests.find((t) => (user.interests || []).includes(t)) || p.interests[0] || "exploring";
+    const first = user.name.split(" ")[0], theirs = p.name.split(" ")[0];
+    const mine = user.interests || [];
+    // Only mention an interest that's true for the sender: one you share, otherwise your own.
+    const both = mine.find((t) => p.interests.includes(t));
+    const interest = both ? ` We both like ${both.toLowerCase()}.` : mine[0] ? ` I'm into ${mine[0].toLowerCase()}.` : "";
     const d = slotDay(slot);
-    const when = !d ? "a day that suits you" : d === todayYmd() ? "today" : d === ymd(addDays(new Date(), 1)) ? "tomorrow" : dayLabel(d);
+    const day = !d ? "on a day that suits you" : d === todayYmd() ? "today" : d === ymd(addDays(new Date(), 1)) ? "tomorrow" : `on ${dayLabel(d)}`;
     const iMoved = place?.kind === "home";
     const dates = place?.trip ? `from ${dmy(place.trip.start)} to ${dmy(place.trip.end)}` : "";
+    const me = `Hi ${theirs}, I'm ${first}${user.from ? ` from ${user.from}` : ""}.`;
     return p.type === "local"
-      ? `Hi ${p.name}! I'm ${first}${user.from ? ` from ${user.from}` : ""}, ${iMoved ? `I've just moved to ${p.city}` : `visiting ${p.city} ${dates}`}. I'm into ${shared.toLowerCase()}. Would you be up for showing me around ${/^(today|tomorrow|a day)/.test(when) ? when : `on ${when}`}? We can agree on a time here.`
-      : `Hey ${p.name}! I'm ${first}, ${iMoved ? `also new in ${p.city}` : `also in ${p.city} ${dates}`}. Fancy teaming up for some ${shared.toLowerCase()} ${/^(today|tomorrow|a day)/.test(when) ? when : `on ${when}`}? Happy to meet at a café first, and we can sort out a time here.`;
+      ? `${me} ${iMoved ? `I've just moved to ${p.city}` : `I'm visiting ${p.city} ${dates}`}.${interest} Would you be up for showing me around ${day}? We can agree on a time here.`
+      : `${me} ${iMoved ? `I've also just moved to ${p.city}` : `I'm in ${p.city} ${dates} too`}.${interest} Want to meet up ${day}? We can sort out a time here.`;
   }
+
 
   // Open someone's profile from a meetup or chat (only their uid and role label are known).
   async function openProfileById(uid, label) {
