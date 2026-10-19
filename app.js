@@ -109,6 +109,11 @@
   // Firestore applies local writes immediately; give the listeners a tick to update the cache.
   const settle = () => new Promise((r) => setTimeout(r, 40));
 
+  // Whether someone has signed in on this device before (only used to pick the first screen).
+  const SIGNED_IN_KEY = "buddyup.signedIn";
+  const wasSignedIn = () => { try { return localStorage.getItem(SIGNED_IN_KEY) === "1"; } catch { return false; } };
+  const rememberSignIn = (on) => { try { on ? localStorage.setItem(SIGNED_IN_KEY, "1") : localStorage.removeItem(SIGNED_IN_KEY); } catch { /* private mode */ } };
+
   // ---------- State & routing ----------
   // Filters on the "find people" results.
   const noFilters = () => ({ type: "all", day: "", interest: "", language: "", rated: false });
@@ -134,6 +139,9 @@
     if (LEGAL[page]) return renderLegal(page); // static: shown even before sign-in has loaded
     if (!DB.ready) return renderSetupNeeded();
     const c = DB.cache;
+    // Visitors who've never signed in on this device see the landing page straight away, without
+    // waiting for Firebase (search engines, too); signed-in people get the loading screen.
+    if (!c.authKnown && !state.signingUp && !wasSignedIn()) return renderLanding();
     if (!c.authKnown || (c.uid && !c.loaded) || state.signingUp) return renderLoading();
     if (page === "contact" && (!c.uid || !c.profile)) return renderContactStandalone();
     if (!c.uid) return renderLanding();
@@ -171,6 +179,7 @@
   // Re-render only what depends on the data that changed, and never while someone is typing.
   DB.onChange((kind) => {
     if (kind?.error) return fail(kind.error);
+    if (kind === "auth") rememberSignIn(!!DB.cache.uid);
     if (kind === "auth" || kind === "loaded") return render();
     if (!DB.cache.loaded) return;
     // Outside the app shell, only the loading / finish-profile screens react to data (the profile

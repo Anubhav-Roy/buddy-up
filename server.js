@@ -4,7 +4,7 @@ const fs = require("fs");
 const path = require("path");
 
 const root = __dirname;
-const types = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".svg": "image/svg+xml", ".png": "image/png", ".woff2": "font/woff2" };
+const types = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".svg": "image/svg+xml", ".png": "image/png", ".woff2": "font/woff2", ".txt": "text/plain", ".xml": "application/xml" };
 
 http.createServer((req, res) => {
   const urlPath = decodeURIComponent(req.url.split("?")[0]);

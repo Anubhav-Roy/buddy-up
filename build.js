@@ -8,7 +8,7 @@ const read = (f) => fs.readFileSync(path.join(__dirname, f), "utf8");
 const inline = (tag, body) => `<${tag}>\n${body}\n</${tag}>`;
 
 // Only these files are published, so nothing else in the repo (.git, rules, README…) is public.
-const SITE = ["index.html", "styles.css", "autocomplete.css", "firebase-config.js", "db.js", "cities.js", "data.js", "legal.js", "app.js"];
+const SITE = ["index.html", "styles.css", "autocomplete.css", "firebase-config.js", "db.js", "cities.js", "data.js", "legal.js", "app.js", "robots.txt", "sitemap.xml", "og.png"];
 // Fonts and the Firebase SDK are served from our own domain (no requests to Google's CDNs).
 const DIRS = ["fonts", "vendor"];
 const pub = path.join(__dirname, "public");
