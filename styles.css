@@ -545,6 +545,15 @@ input.switch { accent-color: var(--teal); width: 20px; height: 20px; }
 .meetup-bar .grow { flex: 1; }
 .meetup-bar .btn svg { width: 15px; height: 15px; }
 
+/* ---------- Notifications ---------- */
+.notif-list { display: grid; gap: 10px; }
+.notif { background: var(--page); border-radius: 14px; padding: 12px 14px; border-left: 3px solid var(--teal); }
+.notif.read { border-left-color: var(--line); opacity: 0.8; }
+.notif-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13.5px; }
+.notif-top .muted { margin-left: auto; font-size: 12px; }
+.notif p { font-size: 13.5px; margin-top: 6px; color: var(--body); line-height: 1.55; }
+.notif .btn { margin-top: 6px; }
+
 @media (max-width: 760px) {
   .mcal-wrap, .trip-top { grid-template-columns: 1fr; }
   .mcal-editor { position: static; }

@@ -9,6 +9,7 @@
 // Data model
 //   users/{uid}               public profile — readable by any signed-in user
 //   users/{uid}/private/info  email, phone, birthdate, verification answers — owner only
+//   users/{uid}/notifications/{id}  in-app notifications — owner only
 //   meetups/{id}              a meetup request between two users (participants = [from, to])
 //   chats/{uidA_uidB}         one conversation per pair; messages in chats/{id}/messages
 //   reviews/{meetupId_uid}    one review per person per completed meetup
@@ -33,7 +34,7 @@ window.BuddyDB = (function () {
   const PHOTO_API = (window.BUDDY_PHOTO_API || "").replace(/\/$/, "");
   const photoCache = new Map(); // R2 photo URL → promise of a blob: URL (see loadPhoto)
 
-  const cache = { authKnown: false, uid: null, authUser: null, profile: undefined, private: undefined, meetups: [], chats: [], reviewsToMe: [], reviewsByMe: [], loaded: false };
+  const cache = { authKnown: false, uid: null, authUser: null, profile: undefined, private: undefined, meetups: [], chats: [], reviewsToMe: [], reviewsByMe: [], notifications: [], loaded: false };
   const subs = new Set();
   const emit = (kind) => subs.forEach((fn) => fn(kind));
   let unsubs = [];
@@ -70,12 +71,16 @@ window.BuddyDB = (function () {
     unsubs.push(db.collection("chats").where("participants", "array-contains", uid).onSnapshot((q) => { cache.chats = q.docs.map(withId); loaded("chats"); emit("chats"); }, fail));
     unsubs.push(db.collection("reviews").where("to", "==", uid).onSnapshot((q) => { cache.reviewsToMe = q.docs.map(withId); emit("reviews"); }, fail));
     unsubs.push(db.collection("reviews").where("from", "==", uid).onSnapshot((q) => { cache.reviewsByMe = q.docs.map(withId); emit("reviews"); }, fail));
+    unsubs.push(db.collection(`users/${uid}/notifications`).orderBy("createdAt", "desc").limit(50).onSnapshot((q) => {
+      cache.notifications = q.docs.map((d) => ({ id: d.id, ...d.data(SNAP) }));
+      emit("notifications");
+    }, fail));
   }
 
   if (auth) {
     auth.onAuthStateChanged((u) => {
       if (!u) photoCache.clear();
-      Object.assign(cache, { authKnown: true, authUser: u, uid: u?.uid || null, profile: undefined, private: undefined, meetups: [], chats: [], reviewsToMe: [], reviewsByMe: [], loaded: false });
+      Object.assign(cache, { authKnown: true, authUser: u, uid: u?.uid || null, profile: undefined, private: undefined, meetups: [], chats: [], reviewsToMe: [], reviewsByMe: [], notifications: [], loaded: false });
       if (u) startListeners(u.uid); else stopListeners();
       emit("auth");
     });
@@ -138,7 +143,7 @@ window.BuddyDB = (function () {
       out.tripEnd = patch.trip?.end || "";
     }
     if ("home" in patch) out.homeCity = patch.home?.city || "";
-    if (patch.availability) out.availability = { ...patch.availability, windows: packWindows(patch.availability.windows), booked: patch.availability.booked || [] };
+    if ("undiscoverable" in patch) out.undiscoverable = patch.undiscoverable;
     return out;
   }
 
@@ -166,13 +171,13 @@ window.BuddyDB = (function () {
 
   // ---------- People ----------
   const getProfile = async (uid) => { const s = await db.doc(`users/${uid}`).get(); return s.exists ? toUser(uid, s.data()) : null; };
-  const findLocals = async (city) => (await db.collection("users").where("localCity", "==", city).where("approved", "==", true).limit(200).get()).docs.map((d) => toUser(d.id, d.data()));
+  const findLocals = async (city) => (await db.collection("users").where("localCity", "==", city).where("approved", "==", true).limit(200).get()).docs.map((d) => toUser(d.id, d.data())).filter((u) => !u.undiscoverable);
   // Travellers with a trip to the city, and people who've just moved there.
   async function findTravellers(city) {
     const [trips, homes] = await Promise.all(["tripCity", "homeCity"].map((f) => db.collection("users").where(f, "==", city).limit(200).get()));
     const byId = new Map();
     [...trips.docs, ...homes.docs].forEach((d) => byId.set(d.id, toUser(d.id, d.data())));
-    return [...byId.values()];
+    return [...byId.values()].filter((u) => !u.undiscoverable);
   }
 
   async function reviewsFor(uids) {
@@ -337,6 +342,21 @@ window.BuddyDB = (function () {
     return path;
   }
 
+  // ---------- Notifications ----------
+  function addNotification(type, message, relatedId) {
+    if (!cache.uid) return Promise.resolve();
+    return db.collection(`users/${cache.uid}/notifications`).add({
+      type, message, relatedId: relatedId || "", read: false, createdAt: now(),
+    });
+  }
+  function markNotificationRead(id) {
+    return db.doc(`users/${cache.uid}/notifications/${id}`).update({ read: true });
+  }
+  const unreadNotifications = () => cache.notifications.filter((n) => !n.read).length;
+
+  // ---------- Toggle undiscoverable ----------
+  const toggleUndiscoverable = (undiscoverable) => saveProfile({ undiscoverable });
+
   // ---------- Account deletion ----------
   // Firebase only deletes an account soon after sign-in, so confirm it's really them first
   // with a fresh Google sign-in.
@@ -386,5 +406,6 @@ window.BuddyDB = (function () {
     createProfile, saveProfile, savePrivate, acceptTerms, deleteIdPhoto, getProfile, findLocals, findTravellers, reviewsFor,
     pairId, requestMeetup, setMeetupStatus, cancelMeetup, watchMessages, sendMessage, markRead, setBlocked, deleteChat,
     addReview, report, uploadAvatar, uploadVerificationFile, isR2Photo, loadPhoto, deleteAccount,
+    addNotification, markNotificationRead, unreadNotifications, toggleUndiscoverable,
   };
 })();

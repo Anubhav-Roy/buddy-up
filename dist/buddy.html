@@ -567,6 +567,15 @@ input.switch { accent-color: var(--teal); width: 20px; height: 20px; }
 .meetup-bar .grow { flex: 1; }
 .meetup-bar .btn svg { width: 15px; height: 15px; }
 
+/* ---------- Notifications ---------- */
+.notif-list { display: grid; gap: 10px; }
+.notif { background: var(--page); border-radius: 14px; padding: 12px 14px; border-left: 3px solid var(--teal); }
+.notif.read { border-left-color: var(--line); opacity: 0.8; }
+.notif-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13.5px; }
+.notif-top .muted { margin-left: auto; font-size: 12px; }
+.notif p { font-size: 13.5px; margin-top: 6px; color: var(--body); line-height: 1.55; }
+.notif .btn { margin-top: 6px; }
+
 @media (max-width: 760px) {
   .mcal-wrap, .trip-top { grid-template-columns: 1fr; }
   .mcal-editor { position: static; }
@@ -1338,6 +1347,15 @@ input.switch { accent-color: var(--teal); width: 20px; height: 20px; }
 .meetup-bar .grow { flex: 1; }
 .meetup-bar .btn svg { width: 15px; height: 15px; }
 
+/* ---------- Notifications ---------- */
+.notif-list { display: grid; gap: 10px; }
+.notif { background: var(--page); border-radius: 14px; padding: 12px 14px; border-left: 3px solid var(--teal); }
+.notif.read { border-left-color: var(--line); opacity: 0.8; }
+.notif-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13.5px; }
+.notif-top .muted { margin-left: auto; font-size: 12px; }
+.notif p { font-size: 13.5px; margin-top: 6px; color: var(--body); line-height: 1.55; }
+.notif .btn { margin-top: 6px; }
+
 @media (max-width: 760px) {
   .mcal-wrap, .trip-top { grid-template-columns: 1fr; }
   .mcal-editor { position: static; }
@@ -2107,6 +2125,15 @@ input.switch { accent-color: var(--teal); width: 20px; height: 20px; }
 .meetup-bar:empty { display: none; }
 .meetup-bar .grow { flex: 1; }
 .meetup-bar .btn svg { width: 15px; height: 15px; }
+
+/* ---------- Notifications ---------- */
+.notif-list { display: grid; gap: 10px; }
+.notif { background: var(--page); border-radius: 14px; padding: 12px 14px; border-left: 3px solid var(--teal); }
+.notif.read { border-left-color: var(--line); opacity: 0.8; }
+.notif-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13.5px; }
+.notif-top .muted { margin-left: auto; font-size: 12px; }
+.notif p { font-size: 13.5px; margin-top: 6px; color: var(--body); line-height: 1.55; }
+.notif .btn { margin-top: 6px; }
 
 @media (max-width: 760px) {
   .mcal-wrap, .trip-top { grid-template-columns: 1fr; }
@@ -2878,6 +2905,15 @@ input.switch { accent-color: var(--teal); width: 20px; height: 20px; }
 .meetup-bar .grow { flex: 1; }
 .meetup-bar .btn svg { width: 15px; height: 15px; }
 
+/* ---------- Notifications ---------- */
+.notif-list { display: grid; gap: 10px; }
+.notif { background: var(--page); border-radius: 14px; padding: 12px 14px; border-left: 3px solid var(--teal); }
+.notif.read { border-left-color: var(--line); opacity: 0.8; }
+.notif-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13.5px; }
+.notif-top .muted { margin-left: auto; font-size: 12px; }
+.notif p { font-size: 13.5px; margin-top: 6px; color: var(--body); line-height: 1.55; }
+.notif .btn { margin-top: 6px; }
+
 @media (max-width: 760px) {
   .mcal-wrap, .trip-top { grid-template-columns: 1fr; }
   .mcal-editor { position: static; }
@@ -3111,6 +3147,7 @@ window.BUDDY_PHOTO_API = "https://buddyup.fyi";
 // Data model
 //   users/{uid}               public profile — readable by any signed-in user
 //   users/{uid}/private/info  email, phone, birthdate, verification answers — owner only
+//   users/{uid}/notifications/{id}  in-app notifications — owner only
 //   meetups/{id}              a meetup request between two users (participants = [from, to])
 //   chats/{uidA_uidB}         one conversation per pair; messages in chats/{id}/messages
 //   reviews/{meetupId_uid}    one review per person per completed meetup
@@ -3135,7 +3172,7 @@ window.BuddyDB = (function () {
   const PHOTO_API = (window.BUDDY_PHOTO_API || "").replace(/\/$/, "");
   const photoCache = new Map(); // R2 photo URL → promise of a blob: URL (see loadPhoto)
 
-  const cache = { authKnown: false, uid: null, authUser: null, profile: undefined, private: undefined, meetups: [], chats: [], reviewsToMe: [], reviewsByMe: [], loaded: false };
+  const cache = { authKnown: false, uid: null, authUser: null, profile: undefined, private: undefined, meetups: [], chats: [], reviewsToMe: [], reviewsByMe: [], notifications: [], loaded: false };
   const subs = new Set();
   const emit = (kind) => subs.forEach((fn) => fn(kind));
   let unsubs = [];
@@ -3172,12 +3209,16 @@ window.BuddyDB = (function () {
     unsubs.push(db.collection("chats").where("participants", "array-contains", uid).onSnapshot((q) => { cache.chats = q.docs.map(withId); loaded("chats"); emit("chats"); }, fail));
     unsubs.push(db.collection("reviews").where("to", "==", uid).onSnapshot((q) => { cache.reviewsToMe = q.docs.map(withId); emit("reviews"); }, fail));
     unsubs.push(db.collection("reviews").where("from", "==", uid).onSnapshot((q) => { cache.reviewsByMe = q.docs.map(withId); emit("reviews"); }, fail));
+    unsubs.push(db.collection(`users/${uid}/notifications`).orderBy("createdAt", "desc").limit(50).onSnapshot((q) => {
+      cache.notifications = q.docs.map((d) => ({ id: d.id, ...d.data(SNAP) }));
+      emit("notifications");
+    }, fail));
   }
 
   if (auth) {
     auth.onAuthStateChanged((u) => {
       if (!u) photoCache.clear();
-      Object.assign(cache, { authKnown: true, authUser: u, uid: u?.uid || null, profile: undefined, private: undefined, meetups: [], chats: [], reviewsToMe: [], reviewsByMe: [], loaded: false });
+      Object.assign(cache, { authKnown: true, authUser: u, uid: u?.uid || null, profile: undefined, private: undefined, meetups: [], chats: [], reviewsToMe: [], reviewsByMe: [], notifications: [], loaded: false });
       if (u) startListeners(u.uid); else stopListeners();
       emit("auth");
     });
@@ -3240,7 +3281,7 @@ window.BuddyDB = (function () {
       out.tripEnd = patch.trip?.end || "";
     }
     if ("home" in patch) out.homeCity = patch.home?.city || "";
-    if (patch.availability) out.availability = { ...patch.availability, windows: packWindows(patch.availability.windows), booked: patch.availability.booked || [] };
+    if ("undiscoverable" in patch) out.undiscoverable = patch.undiscoverable;
     return out;
   }
 
@@ -3268,13 +3309,13 @@ window.BuddyDB = (function () {
 
   // ---------- People ----------
   const getProfile = async (uid) => { const s = await db.doc(`users/${uid}`).get(); return s.exists ? toUser(uid, s.data()) : null; };
-  const findLocals = async (city) => (await db.collection("users").where("localCity", "==", city).where("approved", "==", true).limit(200).get()).docs.map((d) => toUser(d.id, d.data()));
+  const findLocals = async (city) => (await db.collection("users").where("localCity", "==", city).where("approved", "==", true).limit(200).get()).docs.map((d) => toUser(d.id, d.data())).filter((u) => !u.undiscoverable);
   // Travellers with a trip to the city, and people who've just moved there.
   async function findTravellers(city) {
     const [trips, homes] = await Promise.all(["tripCity", "homeCity"].map((f) => db.collection("users").where(f, "==", city).limit(200).get()));
     const byId = new Map();
     [...trips.docs, ...homes.docs].forEach((d) => byId.set(d.id, toUser(d.id, d.data())));
-    return [...byId.values()];
+    return [...byId.values()].filter((u) => !u.undiscoverable);
   }
 
   async function reviewsFor(uids) {
@@ -3439,6 +3480,21 @@ window.BuddyDB = (function () {
     return path;
   }
 
+  // ---------- Notifications ----------
+  function addNotification(type, message, relatedId) {
+    if (!cache.uid) return Promise.resolve();
+    return db.collection(`users/${cache.uid}/notifications`).add({
+      type, message, relatedId: relatedId || "", read: false, createdAt: now(),
+    });
+  }
+  function markNotificationRead(id) {
+    return db.doc(`users/${cache.uid}/notifications/${id}`).update({ read: true });
+  }
+  const unreadNotifications = () => cache.notifications.filter((n) => !n.read).length;
+
+  // ---------- Toggle undiscoverable ----------
+  const toggleUndiscoverable = (undiscoverable) => saveProfile({ undiscoverable });
+
   // ---------- Account deletion ----------
   // Firebase only deletes an account soon after sign-in, so confirm it's really them first
   // with a fresh Google sign-in.
@@ -3488,6 +3544,7 @@ window.BuddyDB = (function () {
     createProfile, saveProfile, savePrivate, acceptTerms, deleteIdPhoto, getProfile, findLocals, findTravellers, reviewsFor,
     pairId, requestMeetup, setMeetupStatus, cancelMeetup, watchMessages, sendMessage, markRead, setBlocked, deleteChat,
     addReview, report, uploadAvatar, uploadVerificationFile, isR2Photo, loadPhoto, deleteAccount,
+    addNotification, markNotificationRead, unreadNotifications, toggleUndiscoverable,
   };
 })();
 
@@ -4069,6 +4126,7 @@ window.BuddyLegal = (function () {
     shield: svg('<path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6l8-3z"/><path d="M9 12l2 2 4-4"/>'),
     user: svg('<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>'),
     pin: svg('<path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>'),
+    bell: svg('<path d="M4 4l16 2c0 4 2.5 6.5 0 9l11.5-8.5c0-5 4-7 8-7s8 2 8 6l-6 14h6v-14M4 11.5l6 3.5 3 2.5M19 5l-2-1 1-1 2-1"/>'),
     star: `<svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>`,
     plane: svg('<path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/>'),
     eye: svg('<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>'),
@@ -4142,6 +4200,7 @@ window.BuddyLegal = (function () {
     authTab: "signup", role: "traveller", interests: [],
     filters: noFilters(), chatSearch: "", pcAck: null, signingUp: false, screen: "",
     verify: null, results: null, thread: null, completing: new Set(), place: null,
+    browsing: false,
   };
 
   // Routes: #/discover (trip) → #/discover/people, #/availability, #/meetups,
@@ -4384,7 +4443,7 @@ window.BuddyLegal = (function () {
   function createProfileFor(au, { name, city, birthdate }) {
     const local = state.role === "local";
     return DB.createProfile(au.uid,
-      { name, role: state.role, mode: state.role, interests: state.interests, from: local ? "" : city, localCity: local ? city : "", photoURL: au.photoURL || "", available: true, trip: null, age: ageFrom(birthdate) },
+      { name, role: state.role, mode: state.role, interests: state.interests, from: local ? "" : city, localCity: local ? city : "", photoURL: au.photoURL || "", trip: null, age: ageFrom(birthdate) },
       { email: au.email || "", verification: local ? { step: 0 } : null, birthdate, termsVersion: LEGAL_VERSION },
     );
   }
@@ -4521,6 +4580,7 @@ window.BuddyLegal = (function () {
     if (mode === "local" && !user.verification) return openBecomeLocal(user);
     DB.saveProfile({ mode }).catch(fail);
     state.filters = noFilters();
+    state.browsing = false;
     await settle();
     toast(mode === "traveller" ? "Switched to traveller mode" : user.verification.completed ? "Switched to local mode" : "Finish your local verification first.");
     go("#/discover");
@@ -4804,13 +4864,14 @@ window.BuddyLegal = (function () {
     return {
       unread: DB.cache.chats.filter(unreadChat).length,
       meetups: DB.cache.meetups.filter((m) => (m.status === "completed" && !reviewedByMe.has(m.id)) || (m.status === "requested" && m.to === uid && bookable(m.slot))).length,
+      notifications: DB.unreadNotifications(),
     };
   };
 
   function renderApp(user) {
     state.screen = "app";
     const { page, id } = route();
-    const pages = { discover: discoverPage, availability: availabilityPage, meetups: meetupsPage, messages: messagesPage, safety: safetyPage, profile: profilePage, contact: contactPage };
+    const pages = { discover: discoverPage, meetups: meetupsPage, messages: messagesPage, safety: safetyPage, profile: profilePage, contact: contactPage, notifications: notificationsPage };
     const current = pages[page] ? page : "discover";
     const isLocal = user.mode === "local";
     const n = counts();
@@ -4818,6 +4879,7 @@ window.BuddyLegal = (function () {
       { key: "discover", label: isLocal ? "Dashboard" : "Discover", icon: isLocal ? I.home : I.grid },
       { key: "meetups", label: "Meetups", icon: I.calendar, count: n.meetups },
       { key: "messages", label: "Messages", icon: I.chat, count: n.unread },
+      { key: "notifications", label: "Alerts", icon: I.bell, count: n.notifications },
       { key: "safety", label: "Safety", icon: I.shield },
       { key: "profile", label: "Profile", icon: I.user },
     ];
@@ -4842,11 +4904,131 @@ window.BuddyLegal = (function () {
 
   function updateNavBadges() {
     const n = counts();
-    [["meetups", n.meetups], ["messages", n.unread]].forEach(([key, value]) => {
+    [["meetups", n.meetups], ["messages", n.unread], ["notifications", n.notifications]].forEach(([key, value]) => {
       const b = $(`[data-page="${key}"] .count`);
       if (b) { b.hidden = !value; b.textContent = value || ""; }
     });
   }
+
+  // ---------- Notifications ----------
+  function notificationsPage(user, root) {
+    const list = DB.cache.notifications || [];
+    const unread = list.filter((n) => !n.read);
+    root.innerHTML = `
+      <div class="page">
+        <div class="greet fade"><h1>Alerts</h1>
+          <p class="muted">${list.length ? `${plural(unread.length, "unread")} of ${plural(list.length, "total")}` : "No alerts yet."}</p>
+        </div>
+        ${list.length ? `
+          <div style="display:flex;gap:8px;margin-bottom:16px">
+            ${unread.length ? `<button class="btn btn-soft btn-sm" id="read-all">Mark all read</button>` : ""}
+          </div>
+          <div class="notif-list">${list.map((n) => `
+            <div class="notif ${n.read ? "read" : "unread"}" data-nid="${esc(n.id)}">
+              <div class="notif-top">
+                <strong>${esc(notifTitle(n.type))}</strong>
+                <span class="muted">${n.createdAt ? shortTime(DB.ms(n.createdAt)) : "now"}</span>
+              </div>
+              <p>${esc(n.message)}</p>
+              ${!n.read ? `<button class="btn btn-soft btn-sm notif-dismiss" data-nid="${esc(n.id)}">Mark read</button>` : ""}
+            </div>`).join("")}
+          </div>` : `<div class="empty"><div class="art">🔔</div>No alerts yet.<br/>You'll be notified when a local gets approved, you get a message, or someone requests a meetup.</div>`}
+      </div>`;
+    $(".notif-dismiss", root).forEach((b) => b.addEventListener("click", (e) => {
+      DB.markNotificationRead(b.dataset.nid).catch(fail);
+      b.remove();
+      updateNavBadges();
+    }));
+    $("#read-all")?.addEventListener("click", () => {
+      unread.forEach((n) => DB.markNotificationRead(n.id).catch(() => {}));
+      render();
+    });
+  }
+  function notifTitle(type) {
+    const titles = { approval: "✓ Approved", message: "💬 New message", meetup_request: "📅 Meetup request", meetup_accepted: "✅ Meetup accepted", meetup_declined: "❌ Meetup declined", meetup_cancelled: "↩️ Meetup cancelled", review: "⭐ New review" };
+    return titles[type] || type;
+  }
+  // Notification triggers for approval, meetups, messages and reviews.
+  // We wait for initial data to load before detecting changes so existing items don't trigger alerts.
+  let prevApproved = false, notifReady = false;
+  let prevMeetups = "", prevChats = "", prevReviews = "";
+
+  // After the full cache loads, snapshot the initial state so we only fire for real changes.
+  function initNotifTrackers() {
+    if (notifReady || !DB.cache.loaded) return;
+    notifReady = true;
+    const u = DB.me();
+    prevApproved = u?.approved || false;
+    prevMeetups = DB.cache.meetups.map((m) => `${m.id}:${m.status}`).join("|");
+    prevChats = DB.cache.chats.map((c) => `${c.id}:${c.lastMessage?.ts}`).join("|");
+    prevReviews = DB.cache.reviewsToMe.map((r) => r.id).join("|");
+  }
+
+  DB.onChange((kind) => {
+    if (kind === "loaded") initNotifTrackers();
+    if (!notifReady) return;
+
+    if (kind === "profile") {
+      const u = DB.me();
+      if (u && u.approved && !prevApproved && u.verification?.completed) {
+        DB.addNotification("approval", "Your local profile has been approved! Travellers can now find you.", "").catch(() => {});
+      }
+      prevApproved = u?.approved || false;
+    }
+    // Notifications for new meetups (requests / status changes)
+    if (kind === "meetups" && DB.cache.uid) {
+      const uid = DB.cache.uid;
+      const now = DB.cache.meetups.map((m) => `${m.id}:${m.status}`).join("|");
+      if (prevMeetups !== now) {
+        const prevMap = Object.fromEntries(prevMeetups.split("|").filter(Boolean).map((s) => s.split(":")));
+        DB.cache.meetups.forEach((m) => {
+          const prev = prevMap[m.id];
+          if (!prev && m.status === "requested" && m.to === uid) {
+            const from = (m.people || []).find((p) => p.uid === m.from);
+            DB.addNotification("meetup_request", `${from?.name || "Someone"} wants to meet up with you${m.kind === "local" ? "" : " (buddy)"}!`, m.id).catch(() => {});
+          } else if (prev === "requested" && m.status === "confirmed" && m.from === uid) {
+            const to = (m.people || []).find((p) => p.uid === m.to);
+            DB.addNotification("meetup_accepted", `${to?.name || "Someone"} accepted your meetup request!`, m.id).catch(() => {});
+          } else if (prev === "requested" && m.status === "cancelled" && m.from === uid) {
+            DB.addNotification("meetup_declined", `Your meetup request was declined.`, m.id).catch(() => {});
+          } else if (prev && m.status === "cancelled" && prev !== "cancelled") {
+            const other = m.to === uid ? m.from : m.to;
+            const p = (m.people || []).find((p) => p.uid === other);
+            DB.addNotification("meetup_cancelled", `${p?.name || "Someone"} cancelled the meetup. "${esc(m.cancelReason || "")}"`, m.id).catch(() => {});
+          }
+        });
+      }
+      prevMeetups = now;
+    }
+    // Notifications for new messages (when you're not the sender)
+    if (kind === "chats" && DB.cache.uid) {
+      const uid = DB.cache.uid;
+      const now = DB.cache.chats.map((c) => `${c.id}:${c.lastMessage?.ts}`).join("|");
+      if (prevChats !== now) {
+        DB.cache.chats.forEach((c) => {
+          const lm = c.lastMessage;
+          if (lm && lm.from && lm.from !== uid && unreadChat(c)) {
+            const p = (c.people || []).find((p) => p.uid === lm.from);
+            DB.addNotification("message", `New message from ${p?.name || "someone"}`, c.id).catch(() => {});
+          }
+        });
+      }
+      prevChats = now;
+    }
+    // Notifications for new reviews
+    if (kind === "reviews" && DB.cache.uid) {
+      const now = DB.cache.reviewsToMe.map((r) => r.id).join("|");
+      if (prevReviews !== now) {
+        const prevSet = new Set(prevReviews.split("|").filter(Boolean));
+        DB.cache.reviewsToMe.forEach((r) => {
+          if (!prevSet.has(r.id)) {
+            DB.addNotification("review", `${r.fromName || "Someone"} left you a ${r.rating || ""}-star review.`, r.meetupId || "").catch(() => {});
+          }
+        });
+      }
+      prevReviews = now;
+    }
+  });
 
   function safetyCards() {
     return [["🛡️", "Verified locals", "We check every local's residency and ID."],
@@ -5164,6 +5346,8 @@ window.BuddyLegal = (function () {
     const kind = state.place === "home" && home ? "home" : state.place === "trip" && trip ? "trip" : trip ? "trip" : home ? "home" : null;
     if (kind === "trip") return { kind, city: trip.city, days: daysBetween(trip.start, trip.end), trip };
     if (kind === "home") return { kind, city: home.city, days: null };
+    // When a local browses, use their local city as a "home" place
+    if (user.mode === "local" && user.localCity) return { kind: "home", city: user.localCity, days: null };
     return null;
   }
   const TYPES = [["all", "Everyone"], ["local", "Locals"], ["buddy", "Buddies"]];
@@ -5181,7 +5365,7 @@ window.BuddyLegal = (function () {
       city: isLocal ? u.localCity : city || trip?.city || home?.city || "", residency: u.residency, tripEnd: here === "trip" ? trip.end : "",
       interests: u.interests || [], languages: u.languages || [], bio: u.bio || "",
       verified: isLocal ? !!u.approved : false, phoneVerified: !!u.phoneVerified,
-      days: isLocal ? (u.availability?.days || []).filter((d) => d >= todayYmd()).sort() : here === "trip" ? daysBetween(trip.start, trip.end) : here === "home" ? null : [],
+      days: isLocal ? null : here === "trip" ? daysBetween(trip.start, trip.end) : here === "home" ? null : [],
       moved: here === "home", cancellations: u.cancellations || 0, age: u.age || null,
     };
   }
@@ -5195,7 +5379,7 @@ window.BuddyLegal = (function () {
     const seen = new Set([user.uid]);
     const metBefore = new Set(DB.cache.meetups.filter((m) => m.status === "completed").map(other));
     const people = [
-      ...locals.filter((u) => u.available !== false && u.availability).map((u) => toPerson(u, "local")),
+      ...locals.filter((u) => !u.undiscoverable).map((u) => toPerson(u, "local")),
       ...travellers.map((u) => toPerson(u, "buddy", place.city)).filter((p) => p.moved || p.days.length),
     ]
       .filter((p) => !seen.has(p.uid) && seen.add(p.uid)) // someone can be both; show them as a local
@@ -5212,7 +5396,17 @@ window.BuddyLegal = (function () {
   }
 
   function discoverPage(user, root, id) {
-    if (user.mode === "local") return hostDashboard(user, root);
+    if (user.mode === "local") {
+      // Browse mode: when the URL specifies /people or browsing state is active
+      if (id === "people") {
+        state.browsing = true;
+        const place = searchPlace(user);
+        return place ? resultsPage(user, root, place) : startPage(user, root);
+      }
+      // If browsing state was set from a previous session, reset it when visiting dashboard
+      if (state.browsing) state.browsing = false;
+      return hostDashboard(user, root);
+    }
     if (id === "local" || id === "buddy") state.filters = { ...noFilters(), type: id }; // old links
     if (id) return go("#/discover");
     const place = searchPlace(user);
@@ -5228,8 +5422,12 @@ window.BuddyLegal = (function () {
           <button type="button" class="role traveller" data-edit="trip"><span class="ico">✈️</span><strong>Visiting a city</strong><small>Add your destination and dates</small></button>
           <button type="button" class="role traveller" data-edit="home"><span class="ico">🏡</span><strong>Just moved to a city</strong><small>No dates needed</small></button>
         </div>
+        <div class="greet" style="margin-top:40px"><h1>Or join as a local</h1><p class="muted">Show visitors around your city.</p>
+          <button class="btn btn-coral btn-block" data-switch="local" style="margin-top:12px">Become a local</button>
+        </div>
       </div>`;
     $("[data-edit]", root).forEach((b) => b.addEventListener("click", () => openPlaceForm(user, b.dataset.edit)));
+    $("[data-switch]", root)?.addEventListener("click", () => switchMode(user, "local"));
   }
 
   // Add or change the trip ("trip") or the home city ("home").
@@ -5407,42 +5605,7 @@ window.BuddyLegal = (function () {
   }
 
   // ---------- Local (host) availability ----------
-  const AVAIL_DAYS = 35;
-  // Locals review their availability at least 30 days ahead (and pick at least one day in the next 4 weeks).
-  const needsAvailability = (u) => !u.availability?.horizon || u.availability.horizon < ymd(addDays(new Date(), 30));
-  const freeDaysAhead = (av, n) => (av?.days || []).filter((d) => d >= todayYmd() && d <= ymd(addDays(new Date(), n - 1))).length;
-
-  function availabilityPage(user, root) {
-    if (user.mode !== "local" || !user.approved) return go("#/discover");
-    const from = dayStart(todayYmd()), to = addDays(from, AVAIL_DAYS - 1);
-    const days = new Set((user.availability?.days || []).filter((d) => d >= ymd(from)));
-    root.innerHTML = `
-      <div class="page">
-        <a class="back-link" href="#/discover">${I.back} Dashboard</a>
-        <div class="greet fade">
-          <h1>${user.availability ? "Your availability" : "Which days are you free?"}</h1>
-          <p class="muted">Tap the days you can meet people. Pick at least one in the next 4 weeks.</p>
-        </div>
-        <section class="panel fade"><div id="cal"></div></section>
-        <div class="save-bar"><span id="count"></span><div class="error" id="err" style="margin:0;flex:1"></div><button class="btn btn-primary" id="save">Save availability</button></div>
-      </div>`;
-    const count = () => {
-      $("#count").textContent = `${plural(days.size, "day")} free · until ${fmtDate(to)}`;
-      $("#err").textContent = "";
-    };
-    mountDayPicker($("#cal"), { from, to, days, onChange: count });
-    count();
-    $("#save").addEventListener("click", () => {
-      const nextFourWeeks = daysFrom(from, 28).map(ymd);
-      if (!nextFourWeeks.some((d) => days.has(d))) {
-        $("#err").textContent = `Pick at least one day before ${fmtDate(addDays(from, 27))}.`;
-        return;
-      }
-      DB.saveProfile({ availability: { days: [...days].sort(), horizon: ymd(to), savedAt: Date.now() } }).catch(fail);
-      toast("Availability saved.");
-      settle().then(() => go("#/discover"));
-    });
-  }
+  
 
   // ---------- Local (host) dashboard ----------
   // Locals don't browse travellers: travellers request a time the local is free, and the
@@ -5451,18 +5614,18 @@ window.BuddyLegal = (function () {
     const first = esc(user.name.split(" ")[0]);
     const city = esc(user.localCity);
     const v = user.verification || {};
-    const av = user.availability;
     const uid = user.uid;
-    const freeDays = freeDaysAhead(av, 30);
     const sidebar = `
       <aside class="host-side">
         ${user.approved ? `
           <section class="panel">
-            <h3>Availability</h3>
-            <label class="list-item" style="cursor:pointer"><span class="li-ico">🟢</span><span class="grow">Available to host<small>${user.available !== false ? `Travellers in ${city} can find you` : "Paused"}</small></span>
-              <input type="checkbox" id="avail" ${user.available !== false ? "checked" : ""} class="switch"/></label>
-            <div class="list-item"><span class="li-ico">📅</span><span class="grow">${av ? `Free on ${plural(freeDays, "day")} in the next 30 days` : "Not set yet"}<small>${av ? `Set until ${fmtYmd(av.horizon)}` : "Required before you get requests"}</small></span></div>
-            <a class="btn ${needsAvailability(user) ? "btn-primary" : "btn-outline"} btn-block" href="#/availability">${av ? "Edit availability" : "Add availability"}</a>
+            <h3>Discoverability</h3>
+            <label class="list-item" style="cursor:pointer"><span class="li-ico">👁️</span><span class="grow">${user.undiscoverable ? "Undiscoverable" : "Discoverable"}<small>${user.undiscoverable ? "Travellers cannot find you" : `Travellers in ${city} can find you`}</small></span>
+              <input type="checkbox" id="undisc" ${!user.undiscoverable ? "checked" : ""} class="switch"/></label>
+          </section>
+          <section class="panel">
+            <h3>Browse</h3>
+            <a class="btn btn-outline btn-block" id="browse-people" href="#/discover/people">🔍 Browse people in ${city}</a>
           </section>` : ""}
         <section class="panel switch-card">
           <h3>Travelling?</h3>
@@ -5473,7 +5636,7 @@ window.BuddyLegal = (function () {
     if (!user.approved) {
       root.innerHTML = `
         <div class="page">
-          <div class="greet fade"><h1>Your local profile is in review</h1><p class="muted">We usually check it within 24 hours. Then you can add the days you're free.</p></div>
+          <div class="greet fade"><h1>Your local profile is in review</h1><p class="muted">We usually check it within 24 hours. You'll get a notification when you're approved.</p></div>
           <div class="host-grid">
             <div>
               <section class="panel fade">
@@ -5484,8 +5647,7 @@ window.BuddyLegal = (function () {
                 <ol class="timeline">
                   <li class="done"><b>Application submitted</b><small>${v.submittedAt ? fmtDate(v.submittedAt) : ""}</small></li>
                   <li class="current"><b>Review</b><small>We check your answers and ID.</small></li>
-                  <li><b>Add your availability</b><small>The days you're free.</small></li>
-                  <li><b>Go live</b><small>Travellers can send you requests.</small></li>
+                  <li><b>Approved</b><small>Travellers can find you.</small></li>
                 </ol>
                 ${v.flags?.length ? `<div class="note"><div><b>Needs a closer look</b><br/>${v.flags.map((f) => esc(f.detail)).join("<br/>")}</div></div>` : ""}
               </section>
@@ -5508,16 +5670,10 @@ window.BuddyLegal = (function () {
           </div>
           <div class="host-grid">
             <div>
-              ${needsAvailability(user) ? `
-                <section class="panel fade cta-panel">
-                  <div class="become-ico">📅</div>
-                  <div class="grow"><h3>${av ? "Your availability is running out" : "Add your availability for the next month"}</h3>
-</div>
-                  <a class="btn btn-primary" href="#/availability">${av ? "Extend availability" : "Add availability"}</a>
-                </section>` : ""}
+              
               <section class="panel fade">
                 <div class="panel-head"><h3>Meetup requests</h3>${pending.length ? `<span class="badge badge-local">${pending.length} new</span>` : ""}</div>
-                ${pending.length ? pending.map(requestCard).join("") : `<div class="empty small"><div class="art">📭</div>No new requests right now.${!av ? "<br/>Add your availability so travellers can request you." : user.available === false ? "<br/>You're paused. Turn on “Available to host” to get requests." : ""}</div>`}
+                ${pending.length ? pending.map(requestCard).join("") : `<div class="empty small"><div class="art">📭</div>No new requests right now.</div>`}
               </section>
               <section class="panel fade">
                 <div class="panel-head"><h3>Upcoming meetups</h3><a class="change-link" href="#/meetups" style="margin:0">All meetups ${I.chev}</a></div>
@@ -5542,7 +5698,8 @@ window.BuddyLegal = (function () {
     }
 
     $("[data-switch]", root).forEach((b) => b.addEventListener("click", () => switchMode(me(), b.dataset.switch)));
-    $("#avail")?.addEventListener("change", async (e) => { DB.saveProfile({ available: e.target.checked }).catch(fail); await settle(); render(); });
+    $("#undisc")?.addEventListener("change", async (e) => { DB.toggleUndiscoverable(!e.target.checked).catch(fail); await settle(); render(); });
+    $("#browse-people")?.addEventListener("click", (e) => { e.preventDefault(); state.browsing = true; go("#/discover"); });
     bindMeetupActions(root);
   }
 
@@ -6078,7 +6235,7 @@ window.BuddyLegal = (function () {
               <button class="list-item" data-edit="home"><span class="li-ico">🏡</span><span class="grow">Home city<small>${home ? esc(home.city) : "Not set"}</small></span><span class="chev">${I.chev}</span></button>
               <button class="list-item" data-edit="trip"><span class="li-ico">✈️</span><span class="grow">Trip<small>${trip ? `${esc(trip.city)}, ${range(trip)}` : "None planned"}</small></span><span class="chev">${I.chev}</span></button>` : ""}
             ${user.cancellations ? `<div class="list-item"><span class="li-ico">↩️</span><span class="grow">${plural(user.cancellations, "cancelled meetup")}<small>These lower you in search results.</small></span></div>` : ""}
-            ${user.mode === "local" && user.approved ? `<a class="list-item" href="#/availability"><span class="li-ico">📅</span><span class="grow">Availability<small>${user.availability ? `Set until ${fmtYmd(user.availability.horizon)}` : "Not set yet"}</small></span><span class="chev">${I.chev}</span></a>` : ""}
+            
             <h3 style="margin-top:26px">Settings</h3>
             <button class="list-item" id="edit"><span class="li-ico">✏️</span><span class="grow">Edit profile<small>Photo, name, bio and interests</small></span><span class="chev">${I.chev}</span></button>
             <div class="list-item"><span class="li-ico">🔐</span><span class="grow">Account<small>${esc(user.email || "")} · Google sign-in</small></span></div>

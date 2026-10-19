@@ -140,5 +140,18 @@ service cloud.firestore {
     match /reports/{id} {
       allow create: if signedIn() && request.resource.data.from == request.auth.uid;
     }
+
+    // Notifications per user.
+    match /users/{uid}/notifications/{notificationId} {
+      allow read: if isMe(uid);
+      allow create: if isMe(uid)
+        && request.resource.data.type is string
+        && request.resource.data.read == false
+        && request.resource.data.message is string
+        && request.resource.data.createdAt == request.time;
+      allow update: if isMe(uid)
+        && onlyChanges(["read"]);
+      allow delete: if false;
+    }
   }
 }
