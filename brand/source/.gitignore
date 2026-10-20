@@ -1,0 +1,5 @@
+node_modules/
+frames/
+package-lock.json
+*.tmp.html
+prev_*.png
