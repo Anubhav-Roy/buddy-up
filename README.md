@@ -45,7 +45,7 @@ Travellers must add a photo (picked or taken with the camera) before they can us
 | Path | Contents | Who can read |
 |---|---|---|
 | `users/{uid}` | name, photo URL (R2), bio, cancellations count, interests, mode, home city, trip + free times, availability, `approved` | any signed-in user |
-| `users/{uid}/private/info` | email, birthdate, verification answers, postcode | only that user |
+| `users/{uid}/private/info` | email, birthdate, verification answers, postcode, message-email setting | only that user |
 | `meetups/{id}` | requests between two users, status, time slot | the two participants |
 | `chats/{uidA_uidB}` + `/messages` | conversations | the two participants |
 | `reviews/{meetupId_uid}` | ratings & reviews after completed meetups | any signed-in user |
@@ -70,7 +70,7 @@ Rules also enforce: a meetup is a day and can be requested or cancelled until th
 - **Local availability**: once approved, locals tap the days they're free on a month calendar for the next 5 weeks (at least one in the next 4 weeks) before getting requests, and are prompted to extend it when it drops below 30 days
 - **Local dashboard**: in review → timeline, trust score, review flags, approval by a reviewer in the Firebase console; approved → meetup requests only in the local's free slots (accept & chat / decline / view profile), upcoming meetups, availability summary, travellers-in-town count. Locals don't browse travellers — travellers reach out
 - **Meetups & reviews**: Meetups page (requests / upcoming / waiting / past — every completed meetup, with a review button until you've reviewed it — / cancelled); either side can cancel with a reason, after a warning that cancelling a confirmed meetup is recorded and lowers them in search; after a meetup's time ends, both sides rate 1–5 stars and write a review; ratings and reviews show on every profile, card and request
-- **Messages** (two-pane): live chat between real users (Firestore), unread badges, quick replies, report / block / share-meetup / delete-chat menu (deleting hides the chat for you only; the other person keeps their copy). The Worker's 10-minute cron emails people about messages they haven't read yet (sender's first name and count only; at most one email per chat per run; none for blocked chats or system notes)
+- **Messages** (two-pane): live chat between real users (Firestore), unread badges, quick replies, report / block / share-meetup / delete-chat menu (deleting hides the chat for you only; the other person keeps their copy). The Worker's 10-minute cron emails people about messages they haven't read yet (sender's first name and count only; at most one email per chat per run; none for blocked chats or system notes); anyone can turn them off in Profile → Settings → Message emails (`private/info.emailMessages`)
 - **Contact us** page (`#/contact`, linked from the landing page, footer, Safety and Profile) with contact@buddyup.fyi
 - **Safety** guidelines page and **Profile** page (modes, trust score, settings, permanent account deletion — profile, photo, private details, ID/selfie and sign-in are deleted; upcoming meetups are cancelled; reviews they wrote are signed "Former member")
 

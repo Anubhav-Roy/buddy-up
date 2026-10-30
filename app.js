@@ -2153,6 +2153,8 @@
             <h3 style="margin-top:26px">Settings</h3>
             <button class="list-item" id="edit"><span class="li-ico">✏️</span><span class="grow">Edit profile<small>Photo, name, bio and interests</small></span><span class="chev">${I.chev}</span></button>
             <div class="list-item"><span class="li-ico">🔐</span><span class="grow">Account<small>${esc(user.email || "")} · Google sign-in</small></span></div>
+            <label class="list-item" style="cursor:pointer"><span class="li-ico">📬</span><span class="grow">Message emails<small>${user.emailMessages ? "We email you when you have unread messages" : "Off — you'll only see new messages in the app"}</small></span>
+              <input type="checkbox" id="email-messages" ${user.emailMessages ? "checked" : ""} class="switch"/></label>
             <button class="list-item" id="invite"><span class="li-ico">🔗</span><span class="grow">Invite friends</span><span class="chev">${I.chev}</span></button>
             <a class="list-item" href="#/contact"><span class="li-ico">✉️</span><span class="grow">Contact us<small>${CONTACT_EMAIL}</small></span><span class="chev">${I.chev}</span></a>
             <div class="list-item"><span class="li-ico">📄</span><span class="grow">Legal<small><a href="#/terms">Terms of Service</a> · <a href="#/privacy">Privacy Policy</a> · <a href="#/imprint">Imprint</a></small></span></div>
@@ -2170,6 +2172,7 @@
     $("#photo").addEventListener("change", (e) => uploadPhoto(e.target.files[0]));
     $("#edit").addEventListener("click", () => openEditProfile(me()));
     $("#delete-account").addEventListener("click", () => openDeleteAccount());
+    $("#email-messages").addEventListener("change", async (e) => { DB.savePrivate({ emailMessages: e.target.checked }).catch(fail); await settle(); render(); });
     $("#invite").addEventListener("click", async () => {
       const text = `I'm on buddyup: ${location.origin}${location.pathname}`;
       try { if (navigator.share) await navigator.share({ title: "buddyup", text }); else { await navigator.clipboard.writeText(text); toast("Link copied."); } } catch { /* dismissed */ }

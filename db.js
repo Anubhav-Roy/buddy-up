@@ -90,7 +90,7 @@ window.BuddyDB = (function () {
   function me() {
     if (!cache.uid || !cache.profile) return null;
     const p = cache.private || {};
-    return { ...toUser(cache.uid, cache.profile), email: p.email || cache.authUser?.email || "", phone: p.phone || "", verification: p.verification || null, trustedContact: p.trustedContact || "", birthdate: p.birthdate || "", termsAccepted: p.termsAccepted || {} };
+    return { ...toUser(cache.uid, cache.profile), email: p.email || cache.authUser?.email || "", phone: p.phone || "", verification: p.verification || null, trustedContact: p.trustedContact || "", birthdate: p.birthdate || "", termsAccepted: p.termsAccepted || {}, emailMessages: p.emailMessages !== false };
   }
 
   // ---------- Errors ----------

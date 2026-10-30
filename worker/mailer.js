@@ -82,7 +82,8 @@ ${site.replace(/^https?:\/\//, "")}`;
 // person and newer than both the recipient's readAt and their emailedAt, sends one email per
 // chat (however many messages arrived since), and records chats/{id}.emailedAt.{uid}. The
 // email names the sender but doesn't include the message text. System notes (meetup
-// accepted / cancelled) and blocked chats don't trigger an email.
+// accepted / cancelled) and blocked chats don't trigger an email, and nobody who has turned
+// off "Message emails" in Profile → Settings (private/info.emailMessages == false) gets one.
 const LOOKBACK_MS = 24 * 3600 * 1000;
 
 export async function sendMessageEmails(env, { fetchImpl = fetch, now = Date.now() } = {}) {
@@ -142,8 +143,9 @@ export async function sendMessageEmails(env, { fetchImpl = fetch, now = Date.now
 
     const info = await fetchImpl(`${db}/users/${to}/private/info`, { headers: auth });
     if (!info.ok) continue; // e.g. the recipient deleted their account
-    const email = (await info.json()).fields?.email?.stringValue;
-    if (!email) continue;
+    const prefs = (await info.json()).fields || {};
+    const email = prefs.email?.stringValue;
+    if (!email || prefs.emailMessages?.booleanValue === false) continue;
 
     const mail = await fetchImpl("https://api.resend.com/emails", {
       method: "POST",
@@ -175,12 +177,13 @@ ${sender} sent you ${what} on buddyup.
 Read and reply:
 ${link}
 
-You're getting this because you have a buddyup account at ${domain}.`;
+You're getting this because you have a buddyup account at ${domain}. To stop these emails, turn off "Message emails" in your profile settings:
+${site}/#/profile`;
   const html = `<div style="font-family:Arial,sans-serif;font-size:15px;line-height:1.6;color:#1d2433;max-width:520px">
   <p>Hi ${esc(name)},</p>
   <p>${esc(sender)} sent you ${esc(what)} on buddyup.</p>
   <p><a href="${esc(link)}" style="display:inline-block;background:#1fb393;color:#fff;text-decoration:none;padding:10px 18px;border-radius:10px">Read and reply</a></p>
-  <p style="color:#6b7385;font-size:13px">You're getting this because you have a buddyup account at <a href="${esc(site)}" style="color:#6b7385">${esc(domain)}</a>.</p>
+  <p style="color:#6b7385;font-size:13px">You're getting this because you have a buddyup account at <a href="${esc(site)}" style="color:#6b7385">${esc(domain)}</a>. To stop these emails, turn off <a href="${esc(site)}/#/profile" style="color:#6b7385">Message emails</a> in your profile settings.</p>
 </div>`;
   return { from, to: [to], subject: `${sender} sent you ${what} on buddyup`, text, html };
 }
