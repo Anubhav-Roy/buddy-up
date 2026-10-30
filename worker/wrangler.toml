@@ -16,7 +16,7 @@ routes = [
 binding = "PHOTOS"
 bucket_name = "buddyup-photos"
 
-# Approval emails (mailer.js) run on this schedule.
+# Approval and new-message emails (mailer.js) run on this schedule.
 [triggers]
 crons = ["*/10 * * * *"]
 

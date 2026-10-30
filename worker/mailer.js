@@ -77,6 +77,114 @@ ${site.replace(/^https?:\/\//, "")}`;
   return { from, to: [to], subject: "You're approved as a local on buddyup", text, html };
 }
 
+// Emails people about chat messages they haven't read yet. Runs on the same schedule as the
+// approval emails: finds chats updated in the last day whose last message is from the other
+// person and newer than both the recipient's readAt and their emailedAt, sends one email per
+// chat (however many messages arrived since), and records chats/{id}.emailedAt.{uid}. The
+// email names the sender but doesn't include the message text. System notes (meetup
+// accepted / cancelled) and blocked chats don't trigger an email.
+const LOOKBACK_MS = 24 * 3600 * 1000;
+
+export async function sendMessageEmails(env, { fetchImpl = fetch, now = Date.now() } = {}) {
+  if (!env.FIREBASE_SERVICE_ACCOUNT || !env.RESEND_API_KEY) return { skipped: "missing secrets" };
+  const sa = JSON.parse(env.FIREBASE_SERVICE_ACCOUNT);
+  const token = await googleAccessToken(sa, fetchImpl);
+  const db = `${FIRESTORE}/projects/${sa.project_id}/databases/(default)/documents`;
+  const auth = { Authorization: `Bearer ${token}` };
+  const runQuery = async (parent, structuredQuery) => {
+    const res = await fetchImpl(`${parent}:runQuery`, {
+      method: "POST", headers: { ...auth, "Content-Type": "application/json" }, body: JSON.stringify({ structuredQuery }),
+    });
+    if (!res.ok) throw new Error(`firestore query ${res.status}`);
+    return (await res.json()).map((r) => r.document).filter(Boolean);
+  };
+  const time = (v) => (v?.timestampValue ? Date.parse(v.timestampValue) : 0);
+
+  const chats = await runQuery(db, {
+    from: [{ collectionId: "chats" }],
+    where: { fieldFilter: { field: { fieldPath: "updatedAt" }, op: "GREATER_THAN", value: { timestampValue: new Date(now - LOOKBACK_MS).toISOString() } } },
+    limit: 500,
+  });
+
+  const names = {};
+  const firstName = async (uid) => {
+    if (!(uid in names)) {
+      const res = await fetchImpl(`${db}/users/${uid}`, { headers: auth });
+      const full = res.ok ? (await res.json()).fields?.name?.stringValue || "" : "";
+      names[uid] = full.trim().split(/\s+/)[0] || "Someone";
+    }
+    return names[uid];
+  };
+
+  const sent = [];
+  for (const chat of chats) {
+    const chatId = chat.name.split("/").pop();
+    const f = chat.fields || {};
+    const last = f.lastMessage?.mapValue?.fields || {};
+    const from = last.from?.stringValue;
+    const participants = (f.participants?.arrayValue?.values || []).map((v) => v.stringValue);
+    const to = participants.find((p) => p !== from);
+    if (!from || !to || participants.length !== 2 || last.type?.stringValue === "sys") continue;
+    if ((f.blockedBy?.arrayValue?.values || []).length) continue;
+    const lastTs = time(last.ts);
+    const since = Math.max(time(f.readAt?.mapValue?.fields?.[to]), time(f.emailedAt?.mapValue?.fields?.[to]));
+    if (!lastTs || lastTs <= since) continue;
+
+    // How many messages from the sender they haven't read or been emailed about.
+    const msgs = await runQuery(`${db}/chats/${chatId}`, {
+      from: [{ collectionId: "messages" }],
+      where: { fieldFilter: { field: { fieldPath: "ts" }, op: "GREATER_THAN", value: { timestampValue: new Date(since).toISOString() } } },
+      orderBy: [{ field: { fieldPath: "ts" } }],
+      limit: 100,
+    });
+    const count = msgs.filter((m) => m.fields?.from?.stringValue === from && m.fields?.type?.stringValue !== "sys").length;
+    if (!count) continue;
+
+    const info = await fetchImpl(`${db}/users/${to}/private/info`, { headers: auth });
+    if (!info.ok) continue; // e.g. the recipient deleted their account
+    const email = (await info.json()).fields?.email?.stringValue;
+    if (!email) continue;
+
+    const mail = await fetchImpl("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json", "Idempotency-Key": `message-${chatId}-${to}-${lastTs}` },
+      body: JSON.stringify(messageEmail({ to: email, chatId, name: await firstName(to), sender: await firstName(from), count, site: env.SITE_URL || "https://buddyup.fyi", from: env.MAIL_FROM || "buddyup <contact@buddyup.fyi>" })),
+    });
+    if (!mail.ok) { console.error("resend", chatId, mail.status, await mail.text()); continue; }
+
+    // Backticks: uids can start with a digit, which a bare field path doesn't allow.
+    await fetchImpl(`${db}/chats/${chatId}?updateMask.fieldPaths=${encodeURIComponent(`emailedAt.\`${to}\``)}`, {
+      method: "PATCH", headers: { ...auth, "Content-Type": "application/json" },
+      body: JSON.stringify({ fields: { emailedAt: { mapValue: { fields: { [to]: { timestampValue: new Date(lastTs).toISOString() } } } } } }),
+    });
+    sent.push(chatId);
+    await new Promise((ok) => setTimeout(ok, 600)); // Resend's default limit is 2 requests/second
+  }
+  return { sent };
+}
+
+export function messageEmail({ to, chatId, name, sender, count, site, from }) {
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const link = `${site}/#/messages/${encodeURIComponent(chatId)}`;
+  const domain = site.replace(/^https?:\/\//, "");
+  const what = count === 1 ? "a new message" : `${count} new messages`;
+  const text = `Hi ${name},
+
+${sender} sent you ${what} on buddyup.
+
+Read and reply:
+${link}
+
+You're getting this because you have a buddyup account at ${domain}.`;
+  const html = `<div style="font-family:Arial,sans-serif;font-size:15px;line-height:1.6;color:#1d2433;max-width:520px">
+  <p>Hi ${esc(name)},</p>
+  <p>${esc(sender)} sent you ${esc(what)} on buddyup.</p>
+  <p><a href="${esc(link)}" style="display:inline-block;background:#1fb393;color:#fff;text-decoration:none;padding:10px 18px;border-radius:10px">Read and reply</a></p>
+  <p style="color:#6b7385;font-size:13px">You're getting this because you have a buddyup account at <a href="${esc(site)}" style="color:#6b7385">${esc(domain)}</a>.</p>
+</div>`;
+  return { from, to: [to], subject: `${sender} sent you ${what} on buddyup`, text, html };
+}
+
 // OAuth access token for a Google service account (JWT bearer grant, signed with its key).
 async function googleAccessToken(sa, fetchImpl) {
   const b64url = (data) => btoa(typeof data === "string" ? data : String.fromCharCode(...new Uint8Array(data))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
