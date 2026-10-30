@@ -92,7 +92,7 @@ window.BuddyLegal = (function () {
     <h2>9. Our service</h2>
     <p>9.1 Because buddyup is free, there is no entitlement to any particular feature or to uninterrupted availability. We may change, restrict or discontinue features. We will tell you in good time before changes that significantly affect how you use buddyup, unless an immediate change is necessary for security or legal reasons.</p>
     <p>9.2 We do not guarantee that you will find a match, or that any user will reply to you or meet you.</p>
-    <p>9.3 How search results are ranked: travellers see locals, newcomers and other travellers; newcomers see locals; locals see other locals and newcomers. Travellers only see people who are in the city on at least one of the same days. Among them, people who have cancelled fewer confirmed meetups are shown first; after that, people with more matching times and more shared interests rank higher.</p>
+    <p>9.3 How search results are ranked: everyone sees the locals, newcomers and travellers in their city. Travellers are shown while their trip is on, and travellers only see other travellers who are in the city on at least one of the same days. Among them, people who have cancelled fewer confirmed meetups are shown first; after that, people with more matching times and more shared interests rank higher.</p>
 
     <h2>10. Liability</h2>
     <p>10.1 We are liable without limitation (a) for damage caused intentionally or through gross negligence, (b) for injury to life, body or health, (c) under the German Product Liability Act, and (d) where we have given a guarantee.</p>

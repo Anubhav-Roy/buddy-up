@@ -4081,7 +4081,7 @@ window.BuddyLegal = (function () {
     <h2>9. Our service</h2>
     <p>9.1 Because buddyup is free, there is no entitlement to any particular feature or to uninterrupted availability. We may change, restrict or discontinue features. We will tell you in good time before changes that significantly affect how you use buddyup, unless an immediate change is necessary for security or legal reasons.</p>
     <p>9.2 We do not guarantee that you will find a match, or that any user will reply to you or meet you.</p>
-    <p>9.3 How search results are ranked: travellers see locals, newcomers and other travellers; newcomers see locals; locals see other locals and newcomers. Travellers only see people who are in the city on at least one of the same days. Among them, people who have cancelled fewer confirmed meetups are shown first; after that, people with more matching times and more shared interests rank higher.</p>
+    <p>9.3 How search results are ranked: everyone sees the locals, newcomers and travellers in their city. Travellers are shown while their trip is on, and travellers only see other travellers who are in the city on at least one of the same days. Among them, people who have cancelled fewer confirmed meetups are shown first; after that, people with more matching times and more shared interests rank higher.</p>
 
     <h2>10. Liability</h2>
     <p>10.1 We are liable without limitation (a) for damage caused intentionally or through gross negligence, (b) for injury to life, body or health, (c) under the German Product Liability Act, and (d) where we have given a guarantee.</p>
@@ -5458,8 +5458,10 @@ window.BuddyLegal = (function () {
 
   // ---------- Discover ----------
   // Three kinds of people. Travellers have a trip (a city and dates), newcomers have recently
-  // moved to a city (no dates), locals are verified residents (always around). Who sees whom:
-  const SEES = { traveller: ["local", "newcomer", "traveller"], newcomer: ["local"], local: ["local", "newcomer"] };
+  // moved to a city (no dates), locals are verified residents (always around). Everyone sees
+  // everyone in their city; travellers only while their trip is on.
+  const ALL_TYPES = ["local", "newcomer", "traveller"];
+  const SEES = { traveller: ALL_TYPES, newcomer: ALL_TYPES, local: ALL_TYPES };
   const TYPE_LABEL = { local: "Local", newcomer: "Newcomer", traveller: "Traveller" };
   const TYPE_PLURAL = { local: "Locals", newcomer: "Newcomers", traveller: "Travellers" };
   const BADGE = { local: "badge-local", newcomer: "badge-new", traveller: "badge-buddy" };
@@ -5712,8 +5714,8 @@ window.BuddyLegal = (function () {
   
 
   // ---------- Local (host) dashboard ----------
-  // Locals get requests from travellers, newcomers and other locals, and can look for other locals
-  // and newcomers themselves. They don't see short-stay travellers.
+  // Locals get requests from travellers, newcomers and other locals, and can look for anyone in
+  // their city themselves.
   function hostDashboard(user, root) {
     const first = esc(user.name.split(" ")[0]);
     const city = esc(user.localCity);
@@ -5729,7 +5731,7 @@ window.BuddyLegal = (function () {
           </section>
           <section class="panel">
             <h3>Find people</h3>
-            <a class="btn btn-primary btn-block" href="#/discover/people">Locals and newcomers in ${city}</a>
+            <a class="btn btn-primary btn-block" href="#/discover/people">People in ${city}</a>
           </section>` : ""}
         <section class="panel switch-card">
           <h3>Travelling, or new somewhere?</h3>

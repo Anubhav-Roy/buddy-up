@@ -1267,8 +1267,10 @@
 
   // ---------- Discover ----------
   // Three kinds of people. Travellers have a trip (a city and dates), newcomers have recently
-  // moved to a city (no dates), locals are verified residents (always around). Who sees whom:
-  const SEES = { traveller: ["local", "newcomer", "traveller"], newcomer: ["local"], local: ["local", "newcomer"] };
+  // moved to a city (no dates), locals are verified residents (always around). Everyone sees
+  // everyone in their city; travellers only while their trip is on.
+  const ALL_TYPES = ["local", "newcomer", "traveller"];
+  const SEES = { traveller: ALL_TYPES, newcomer: ALL_TYPES, local: ALL_TYPES };
   const TYPE_LABEL = { local: "Local", newcomer: "Newcomer", traveller: "Traveller" };
   const TYPE_PLURAL = { local: "Locals", newcomer: "Newcomers", traveller: "Travellers" };
   const BADGE = { local: "badge-local", newcomer: "badge-new", traveller: "badge-buddy" };
@@ -1521,8 +1523,8 @@
   
 
   // ---------- Local (host) dashboard ----------
-  // Locals get requests from travellers, newcomers and other locals, and can look for other locals
-  // and newcomers themselves. They don't see short-stay travellers.
+  // Locals get requests from travellers, newcomers and other locals, and can look for anyone in
+  // their city themselves.
   function hostDashboard(user, root) {
     const first = esc(user.name.split(" ")[0]);
     const city = esc(user.localCity);
@@ -1538,7 +1540,7 @@
           </section>
           <section class="panel">
             <h3>Find people</h3>
-            <a class="btn btn-primary btn-block" href="#/discover/people">Locals and newcomers in ${city}</a>
+            <a class="btn btn-primary btn-block" href="#/discover/people">People in ${city}</a>
           </section>` : ""}
         <section class="panel switch-card">
           <h3>Travelling, or new somewhere?</h3>
