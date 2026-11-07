@@ -168,6 +168,12 @@ window.BuddyDB = (function () {
     return batch.commit();
   }
   const savePrivate = (patch) => db.doc(`users/${cache.uid}/private/info`).set(patch, { merge: true });
+  // A reviewer couldn't accept a local's ID photo (they set private/info.verification.idRejected):
+  // replace the photo and send the profile back into review.
+  async function resubmitId(file) {
+    const idFile = await uploadVerificationFile("id", file);
+    return savePrivate({ verification: { idFile, idRejected: FV().delete(), idResubmittedAt: now(), completed: true } });
+  }
 
   // ---------- People ----------
   const getProfile = async (uid) => { const s = await db.doc(`users/${uid}`).get(); return s.exists ? toUser(uid, s.data()) : null; };
@@ -403,7 +409,7 @@ window.BuddyDB = (function () {
   return {
     ready, cache, me, onChange: (fn) => subs.add(fn), friendlyError, ms,
     signInGoogle, signOut, finishRedirect, currentAuthUser: () => cache.authUser,
-    createProfile, saveProfile, savePrivate, acceptTerms, deleteIdPhoto, getProfile, findLocals, findTravellers, reviewsFor,
+    createProfile, saveProfile, savePrivate, resubmitId, acceptTerms, deleteIdPhoto, getProfile, findLocals, findTravellers, reviewsFor,
     pairId, requestMeetup, setMeetupStatus, cancelMeetup, watchMessages, sendMessage, markRead, setBlocked, deleteChat,
     addReview, report, uploadAvatar, uploadVerificationFile, isR2Photo, loadPhoto, deleteAccount,
     addNotification, markNotificationRead, unreadNotifications, toggleUndiscoverable,

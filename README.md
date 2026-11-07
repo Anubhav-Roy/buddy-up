@@ -40,6 +40,8 @@ Travellers must add a photo (picked or taken with the camera) before they can us
 
 **Approving locals:** locals can't approve themselves (the rules block it). A reviewer opens Firestore → `users` → the local's document, checks their answers in `private/info` and their photo ID in `users/<uid>/verification/id` (the `image` field is a photo you can paste into a browser tab), compares it with their profile photo (Cloudflare → R2 → `buddyup-photos` → `profiles/<uid>/`), then sets `approved` to `true`. The local's dashboard updates live. Their ID photo is deleted automatically the next time they open buddyup. If you reject someone, delete `users/<uid>/verification/id` yourself within 30 days (the Privacy Policy promises this).
 
+**Asking for a new ID photo:** if the ID photo is wrong (unreadable, cut off, not an ID, doesn't match), open `users/<uid>/private/info` and add `idRejected` inside the `verification` map — a short string the local will see (e.g. `The photo was blurry, so we couldn't read your name`), or `true` for no note. Then delete `users/<uid>/verification/id`. Next time they open buddyup as a local they get a "Please upload your ID again" screen; uploading a new photo removes `idRejected`, sets `idResubmittedAt` and puts them back in review (their other answers are kept). Tell them by email so they know to come back.
+
 **Where data lives**
 
 | Path | Contents | Who can read |

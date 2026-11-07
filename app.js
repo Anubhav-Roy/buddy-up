@@ -154,6 +154,7 @@
     if (user.age !== ageFrom(user.birthdate)) DB.saveProfile({ age: ageFrom(user.birthdate) }).catch(fail); // birthdays
     // Everyone adds a profile photo first; for locals it's also what reviewers match their ID against.
     if (!user.photoUploaded) return renderAddPhoto(user);
+    if (user.mode === "local" && !user.approved && user.verification?.idRejected) return renderNewId(user);
     if (user.mode === "local" && !user.verification?.completed) return renderVerify(user);
     if (page === "trip") return go("#/discover");
     if (user.approved && user.verification?.idFile && !user.verification.idDeletedAt && !state.idDeleting) {
@@ -604,6 +605,59 @@
     $("#logout")?.addEventListener("click", () => { DB.signOut(); go("#/"); });
     $("#to-traveller")?.addEventListener("click", () => switchMode(user, "traveller"));
     $("#vform").addEventListener("submit", (e) => { e.preventDefault(); submitVerifyStep(user, v, new FormData(e.target)); });
+  }
+
+  // A reviewer couldn't accept the ID photo: they set private/info.verification.idRejected in the
+  // console (to a short reason the local sees, or just true). The local uploads a new photo and
+  // the profile goes back into review; their other answers are kept.
+  function renderNewId(user) {
+    state.screen = "new-id";
+    const reason = typeof user.verification.idRejected === "string" ? user.verification.idRejected.trim() : "";
+    const canTravel = user.role === "traveller" || !!user.trip || !!user.home;
+    app.innerHTML = `
+      <header class="nav"><div class="container">${logo()}
+        ${canTravel ? `<button class="btn btn-soft btn-sm" id="to-traveller">🎒 Back to traveller mode</button>` : `<button class="btn btn-soft btn-sm" id="logout">Log out</button>`}
+      </div></header>
+      <section class="verify-page">
+        <div class="verify fade">
+          <div class="verify-top"><span class="badge badge-local">Local verification · ${esc(user.localCity)}</span></div>
+          <h1>Please upload your ID again</h1>
+          <p class="sub">We couldn't approve your local profile because the photo of your ID wasn't right. Your other answers are saved, so this is the only thing left to do.</p>
+          ${reason ? `<div class="check-result warn">Note from our review team: ${esc(reason)}</div>` : ""}
+          <form id="idform" novalidate>
+            <label class="upload"><input type="file" name="idDoc" accept="image/*"/><span class="ico">🪪</span><span class="label">Upload a photo of your passport, ID card or driving licence</span></label>
+            <p class="hint">Make sure the whole document is in the photo, sharp and readable. Only our review team sees it. We compare it with your profile photo and delete it once you're approved. You can black out everything except your photo, name, date of birth and expiry date.</p>
+            <div class="error" id="err"></div>
+            <div class="step-nav"><span></span><button class="btn btn-primary" type="submit" id="next">Send for review ${I.arrow}</button></div>
+          </form>
+        </div>
+      </section>`;
+
+    const input = $('[name="idDoc"]');
+    input.addEventListener("change", () => {
+      const label = input.closest(".upload");
+      if (input.files[0]) { label.classList.add("done"); label.querySelector(".label").textContent = "✓ " + input.files[0].name + " (uploads when you send it)"; }
+    });
+    $("#logout")?.addEventListener("click", () => { DB.signOut(); go("#/"); });
+    $("#to-traveller")?.addEventListener("click", () => switchMode(user, "traveller"));
+    $("#idform").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const err = $("#err"), btn = $("#next"), file = input.files[0];
+      err.textContent = "";
+      if (!file) return (err.textContent = "Please upload a photo of your passport, ID card or driving licence.");
+      btn.disabled = true;
+      btn.textContent = "Uploading ID…";
+      try {
+        await DB.resubmitId(file);
+      } catch (ex) {
+        btn.disabled = false;
+        btn.innerHTML = `Send for review ${I.arrow}`;
+        return (err.textContent = ex?.code ? DB.friendlyError(ex) : ex.message);
+      }
+      toast("New ID sent. We usually review it within 24 hours.");
+      go("#/discover");
+      render();
+    });
   }
 
   function verifyStepBody(step, user) {
@@ -2112,7 +2166,7 @@
   // ---------- Profile ----------
   function profilePage(user, root) {
     const v = user.verification;
-    const localStatus = !v ? "Not set up yet" : user.approved ? `✓ Verified in ${esc(user.localCity)}` : v.completed ? `In review · ${esc(user.localCity)}` : `Verification in progress · ${esc(user.localCity)}`;
+    const localStatus = !v ? "Not set up yet" : user.approved ? `✓ Verified in ${esc(user.localCity)}` : v.idRejected ? `New ID photo needed · ${esc(user.localCity)}` : v.completed ? `In review · ${esc(user.localCity)}` : `Verification in progress · ${esc(user.localCity)}`;
     const home = homeOf(user), trip = tripOf(user);
     const travellerStatus = trip ? `${esc(trip.city)}, ${range(trip)}` : "No trip planned";
     const newcomerStatus = home ? `New in ${esc(home.city)}` : "No city set";
